@@ -4,13 +4,10 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import {
   ArrowDownUp,
-  Crown,
-  Swords,
   AlertTriangle,
   Trophy,
   Handshake,
   ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 
 // ── piece value map for captured material calculation ──
@@ -80,19 +77,23 @@ function getCapturedPieces(game) {
       if (sq) current[sq.color][sq.type]++;
     }
   }
-  const captured = { w: [], b: [] }; // w = white pieces captured (taken by black)
+  // captured[color] = pieces of that color that were taken
+  // capturedPts[color] = total point value of pieces taken from that side
+  const captured = { w: [], b: [] };
+  const capturedPts = { w: 0, b: 0 };
   for (const color of ["w", "b"]) {
     for (const piece of ["q", "r", "b", "n", "p"]) {
       const diff = start[color][piece] - current[color][piece];
       for (let i = 0; i < diff; i++) {
         captured[color].push(color + piece);
       }
+      capturedPts[color] += (PIECE_VALUES[piece] || 0) * Math.max(0, diff);
     }
   }
-  // material advantage
+  // material advantage: positive = white remaining material > black remaining material
   const whiteTotal = Object.entries(current.w).reduce((s, [p, c]) => s + (PIECE_VALUES[p] || 0) * c, 0);
   const blackTotal = Object.entries(current.b).reduce((s, [p, c]) => s + (PIECE_VALUES[p] || 0) * c, 0);
-  return { captured, advantage: whiteTotal - blackTotal };
+  return { captured, capturedPts, advantage: whiteTotal - blackTotal };
 }
 
 function BoardPanel({
@@ -102,6 +103,7 @@ function BoardPanel({
   moveHistory,
   lastMoveSquares,
   onUndo,
+  isAIThinking = false,
 }) {
   const containerRef = useRef(null);
   const [boardWidth, setBoardWidth] = useState(400);
@@ -109,14 +111,15 @@ function BoardPanel({
   const [selectedSquare, setSelectedSquare] = useState(null);
   const [rightClickedSquares, setRightClickedSquares] = useState({});
   const [optionSquares, setOptionSquares] = useState({});
-  const moveHistoryRef = useRef(null);
+  // ── Track invalid/blocked square for shake animation ──
+  const [invalidSquare, setInvalidSquare] = useState(null);
 
   // ── Resize board ──
   useEffect(() => {
     function updateSize() {
       if (containerRef.current) {
         const { width, height } = containerRef.current.getBoundingClientRect();
-        const maxSize = Math.min(width - 48, height - 160);
+        const maxSize = Math.min(width - 48, height - 120);
         setBoardWidth(Math.max(280, Math.floor(maxSize)));
       }
     }
@@ -125,12 +128,13 @@ function BoardPanel({
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
-  // ── Scroll move history to end ──
+  // ── Clear shake animation after it plays ──
   useEffect(() => {
-    if (moveHistoryRef.current) {
-      moveHistoryRef.current.scrollLeft = moveHistoryRef.current.scrollWidth;
+    if (invalidSquare) {
+      const t = setTimeout(() => setInvalidSquare(null), 500);
+      return () => clearTimeout(t);
     }
-  }, [moveHistory]);
+  }, [invalidSquare]);
 
   const fen = game.fen();
   const inCheck = game.inCheck();
@@ -150,7 +154,7 @@ function BoardPanel({
   }, [inCheck, isCheckmate, isStalemate, isDraw]);
 
   // ── Captured pieces ──
-  const { captured, advantage } = useMemo(() => getCapturedPieces(game), [fen]);
+  const { captured, capturedPts, advantage } = useMemo(() => getCapturedPieces(game), [fen]);
 
   // ── Find king square when in check ──
   const checkSquare = useMemo(() => {
@@ -202,20 +206,53 @@ function BoardPanel({
   function onSquareClick({ square }) {
     setRightClickedSquares({});
 
-    // If a piece is already selected, try to move
+    // A piece is already selected — try to move or reselect
     if (selectedSquare) {
-      const result = onMove(selectedSquare, square);
-      if (result) {
+      // Clicking the same square deselects
+      if (square === selectedSquare) {
         setSelectedSquare(null);
         setOptionSquares({});
         return;
       }
+
+      // Is this a valid legal-move target?
+      const isValidTarget = Boolean(optionSquares[square]);
+
+      if (isValidTarget) {
+        const result = onMove(selectedSquare, square);
+        if (result) {
+          setSelectedSquare(null);
+          setOptionSquares({});
+          return;
+        }
+      }
+
+      // Clicking own piece → reselect it
+      const piece = game.get(square);
+      if (piece && piece.color === turn) {
+        const hasMoves = getMoveOptions(square);
+        if (!hasMoves) setInvalidSquare(square); // fully pinned piece
+        return;
+      }
+
+      // Clicked non-legal enemy/empty square — shake selected piece
+      setInvalidSquare(selectedSquare);
+      setSelectedSquare(null);
+      setOptionSquares({});
+      return;
     }
 
-    // Select the clicked piece (if it belongs to the current turn)
+    // No piece selected yet — try to select
     const piece = game.get(square);
     if (piece && piece.color === turn) {
-      getMoveOptions(square);
+      const hasMoves = getMoveOptions(square);
+      if (!hasMoves) {
+        // Piece exists but no legal moves (pinned / blocked)
+        setInvalidSquare(square);
+      }
+    } else if (piece) {
+      // Wrong color piece — shake it
+      setInvalidSquare(square);
     } else {
       setSelectedSquare(null);
       setOptionSquares({});
@@ -269,10 +306,21 @@ function BoardPanel({
       }
     }
 
-    // Check highlight (red glow on king)
+    // ── King in check: solid red background with glow ──
     if (checkSquare) {
       styles[checkSquare] = {
-        background: "radial-gradient(circle, rgba(255, 0, 0, 0.6) 0%, rgba(255, 0, 0, 0.2) 60%, transparent 80%)",
+        backgroundColor: "#ef4444",
+        boxShadow: "0 0 0 3px #ef4444, 0 0 18px 6px rgba(239,68,68,0.6)",
+        animation: "check-pulse 1s ease-in-out infinite",
+      };
+    }
+
+    // ── Blocked/invalid move square: shake animation ──
+    if (invalidSquare) {
+      styles[invalidSquare] = {
+        ...styles[invalidSquare],
+        backgroundColor: "rgba(239, 68, 68, 0.35)",
+        animation: "shake 0.45s ease-in-out",
       };
     }
 
@@ -283,30 +331,39 @@ function BoardPanel({
     Object.assign(styles, rightClickedSquares);
 
     return styles;
-  }, [lastMoveSquares, checkSquare, optionSquares, rightClickedSquares]);
-
-  // ── Move history pairs ──
-  const movePairs = useMemo(() => {
-    const pairs = [];
-    for (let i = 0; i < moveHistory.length; i += 2) {
-      pairs.push({
-        number: Math.floor(i / 2) + 1,
-        white: moveHistory[i],
-        black: moveHistory[i + 1] || null,
-      });
-    }
-    return pairs;
-  }, [moveHistory]);
+  }, [lastMoveSquares, checkSquare, optionSquares, rightClickedSquares, invalidSquare]);
 
   // ── Captured piece row ──
-  function CapturedRow({ pieces, adv }) {
-    if (pieces.length === 0 && !adv) return null;
+  function CapturedRow({ pieces, totalPts, adv }) {
+    // Group pieces by key into counts
+    const groups = pieces.reduce((acc, p) => {
+      acc[p] = (acc[p] || 0) + 1;
+      return acc;
+    }, {});
+    const hasPieces = pieces.length > 0;
     return (
-      <div className="flex items-center gap-0.5 text-sm leading-none min-h-[20px]">
-        {pieces.map((p, i) => (
-          <span key={i} className="opacity-70">{PIECE_UNICODE[p]}</span>
-        ))}
-        {adv > 0 && <span className="text-xs text-muted-foreground ml-1">+{adv}</span>}
+      <div className="flex items-center gap-1.5 min-h-[22px]">
+        {/* Piece icons grouped */}
+        {hasPieces && (
+          <div className="flex items-center gap-0.5">
+            {Object.entries(groups).map(([key, count]) => (
+              <span key={key} className="text-sm leading-none opacity-75 select-none">
+                {PIECE_UNICODE[key]}{count > 1 && <span className="text-[10px] text-muted-foreground">×{count}</span>}
+              </span>
+            ))}
+          </div>
+        )}
+        {/* Points captured label */}
+        {totalPts > 0 && (
+          <span className="text-[11px] text-muted-foreground/70 tabular-nums">{totalPts} pts</span>
+        )}
+        {/* Advantage badge */}
+        {adv > 0 && (
+          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-semibold
+            bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
+            +{adv}
+          </span>
+        )}
       </div>
     );
   }
@@ -339,6 +396,7 @@ function BoardPanel({
       <div className="w-full flex justify-between items-center px-1" style={{ maxWidth: boardWidth }}>
         <CapturedRow
           pieces={boardOrientation === "white" ? captured.w : captured.b}
+          totalPts={boardOrientation === "white" ? capturedPts.w : capturedPts.b}
           adv={boardOrientation === "white" ? (advantage < 0 ? -advantage : 0) : (advantage > 0 ? advantage : 0)}
         />
         <div className="flex items-center gap-1">
@@ -354,23 +412,32 @@ function BoardPanel({
 
       {/* Chess Board */}
       <div
-        className="rounded-lg overflow-hidden shadow-lg border border-border"
+        className="rounded-lg overflow-hidden shadow-lg border border-border relative"
         style={{ width: boardWidth, height: boardWidth }}
       >
+        {/* AI thinking overlay */}
+        {isAIThinking && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/10 pointer-events-none">
+            <div className="bg-card/90 border border-border rounded-full px-3 py-1.5 flex items-center gap-2 shadow-lg text-xs text-primary">
+              <span className="animate-spin inline-block">⚙</span>
+              AI thinking…
+            </div>
+          </div>
+        )}
         <Chessboard
           options={{
             id: "main-board",
             position: fen,
             onPieceDrop: ({ sourceSquare, targetSquare, piece }) =>
               onDrop(sourceSquare, targetSquare, piece),
-            onSquareClick,
-            onPieceClick: ({ square }) => onSquareClick({ square }),
+            onSquareClick: isAIThinking ? () => {} : onSquareClick,
+            onPieceClick: isAIThinking ? () => {} : ({ square }) => onSquareClick({ square }),
             onSquareRightClick,
             onPieceDrag,
             boardOrientation,
             animationDurationInMs: 200,
-            allowDragging: !isGameOver,
-            canDragPiece: () => !isGameOver,
+            allowDragging: !isGameOver && !isAIThinking,
+            canDragPiece: () => !isGameOver && !isAIThinking,
             boardStyle: { borderRadius: "0px" },
             darkSquareStyle: { backgroundColor: "#779952" },
             lightSquareStyle: { backgroundColor: "#edeed1" },
@@ -384,6 +451,7 @@ function BoardPanel({
       <div className="w-full flex justify-between items-center px-1" style={{ maxWidth: boardWidth }}>
         <CapturedRow
           pieces={boardOrientation === "white" ? captured.b : captured.w}
+          totalPts={boardOrientation === "white" ? capturedPts.b : capturedPts.w}
           adv={boardOrientation === "white" ? (advantage > 0 ? advantage : 0) : (advantage < 0 ? -advantage : 0)}
         />
         <div className="flex items-center gap-1">
@@ -407,6 +475,7 @@ function BoardPanel({
           className="text-muted-foreground"
         >
           <ArrowDownUp className="h-3.5 w-3.5" />
+          Flip
         </Button>
 
         {moveQuality && (
@@ -429,27 +498,6 @@ function BoardPanel({
           Undo
         </Button>
       </div>
-
-      {/* Move history */}
-      {movePairs.length > 0 && (
-        <div
-          ref={moveHistoryRef}
-          className="overflow-x-auto overflow-y-hidden rounded-md bg-secondary/50 px-3 py-2 text-xs font-mono whitespace-nowrap"
-          style={{ maxWidth: boardWidth, width: "100%" }}
-        >
-          <div className="flex gap-x-3">
-            {movePairs.map((pair) => (
-              <span key={pair.number} className="text-muted-foreground flex-shrink-0">
-                <span className="text-foreground/40">{pair.number}.</span>{" "}
-                <span className="text-foreground">{pair.white}</span>
-                {pair.black && (
-                  <span className="text-foreground ml-1">{pair.black}</span>
-                )}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
