@@ -9,6 +9,7 @@
  */
 
 import { Chess } from "chess.js";
+import { detectOpening } from "./openings";
 
 // ─── Move-quality thresholds (centipawns lost vs best) ──────────────────────
 const QUALITY_LEVELS = [
@@ -449,32 +450,47 @@ const PIECE_NAMES = { p: "Pawn", n: "Knight", b: "Bishop", r: "Rook", q: "Queen"
 /**
  * Analyze threats after the opponent's move and build a threat card.
  *
- * @param {Chess}  game           chess.js game instance (position after opponent's move)
- * @param {string} opponentColor  'w' | 'b'
- * @param {string} lastMoveTo     UCI "to" square of the opponent's last move
- * @param {string} opponentMoveSan SAN of the opponent's last move
- * @param {number} msgSeed        Seed for varied messages
+ * @param {Chess}    game            chess.js game instance (position after opponent's move)
+ * @param {string}   opponentColor   'w' | 'b'
+ * @param {string}   lastMoveTo      UCI "to" square of the opponent's last move
+ * @param {string}   opponentMoveSan SAN of the opponent's last move
+ * @param {number}   msgSeed         Seed for varied messages
+ * @param {string[]} moveHistory     Full SAN move history including the opponent's last move
  * @returns {{ type: 'threat-card', ... } | null}
  */
-export function buildThreatCard(game, opponentColor, lastMoveTo, opponentMoveSan, msgSeed = 0) {
+export function buildThreatCard(game, opponentColor, lastMoveTo, opponentMoveSan, msgSeed = 0, moveHistory = []) {
     const playerColor = opponentColor === "w" ? "b" : "w";
     const threats = [];
 
+    // ── Opening detection ────────────────────────────────────────────────────
+    // Identify if we're still in known opening theory so we can offer learning.
+    const opening = detectOpening(moveHistory);
+    const knownPattern = opening
+        ? {
+              type: "opening",
+              name: opening.name,
+              eco: opening.eco,
+              category: opening.category,
+              idea: opening.idea,
+          }
+        : null;
+
     // 1. Check
     if (game.inCheck()) {
-        threats.push({
+        const threat = {
             id: "check",
             name: "Check",
             icon: "⚡",
             description: pickThreatMsg("check", msgSeed),
             severity: "critical",
-        });
-        // Check is the most urgent; return immediately with just this threat
+        };
         return {
             type: "threat-card",
             opponentMoveSan,
-            primaryThreat: threats[0],
-            allThreats: threats,
+            primaryThreat: threat,
+            allThreats: [threat],
+            knownPattern,
+            hasLearnButton: !!knownPattern,
             hasAiButton: true,
         };
     }
@@ -482,7 +498,9 @@ export function buildThreatCard(game, opponentColor, lastMoveTo, opponentMoveSan
     // 2. Fork
     const fork = detectFork(game, opponentColor, lastMoveTo);
     if (fork) {
-        const targetNames = fork.targets.map((t) => `${PIECE_NAMES[t.piece]} on ${t.square}`).join(" and ");
+        const targetNames = fork.targets
+            .map((t) => `${PIECE_NAMES[t.piece]} on ${t.square}`)
+            .join(" and ");
         threats.push({
             id: "fork",
             name: `${PIECE_NAMES[fork.forkingPiece]} Fork`,
@@ -505,13 +523,48 @@ export function buildThreatCard(game, opponentColor, lastMoveTo, opponentMoveSan
         });
     }
 
-    if (threats.length === 0) return null; // No notable threats
+    // ── Tactical pattern tag (for fork) ─────────────────────────────────────
+    // If no opening is detected, tag a fork as a known tactical pattern worth learning.
+    const effectivePattern =
+        knownPattern ??
+        (threats.some((t) => t.id === "fork")
+            ? {
+                  type: "tactical",
+                  name: "Fork Tactic",
+                  eco: null,
+                  category: "tactical",
+                  idea: "A fork attacks two or more of your pieces at once, forcing a difficult choice about which piece to save. Learning to spot forks before they land is essential for every chess player.",
+              }
+            : null);
+
+    // ── Pure opening card (no tactical threat, but in known opening theory) ─
+    if (threats.length === 0) {
+        if (!effectivePattern) return null; // Nothing to report
+        // Return an informational card about the opening move
+        return {
+            type: "threat-card",
+            opponentMoveSan,
+            primaryThreat: {
+                id: "opening",
+                name: `Theory: ${effectivePattern.name}`,
+                icon: "📚",
+                description: `Your opponent played a well-known theoretical move from the ${effectivePattern.name}. Understanding this opening will sharpen your game significantly.`,
+                severity: "info",
+            },
+            allThreats: [],
+            knownPattern: effectivePattern,
+            hasLearnButton: true,
+            hasAiButton: false,
+        };
+    }
 
     return {
         type: "threat-card",
         opponentMoveSan,
         primaryThreat: threats[0],
         allThreats: threats,
+        knownPattern: effectivePattern,
+        hasLearnButton: !!effectivePattern,
         hasAiButton: true,
     };
 }

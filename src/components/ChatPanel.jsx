@@ -23,6 +23,7 @@ const SEVERITY_STYLES = {
   high:     { border: "border-orange-500/60", bg: "bg-orange-950/40", icon: "text-orange-400" },
   medium:   { border: "border-yellow-500/50", bg: "bg-yellow-950/30", icon: "text-yellow-400" },
   low:      { border: "border-blue-500/40",   bg: "bg-blue-950/30",   icon: "text-blue-400"   },
+  info:     { border: "border-teal-500/50",   bg: "bg-teal-950/30",   icon: "text-teal-400"   },
 };
 
 // ── Eval score colour helper ──────────────────────────────────────────────
@@ -221,15 +222,18 @@ function HintCard({ card }) {
 }
 
 // ── Threat Card ───────────────────────────────────────────────────────────
-function ThreatCard({ card, onAskAI }) {
+function ThreatCard({ card, onAskAI, onLearnWithAI }) {
   const primary = card.primaryThreat;
   const ss = SEVERITY_STYLES[primary.severity] || SEVERITY_STYLES.medium;
+  const isOpeningOnly = primary.id === "opening";
 
   return (
     <div className={`rounded-xl border ${ss.border} ${ss.bg} p-3 text-sm space-y-2 w-full`}>
       {/* Header */}
       <div className="flex items-center gap-2">
-        <AlertTriangle className={`h-4 w-4 shrink-0 ${ss.icon}`} />
+        {isOpeningOnly
+          ? <BookOpen className={`h-4 w-4 shrink-0 ${ss.icon}`} />
+          : <AlertTriangle className={`h-4 w-4 shrink-0 ${ss.icon}`} />}
         <span className="text-xs font-semibold text-foreground/90">{primary.name}</span>
         <div className="ml-auto">
           <MoveChip move={card.opponentMoveSan} />
@@ -238,6 +242,28 @@ function ThreatCard({ card, onAskAI }) {
 
       {/* Description */}
       <p className="text-xs text-foreground/80 leading-relaxed">{primary.description}</p>
+
+      {/* Known opening / tactical pattern badge (only when there are also threats) */}
+      {card.knownPattern && !isOpeningOnly && (
+        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-teal-500/10 border border-teal-500/20">
+          <BookOpen className="h-3 w-3 text-teal-400 shrink-0" />
+          <span className="text-[11px] text-teal-300 font-medium">
+            {card.knownPattern.type === "opening"
+              ? `Opening Theory: ${card.knownPattern.name}`
+              : card.knownPattern.name}
+          </span>
+          {card.knownPattern.eco && (
+            <span className="text-[10px] text-teal-400/60 font-mono ml-auto">{card.knownPattern.eco}</span>
+          )}
+        </div>
+      )}
+
+      {/* Opening idea one-liner */}
+      {card.knownPattern?.idea && !isOpeningOnly && (
+        <p className="text-[11px] text-muted-foreground/70 italic pl-1">
+          {card.knownPattern.idea}
+        </p>
+      )}
 
       {/* Additional threats */}
       {card.allThreats.length > 1 && (
@@ -251,16 +277,40 @@ function ThreatCard({ card, onAskAI }) {
         </div>
       )}
 
-      {/* Ask AI button */}
-      {card.hasAiButton && (
-        <div className="pt-1 border-t border-white/10">
-          <button
-            onClick={() => onAskAI?.(card)}
-            className="flex items-center gap-1.5 text-[11px] text-cyan-400 hover:text-cyan-300 transition-colors"
-          >
-            <BrainCircuit className="h-3 w-3" />
-            Ask AI to explain this threat
-          </button>
+      {/* Action buttons */}
+      {(card.hasLearnButton || card.hasAiButton) && (
+        <div className="pt-1.5 border-t border-white/10 flex flex-col gap-1.5">
+          {/* ── Learn with AI — primary learning CTA ── */}
+          {card.hasLearnButton && (
+            <button
+              onClick={() => onLearnWithAI?.(card)}
+              className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg bg-linear-to-r from-teal-500/20 to-cyan-500/15 border border-teal-500/30 hover:border-teal-400/50 hover:from-teal-500/30 hover:to-cyan-500/25 transition-all text-left group"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-teal-400 shrink-0 group-hover:text-teal-300" />
+              <div className="flex flex-col min-w-0">
+                <span className="text-[11px] font-semibold text-teal-300 group-hover:text-teal-200 leading-tight">
+                  Learn with AI
+                </span>
+                <span className="text-[10px] text-teal-400/60 leading-tight">
+                  {card.knownPattern?.type === "opening"
+                    ? `Understand the ${card.knownPattern.name}`
+                    : "Understand this pattern"}
+                </span>
+              </div>
+              <ChevronRight className="h-3 w-3 text-teal-400/60 ml-auto shrink-0 group-hover:text-teal-300" />
+            </button>
+          )}
+
+          {/* ── Ask AI to explain the tactical threat ── */}
+          {card.hasAiButton && (
+            <button
+              onClick={() => onAskAI?.(card)}
+              className="flex items-center gap-1.5 text-[11px] text-cyan-400 hover:text-cyan-300 transition-colors pl-0.5"
+            >
+              <BrainCircuit className="h-3 w-3" />
+              Ask AI to explain this threat
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -361,7 +411,7 @@ function GlossaryDialog({ open, onClose }) {
 }
 
 // ── Message bubble ────────────────────────────────────────────────────────
-function MessageBubble({ msg, onAskAI }) {
+function MessageBubble({ msg, onAskAI, onLearnWithAI }) {
   // Special structured cards
   if (msg.type === "my-move-analysis" && typeof msg.content === "object") {
     return (
@@ -409,7 +459,7 @@ function MessageBubble({ msg, onAskAI }) {
           <AlertTriangle className="h-3.5 w-3.5 text-orange-400" />
         </div>
         <div className="flex-1 min-w-0">
-          <ThreatCard card={msg.content} onAskAI={onAskAI} />
+          <ThreatCard card={msg.content} onAskAI={onAskAI} onLearnWithAI={onLearnWithAI} />
         </div>
       </div>
     );
@@ -460,6 +510,7 @@ function ChatPanel({
   onEngineBestMove,
   onEngineHint,
   onAskAI,
+  onLearnWithAI,
 }) {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
@@ -573,7 +624,7 @@ function ChatPanel({
           </div>
         )}
 
-        {visibleMessages.map((msg, i) => <MessageBubble key={i} msg={msg} onAskAI={onAskAI} />)}
+        {visibleMessages.map((msg, i) => <MessageBubble key={i} msg={msg} onAskAI={onAskAI} onLearnWithAI={onLearnWithAI} />)}
 
         {isLoading && (
           <div className="flex gap-2.5 justify-start">
