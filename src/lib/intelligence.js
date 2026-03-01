@@ -523,8 +523,12 @@ export function buildThreatCard(game, opponentColor, lastMoveTo, opponentMoveSan
         });
     }
 
-    // ── Tactical pattern tag (for fork) ─────────────────────────────────────
-    // If no opening is detected, tag a fork as a known tactical pattern worth learning.
+    // No threats — nothing to show, regardless of opening context.
+    if (threats.length === 0) return null;
+
+    // ── Tag as a known pattern only when a threat actually exists ────────────
+    // Opening context: the game is in a known opening line.
+    // Tactical context: a fork was just created (always worth learning about).
     const effectivePattern =
         knownPattern ??
         (threats.some((t) => t.id === "fork")
@@ -536,27 +540,6 @@ export function buildThreatCard(game, opponentColor, lastMoveTo, opponentMoveSan
                   idea: "A fork attacks two or more of your pieces at once, forcing a difficult choice about which piece to save. Learning to spot forks before they land is essential for every chess player.",
               }
             : null);
-
-    // ── Pure opening card (no tactical threat, but in known opening theory) ─
-    if (threats.length === 0) {
-        if (!effectivePattern) return null; // Nothing to report
-        // Return an informational card about the opening move
-        return {
-            type: "threat-card",
-            opponentMoveSan,
-            primaryThreat: {
-                id: "opening",
-                name: `Theory: ${effectivePattern.name}`,
-                icon: "📚",
-                description: `Your opponent played a well-known theoretical move from the ${effectivePattern.name}. Understanding this opening will sharpen your game significantly.`,
-                severity: "info",
-            },
-            allThreats: [],
-            knownPattern: effectivePattern,
-            hasLearnButton: true,
-            hasAiButton: false,
-        };
-    }
 
     return {
         type: "threat-card",
