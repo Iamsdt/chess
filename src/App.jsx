@@ -3,6 +3,7 @@ import { Chess } from "chess.js";
 import ControlBar from "@/components/ControlBar";
 import BoardPanel, { playSound } from "@/components/BoardPanel";
 import ChatPanel from "@/components/ChatPanel";
+import MoveHistorySidebar from "@/components/MoveHistorySidebar";
 import SettingsDialog from "@/components/SettingsDialog";
 import {
   sendChatMessage,
@@ -117,11 +118,12 @@ function App() {
   const [moveQuality, setMoveQuality] = useState(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [lastMoveSquares, setLastMoveSquares] = useState(null);
+  const [evalScore, setEvalScore] = useState(null); // White-perspective score (cp/100)
+  const [boardOrientation, setBoardOrientation] = useState("white");
 
-  // ---- Opponent / difficulty / moves sidebar ----
-  const [opponent, setOpponent] = useState("manual"); // manual | ai | engine
+  // ---- Opponent / difficulty ----
+  const [opponent, setOpponent] = useState("engine"); // manual | ai | engine
   const [difficulty, setDifficulty] = useState("medium"); // easy | medium | hard
-  const [showMoves, setShowMoves] = useState(false); // move history sidebar
   const [isAIThinking, setIsAIThinking] = useState(false);
   const aiTimeoutRef = useRef(null);
 
@@ -199,9 +201,12 @@ function App() {
 
           // Live analysis after engine/AI move
           if (isLiveModeRef.current && coachModeRef.current === "engine") {
-            engineLiveAnalyze(game.fen(), move.san);
-          } else if (isLiveModeRef.current && coachModeRef.current === "ai" && getApiKey()) {
-            evaluateLastMove(move.san, game.fen(), newHistory);
+            engineLiveAnalyze(game.fen(), move.san); // also updates eval bar
+          } else {
+            updateEvalBar(game.fen()); // always keep eval bar live
+            if (isLiveModeRef.current && coachModeRef.current === "ai" && getApiKey()) {
+              evaluateLastMove(move.san, game.fen(), newHistory);
+            }
           }
         } catch (e) {
           console.error("Engine move error:", e);
@@ -276,12 +281,13 @@ function App() {
       }
 
       // Live analysis / evaluation after human move
+      // For engine opponent, eval bar + analysis run after the engine replies (in triggerAIMove)
       if (opponent === "manual" || opponent === "ai") {
-        // For engine opponent, analysis runs *after* the engine replies (in triggerAIMove)
-        if (isLiveMode) {
-          if (coachMode === "engine") {
-            engineLiveAnalyze(game.fen(), move.san);
-          } else if (coachMode === "ai" && getApiKey()) {
+        if (isLiveMode && coachMode === "engine") {
+          engineLiveAnalyze(game.fen(), move.san); // also updates eval bar
+        } else {
+          updateEvalBar(game.fen()); // always keep eval bar live
+          if (isLiveMode && coachMode === "ai" && getApiKey()) {
             evaluateLastMove(move.san, game.fen(), [...moveHistory, move.san]);
           }
         }
@@ -298,11 +304,29 @@ function App() {
     [isLiveMode, coachMode, moveHistory, opponent, triggerAIMove]
   );
 
+  // ---- Helper: extract White-perspective score from engine result ----
+  function applyEvalScore(result, fen) {
+    if (!result.isMate && result.scoreCp !== null) {
+      const isWhite = new Chess(fen).turn() === "w";
+      const wScore = isWhite ? result.scoreCp / 100 : -result.scoreCp / 100;
+      setEvalScore(wScore);
+    }
+  }
+
+  // ---- Lightweight eval bar update — fires after every move ----
+  function updateEvalBar(fen) {
+    const sf = getStockfishEngine();
+    sf.analyze(fen, 10, 1)
+      .then((result) => applyEvalScore(result, fen))
+      .catch(() => { /* silent */ });
+  }
+
   // ---- Engine live analysis (auto, after moves) ----
   function engineLiveAnalyze(fen, lastMoveSan) {
     const sf = getStockfishEngine();
     sf.analyze(fen, 12, 1)
       .then((result) => {
+        applyEvalScore(result, fen);
         const content = buildLiveAnalysisMsg(result, fen, lastMoveSan);
         setMessages((prev) => [...prev, { role: "assistant", content, type: "engine" }]);
       })
@@ -316,6 +340,7 @@ function App() {
     try {
       const sf     = getStockfishEngine();
       const result = await sf.analyze(gameRef.current.fen(), 18, 3);
+      applyEvalScore(result, gameRef.current.fen());
       const content = buildAnalysisMsg(result, gameRef.current.fen());
       setMessages((prev) => [...prev, { role: "assistant", content, type: "engine" }]);
     } catch (e) {
@@ -332,6 +357,7 @@ function App() {
     try {
       const sf     = getStockfishEngine();
       const result = await sf.analyze(gameRef.current.fen(), 15, 1);
+      applyEvalScore(result, gameRef.current.fen());
       const content = buildBestMoveMsg(result, gameRef.current.fen());
       setMessages((prev) => [...prev, { role: "assistant", content, type: "engine" }]);
     } catch (e) {
@@ -543,6 +569,7 @@ function App() {
     setMessages([]);
     setLastMoveSquares(null);
     setIsAIThinking(false);
+    setEvalScore(null);
   }, []);
 
   // ---- Pre-warm Stockfish when engine mode is selected ----
@@ -568,29 +595,36 @@ function App() {
       />
 
       {/* Main Content */}
-      <div className="grid grid-cols-2 flex-1 overflow-hidden">
-        {/* Left — Board */}
+      <div className="grid grid-cols-[220px_1fr_380px] flex-1 overflow-hidden">
+        {/* Left — Move history + eval bar */}
+        <div className="min-w-0 min-h-0">
+          <MoveHistorySidebar
+            game={gameRef.current}
+            moveHistory={moveHistory}
+            evalScore={evalScore}
+            moveQuality={moveQuality}
+            onFlipBoard={() => setBoardOrientation((o) => (o === "white" ? "black" : "white"))}
+            onUndo={handleUndo}
+          />
+        </div>
+
+        {/* Center — Board */}
         <div className="flex items-center justify-center bg-background overflow-hidden p-4">
           <BoardPanel
             game={gameRef.current}
             onMove={handleMove}
-            moveQuality={moveQuality}
-            moveHistory={moveHistory}
             lastMoveSquares={lastMoveSquares}
-            onUndo={handleUndo}
             isAIThinking={isAIThinking}
+            boardOrientation={boardOrientation}
           />
         </div>
 
-        {/* Right — Chat / Moves sidebar */}
+        {/* Right — Chat */}
         <div className="min-w-0 min-h-0">
           <ChatPanel
             messages={messages}
             onSendMessage={handleSendMessage}
             isLoading={isLoading}
-            moveHistory={moveHistory}
-            showMoves={showMoves}
-            onToggleMoves={() => setShowMoves((s) => !s)}
             coachMode={coachMode}
             onCoachModeChange={setCoachMode}
             isLiveMode={isLiveMode}

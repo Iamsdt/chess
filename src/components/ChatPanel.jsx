@@ -2,58 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import {
-  Send, Bot, User, Loader2, BookOpen, Cpu,
+  Send, Bot, User, Loader2, Cpu,
   Search, Lightbulb, Crosshair, Zap,
 } from "lucide-react";
-
-// ── Move history panel ────────────────────────────────────────────────────
-function MoveHistoryPanel({ moveHistory }) {
-  const pairs = [];
-  for (let i = 0; i < moveHistory.length; i += 2) {
-    pairs.push({ number: Math.floor(i / 2) + 1, white: moveHistory[i], black: moveHistory[i + 1] || null });
-  }
-  const endRef = useRef(null);
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [moveHistory]);
-
-  if (pairs.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-        <BookOpen className="h-10 w-10 mb-3 opacity-30" />
-        <p className="text-sm">No moves yet</p>
-        <p className="text-xs mt-1">Make a move to see history here</p>
-      </div>
-    );
-  }
-  return (
-    <div className="flex-1 overflow-y-auto p-3">
-      <table className="w-full text-xs font-mono border-collapse">
-        <thead>
-          <tr className="text-muted-foreground border-b border-border">
-            <th className="text-left px-2 py-1.5 w-8">#</th>
-            <th className="text-left px-2 py-1.5">White</th>
-            <th className="text-left px-2 py-1.5">Black</th>
-          </tr>
-        </thead>
-        <tbody>
-          {pairs.map((pair) => (
-            <tr key={pair.number}
-              className={`border-b border-border/30 hover:bg-secondary/40 transition-colors ${
-                pair.number === pairs.length ? "bg-primary/5" : ""
-              }`}
-            >
-              <td className="px-2 py-1.5 text-muted-foreground">{pair.number}.</td>
-              <td className="px-2 py-1.5 text-foreground font-semibold">{pair.white}</td>
-              <td className="px-2 py-1.5 text-foreground">
-                {pair.black || <span className="text-muted-foreground/40">—</span>}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div ref={endRef} />
-    </div>
-  );
-}
 
 // ── Message bubble ────────────────────────────────────────────────────────
 function MessageBubble({ msg }) {
@@ -63,7 +14,7 @@ function MessageBubble({ msg }) {
   return (
     <div className={`flex gap-2.5 ${isUser ? "justify-end" : "justify-start"}`}>
       {!isUser && (
-        <div className={`flex-shrink-0 h-7 w-7 rounded-full flex items-center justify-center
+        <div className={`shrink-0 h-7 w-7 rounded-full flex items-center justify-center
           ${isEngine ? "bg-cyan-500/15" : "bg-primary/10"}`}>
           {isEngine
             ? <Cpu   className="h-3.5 w-3.5 text-cyan-400" />
@@ -82,7 +33,7 @@ function MessageBubble({ msg }) {
         {msg.content}
       </div>
       {isUser && (
-        <div className="flex-shrink-0 h-7 w-7 rounded-full bg-muted flex items-center justify-center">
+        <div className="shrink-0 h-7 w-7 rounded-full bg-muted flex items-center justify-center">
           <User className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
       )}
@@ -95,9 +46,6 @@ function ChatPanel({
   messages,
   onSendMessage,
   isLoading,
-  moveHistory = [],
-  showMoves = false,
-  onToggleMoves,
   coachMode = "engine",
   onCoachModeChange,
   isLiveMode = false,
@@ -108,24 +56,20 @@ function ChatPanel({
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
 
-  // activeTab: "engine" | "ai" | "moves"
   const [activeTab, setActiveTab] = useState(coachMode === "ai" ? "ai" : "engine");
 
-  // Sync tab → coachMode when tab changes
   function handleTabClick(tab) {
     setActiveTab(tab);
-    if (tab === "engine" || tab === "ai") onCoachModeChange?.(tab);
-    if (tab === "moves" && activeTab !== "moves") onToggleMoves?.();
-    if (tab !== "moves" && showMoves) onToggleMoves?.();
+    onCoachModeChange?.(tab);
   }
 
   // Keep tab in sync if coachMode is changed externally
   useEffect(() => {
-    if (coachMode !== activeTab && activeTab !== "moves") setActiveTab(coachMode);
+    if (coachMode !== activeTab) setActiveTab(coachMode);
   }, [coachMode]);
 
   useEffect(() => {
-    if (activeTab !== "moves") messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, activeTab]);
 
   function handleSend() {
@@ -139,7 +83,6 @@ function ChatPanel({
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
   }
 
-  // Filter messages by coach mode so engine/ai chats are separate
   const visibleMessages = messages.filter((m) => {
     if (activeTab === "engine") return m.type === "engine" || m.type === "engine-query";
     if (activeTab === "ai")     return m.type !== "engine" && m.type !== "engine-query";
@@ -147,9 +90,8 @@ function ChatPanel({
   });
 
   const tabs = [
-    { id: "engine", icon: Cpu,      label: "Engine",   iconCls: "text-cyan-400" },
-    { id: "ai",     icon: Bot,      label: "AI Coach"                           },
-    { id: "moves",  icon: BookOpen, label: "Moves"                              },
+    { id: "engine", icon: Cpu, label: "Engine", iconCls: "text-cyan-400" },
+    { id: "ai",     icon: Bot, label: "AI Coach" },
   ];
 
   return (
@@ -169,11 +111,6 @@ function ChatPanel({
             >
               <Icon className={`h-4 w-4 ${isActive && iconCls ? iconCls : ""}`} />
               <span>{label}</span>
-              {id === "moves" && moveHistory.length > 0 && (
-                <span className="ml-0.5 text-xs bg-primary/20 text-primary rounded-full px-1.5 py-0.5 leading-none">
-                  {moveHistory.length}
-                </span>
-              )}
               {id === "engine" && isLiveMode && (
                 <span className="ml-0.5 inline-flex items-center gap-0.5 text-[10px] bg-cyan-500/20 text-cyan-400 rounded-full px-1.5 py-0.5 leading-none">
                   <Zap className="h-2.5 w-2.5" />Live
@@ -184,111 +121,102 @@ function ChatPanel({
         })}
       </div>
 
-      {/* ── Moves tab ─────────────────────────────────────────────────────── */}
-      {activeTab === "moves" ? (
-        <MoveHistoryPanel moveHistory={moveHistory} />
-      ) : (
-        <>
-          {/* ── Messages area ────────────────────────────────────────────── */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {visibleMessages.length === 0 && (
-              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-                {activeTab === "engine" ? (
-                  <>
-                    <Cpu className="h-10 w-10 mb-3 opacity-20 text-cyan-400" />
-                    <p className="text-sm">Stockfish Engine Coach</p>
-                    <p className="text-xs mt-1">
-                      {isLiveMode
-                        ? "Live analysis is on — analysis appears after each move."
-                        : "Use the buttons below to analyze the position."}
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <Bot className="h-10 w-10 mb-3 opacity-30" />
-                    <p className="text-sm">AI Coach</p>
-                    <p className="text-xs mt-1">Ask me anything about the position!</p>
-                  </>
-                )}
-              </div>
+      {/* Messages area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {visibleMessages.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+            {activeTab === "engine" ? (
+              <>
+                <Cpu className="h-10 w-10 mb-3 opacity-20 text-cyan-400" />
+                <p className="text-sm">Stockfish Engine Coach</p>
+                <p className="text-xs mt-1">
+                  {isLiveMode
+                    ? "Live analysis is on — analysis appears after each move."
+                    : "Use the buttons below to analyze the position."}
+                </p>
+              </>
+            ) : (
+              <>
+                <Bot className="h-10 w-10 mb-3 opacity-30" />
+                <p className="text-sm">AI Coach</p>
+                <p className="text-xs mt-1">Ask me anything about the position!</p>
+              </>
             )}
-
-            {visibleMessages.map((msg, i) => <MessageBubble key={i} msg={msg} />)}
-
-            {isLoading && (
-              <div className="flex gap-2.5 justify-start">
-                <div className={`flex-shrink-0 h-7 w-7 rounded-full flex items-center justify-center
-                  ${activeTab === "engine" ? "bg-cyan-500/15" : "bg-primary/10"}`}>
-                  {activeTab === "engine"
-                    ? <Cpu className="h-3.5 w-3.5 text-cyan-400" />
-                    : <Bot className="h-3.5 w-3.5 text-primary" />}
-                </div>
-                <div className="bg-secondary rounded-lg px-3 py-2 text-sm text-muted-foreground flex items-center gap-2">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  {activeTab === "engine" ? "Calculating…" : "Thinking…"}
-                </div>
-              </div>
-            )}
-
-            <div ref={messagesEndRef} />
           </div>
+        )}
 
-          {/* ── Bottom action area ────────────────────────────────────────── */}
-          {activeTab === "engine" ? (
-            /* Engine mode — action buttons instead of text input */
-            <div className="p-3 border-t border-border space-y-2">
-              <div className="grid grid-cols-3 gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onEngineAnalyze}
-                  disabled={isLoading}
-                  className="flex flex-col h-auto py-2 gap-1 border-cyan-800/40 hover:bg-cyan-950/40 hover:border-cyan-600/60"
-                >
-                  <Search className="h-4 w-4 text-cyan-400" />
-                  <span className="text-[11px] text-cyan-300">Analyze</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onEngineBestMove}
-                  disabled={isLoading}
-                  className="flex flex-col h-auto py-2 gap-1 border-cyan-800/40 hover:bg-cyan-950/40 hover:border-cyan-600/60"
-                >
-                  <Lightbulb className="h-4 w-4 text-cyan-400" />
-                  <span className="text-[11px] text-cyan-300">Best Move</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onEngineHint}
-                  disabled={isLoading}
-                  className="flex flex-col h-auto py-2 gap-1 border-cyan-800/40 hover:bg-cyan-950/40 hover:border-cyan-600/60"
-                >
-                  <Crosshair className="h-4 w-4 text-cyan-400" />
-                  <span className="text-[11px] text-cyan-300">Hint</span>
-                </Button>
-              </div>
+        {visibleMessages.map((msg, i) => <MessageBubble key={i} msg={msg} />)}
+
+        {isLoading && (
+          <div className="flex gap-2.5 justify-start">
+            <div className={`shrink-0 h-7 w-7 rounded-full flex items-center justify-center
+              ${activeTab === "engine" ? "bg-cyan-500/15" : "bg-primary/10"}`}>
+              {activeTab === "engine"
+                ? <Cpu className="h-3.5 w-3.5 text-cyan-400" />
+                : <Bot className="h-3.5 w-3.5 text-primary" />}
             </div>
-          ) : (
-            /* AI mode — normal text input */
-            <div className="p-3 border-t border-border">
-              <div className="flex gap-2">
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Ask your AI coach…"
-                  disabled={isLoading}
-                  className="flex-1"
-                />
-                <Button size="icon" onClick={handleSend} disabled={isLoading || !input.trim()}>
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
+            <div className="bg-secondary rounded-lg px-3 py-2 text-sm text-muted-foreground flex items-center gap-2">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              {activeTab === "engine" ? "Calculating…" : "Thinking…"}
             </div>
-          )}
-        </>
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Bottom action area */}
+      {activeTab === "engine" ? (
+        <div className="p-3 border-t border-border space-y-2">
+          <div className="grid grid-cols-3 gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onEngineAnalyze}
+              disabled={isLoading}
+              className="flex flex-col h-auto py-2 gap-1 border-cyan-800/40 hover:bg-cyan-950/40 hover:border-cyan-600/60"
+            >
+              <Search className="h-4 w-4 text-cyan-400" />
+              <span className="text-[11px] text-cyan-300">Analyze</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onEngineBestMove}
+              disabled={isLoading}
+              className="flex flex-col h-auto py-2 gap-1 border-cyan-800/40 hover:bg-cyan-950/40 hover:border-cyan-600/60"
+            >
+              <Lightbulb className="h-4 w-4 text-cyan-400" />
+              <span className="text-[11px] text-cyan-300">Best Move</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onEngineHint}
+              disabled={isLoading}
+              className="flex flex-col h-auto py-2 gap-1 border-cyan-800/40 hover:bg-cyan-950/40 hover:border-cyan-600/60"
+            >
+              <Crosshair className="h-4 w-4 text-cyan-400" />
+              <span className="text-[11px] text-cyan-300">Hint</span>
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="p-3 border-t border-border">
+          <div className="flex gap-2">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask your AI coach…"
+              disabled={isLoading}
+              className="flex-1"
+            />
+            <Button size="icon" onClick={handleSend} disabled={isLoading || !input.trim()}>
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   );

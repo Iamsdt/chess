@@ -1,29 +1,13 @@
 import { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import { Chessboard } from "react-chessboard";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 import {
-  ArrowDownUp,
   AlertTriangle,
   Trophy,
   Handshake,
-  ChevronLeft,
 } from "lucide-react";
 
 // ── piece value map for captured material calculation ──
 const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9 };
-const PIECE_UNICODE = {
-  wp: "♙", wn: "♘", wb: "♗", wr: "♖", wq: "♕",
-  bp: "♟", bn: "♞", bb: "♝", br: "♜", bq: "♛",
-};
-
-const qualityVariantMap = {
-  excellent: "excellent",
-  good: "good",
-  inaccuracy: "inaccuracy",
-  mistake: "mistake",
-  blunder: "blunder",
-};
 
 // ── sounds (Web Audio) ──
 function playSound(type) {
@@ -99,15 +83,12 @@ function getCapturedPieces(game) {
 function BoardPanel({
   game,
   onMove,
-  moveQuality,
-  moveHistory,
   lastMoveSquares,
-  onUndo,
   isAIThinking = false,
+  boardOrientation = "white",
 }) {
   const containerRef = useRef(null);
   const [boardWidth, setBoardWidth] = useState(400);
-  const [boardOrientation, setBoardOrientation] = useState("white");
   const [selectedSquare, setSelectedSquare] = useState(null);
   const [rightClickedSquares, setRightClickedSquares] = useState({});
   const [optionSquares, setOptionSquares] = useState({});
@@ -154,7 +135,7 @@ function BoardPanel({
   }, [inCheck, isCheckmate, isStalemate, isDraw]);
 
   // ── Captured pieces ──
-  const { captured, capturedPts, advantage } = useMemo(() => getCapturedPieces(game), [fen]);
+  const { capturedPts, advantage } = useMemo(() => getCapturedPieces(game), [fen]);
 
   // ── Find king square when in check ──
   const checkSquare = useMemo(() => {
@@ -334,30 +315,12 @@ function BoardPanel({
   }, [lastMoveSquares, checkSquare, optionSquares, rightClickedSquares, invalidSquare]);
 
   // ── Captured piece row ──
-  function CapturedRow({ pieces, totalPts, adv }) {
-    // Group pieces by key into counts
-    const groups = pieces.reduce((acc, p) => {
-      acc[p] = (acc[p] || 0) + 1;
-      return acc;
-    }, {});
-    const hasPieces = pieces.length > 0;
+  function CapturedRow({ totalPts, adv }) {
     return (
       <div className="flex items-center gap-1.5 min-h-[22px]">
-        {/* Piece icons grouped */}
-        {hasPieces && (
-          <div className="flex items-center gap-0.5">
-            {Object.entries(groups).map(([key, count]) => (
-              <span key={key} className="text-sm leading-none opacity-75 select-none">
-                {PIECE_UNICODE[key]}{count > 1 && <span className="text-[10px] text-muted-foreground">×{count}</span>}
-              </span>
-            ))}
-          </div>
-        )}
-        {/* Points captured label */}
         {totalPts > 0 && (
-          <span className="text-[11px] text-muted-foreground/70 tabular-nums">{totalPts} pts</span>
+          <span className="text-xs font-medium text-foreground tabular-nums">{totalPts} pts</span>
         )}
-        {/* Advantage badge */}
         {adv > 0 && (
           <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-semibold
             bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
@@ -395,7 +358,6 @@ function BoardPanel({
       {/* Captured pieces — opponent (top) */}
       <div className="w-full flex justify-between items-center px-1" style={{ maxWidth: boardWidth }}>
         <CapturedRow
-          pieces={boardOrientation === "white" ? captured.w : captured.b}
           totalPts={boardOrientation === "white" ? capturedPts.w : capturedPts.b}
           adv={boardOrientation === "white" ? (advantage < 0 ? -advantage : 0) : (advantage > 0 ? advantage : 0)}
         />
@@ -450,7 +412,6 @@ function BoardPanel({
       {/* Captured pieces — player (bottom) */}
       <div className="w-full flex justify-between items-center px-1" style={{ maxWidth: boardWidth }}>
         <CapturedRow
-          pieces={boardOrientation === "white" ? captured.b : captured.w}
           totalPts={boardOrientation === "white" ? capturedPts.b : capturedPts.w}
           adv={boardOrientation === "white" ? (advantage > 0 ? advantage : 0) : (advantage < 0 ? -advantage : 0)}
         />
@@ -465,39 +426,6 @@ function BoardPanel({
         </div>
       </div>
 
-      {/* Controls row: flip + quality badge + undo */}
-      <div className="flex items-center gap-2" style={{ maxWidth: boardWidth, width: "100%" }}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setBoardOrientation((o) => (o === "white" ? "black" : "white"))}
-          title="Flip board"
-          className="text-muted-foreground"
-        >
-          <ArrowDownUp className="h-3.5 w-3.5" />
-          Flip
-        </Button>
-
-        {moveQuality && (
-          <Badge variant={qualityVariantMap[moveQuality.toLowerCase()] || "default"}>
-            {moveQuality}
-          </Badge>
-        )}
-
-        <div className="flex-1" />
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onUndo}
-          disabled={moveHistory.length === 0}
-          title="Undo last move"
-          className="text-muted-foreground"
-        >
-          <ChevronLeft className="h-3.5 w-3.5" />
-          Undo
-        </Button>
-      </div>
     </div>
   );
 }
