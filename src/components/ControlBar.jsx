@@ -75,9 +75,9 @@ function Dropdown({ label, icon: Icon, options, value, onChange, disabled = fals
 }
 
 const OPPONENT_OPTIONS = [
-  { value: "manual",  label: "Manual",        icon: User, desc: "2 players" },
-  { value: "ai",      label: "AI",            icon: Bot,  desc: "minimax"   },
   { value: "engine",  label: "Chess Engine",  icon: Cpu,  desc: "strongest" },
+  { value: "ai",      label: "AI",            icon: Bot,  desc: "minimax"   },
+  { value: "manual",  label: "Manual",        icon: User, desc: "2 players" },
 ];
 
 const DIFFICULTY_OPTIONS = [
@@ -102,7 +102,6 @@ function ControlBar({
   onOpponentChange,
   difficulty,
   onDifficultyChange,
-  isAIThinking,
   playerColor,
   onPlayerColorChange,
   isGameInProgress,
@@ -110,9 +109,9 @@ function ControlBar({
   return (
     <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card gap-2 flex-wrap">
       {/* Left — branding */}
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex items-center gap-2 shrink-0">
         <span className="text-base font-bold tracking-tight text-primary">
-          ♟ Chess
+          ♟ Chess King
         </span>
       </div>
 
@@ -149,14 +148,6 @@ function ControlBar({
           />
         )}
 
-        {/* AI thinking indicator */}
-        {isAIThinking && (
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-primary/10 border border-primary/20 text-xs text-primary animate-pulse">
-            <Cpu className="h-3.5 w-3.5 animate-spin" />
-            Thinking…
-          </div>
-        )}
-
         <div className="w-px h-4 bg-border mx-1" />
 
         <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-secondary">
@@ -165,7 +156,7 @@ function ControlBar({
               isLiveMode ? "text-primary" : "text-muted-foreground"
             }`}
           />
-          <span className="text-xs text-muted-foreground">Live</span>
+          <span className="text-xs text-muted-foreground">Learning</span>
           <Switch checked={isLiveMode} onCheckedChange={onToggleLiveMode} />
         </div>
 
@@ -185,7 +176,7 @@ function ControlBar({
         variant="ghost"
         size="icon"
         onClick={onOpenSettings}
-        className="flex-shrink-0"
+        className="shrink-0"
       >
         <Settings className="h-4 w-4" />
       </Button>

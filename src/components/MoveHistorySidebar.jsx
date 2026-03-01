@@ -1,5 +1,5 @@
 import { useRef, useEffect, useMemo } from "react";
-import { ArrowDownUp, ChevronLeft, BookOpen } from "lucide-react";
+import { ArrowDownUp, ChevronLeft, BookOpen, SkipBack, SkipForward, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 
@@ -12,7 +12,6 @@ const qualityVariantMap = {
 };
 
 function EvalBar({ score }) {
-  // score: null or number (White perspective: positive = White better)
   const clamped = score === null ? 0 : Math.max(-5, Math.min(5, score));
   const whitePercent = Math.round(50 + (clamped / 5) * 40);
   const label =
@@ -45,7 +44,6 @@ function EvalBar({ score }) {
 
 const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9 };
 
-// ── compute captured pieces from move history of a chess.js game ──
 function getCapturedPieces(game) {
   const start = {
     w: { p: 8, n: 2, b: 2, r: 2, q: 1 },
@@ -58,8 +56,6 @@ function getCapturedPieces(game) {
       if (sq) current[sq.color][sq.type]++;
     }
   }
-  // captured[color] = pieces of that color that were taken
-  // capturedPts[color] = total point value of pieces taken from that side
   const capturedPts = { w: 0, b: 0 };
   for (const color of ["w", "b"]) {
     for (const piece of ["q", "r", "b", "n", "p"]) {
@@ -71,34 +67,64 @@ function getCapturedPieces(game) {
 }
 
 function MoveHistorySidebar({
-  moveHistory = [],
+  moveHistory = [], // { san, fen, from, to }[]
   evalScore = null,
   onFlipBoard,
   onUndo,
   moveQuality,
   game,
+  viewIndex,        // null = live, -1 = start, 0..n-1 = historical
+  onJumpToMove,
+  onExitReview,
+  onNavigateBack,
+  onNavigateForward,
 }) {
-
   const fen = game.fen();
-
   const { capturedPts } = useMemo(() => getCapturedPieces(game), [game, fen]);
 
+  // Build pairs from { san }[] entries
   const pairs = [];
   for (let i = 0; i < moveHistory.length; i += 2) {
     pairs.push({
       number: Math.floor(i / 2) + 1,
-      white: moveHistory[i],
-      black: moveHistory[i + 1] || null,
+      white: moveHistory[i]?.san ?? moveHistory[i],
+      whiteIdx: i,
+      black: moveHistory[i + 1] ? (moveHistory[i + 1]?.san ?? moveHistory[i + 1]) : null,
+      blackIdx: i + 1,
     });
   }
+
+  const isReviewMode = viewIndex !== null;
   const endRef = useRef(null);
+  const activeRowRef = useRef(null);
+
+  // Auto-scroll to bottom when new moves arrive (live mode)
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [moveHistory]);
+    if (!isReviewMode) {
+      endRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [moveHistory, isReviewMode]);
+
+  // Scroll active (reviewed) move into view
+  useEffect(() => {
+    if (isReviewMode && activeRowRef.current) {
+      activeRowRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [viewIndex, isReviewMode]);
+
+  function isMoveActive(idx) {
+    if (viewIndex === null) return false;
+    return viewIndex === idx;
+  }
+
+  function isLastLiveMove(idx) {
+    if (viewIndex !== null) return false;
+    return idx === moveHistory.length - 1;
+  }
 
   return (
     <div className="flex flex-col h-full border-r border-border bg-card">
-      {/* Controls: Flip + moveQuality badge + Undo */}
+      {/* Controls: Flip + quality badge + Undo */}
       <div className="flex items-center gap-1 px-2 py-2 border-b border-border shrink-0">
         <Button
           variant="ghost"
@@ -111,7 +137,7 @@ function MoveHistorySidebar({
           Flip
         </Button>
 
-        {moveQuality && (
+        {moveQuality && !isReviewMode && (
           <Badge variant={qualityVariantMap[moveQuality.toLowerCase()] || "default"} className="text-[10px]">
             {moveQuality}
           </Badge>
@@ -123,7 +149,7 @@ function MoveHistorySidebar({
           variant="ghost"
           size="sm"
           onClick={onUndo}
-          disabled={moveHistory.length === 0}
+          disabled={moveHistory.length === 0 || isReviewMode}
           title="Undo last move"
           className="text-muted-foreground h-7 px-2 text-xs"
         >
@@ -131,6 +157,59 @@ function MoveHistorySidebar({
           Undo
         </Button>
       </div>
+
+      {/* Review mode nav bar */}
+      {isReviewMode && (
+        <div className="flex items-center gap-0.5 px-1.5 py-1.5 border-b border-border bg-primary/5 shrink-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onJumpToMove(-1)}
+            title="Go to start"
+            className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+          >
+            <SkipBack className="h-3 w-3" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onNavigateBack}
+            title="Previous move (←)"
+            className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+          >
+            <ChevronLeft className="h-3 w-3" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onNavigateForward}
+            title="Next move (→)"
+            className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+          >
+            <ChevronRight className="h-3 w-3" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onJumpToMove(moveHistory.length - 1)}
+            title="Go to end"
+            className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+          >
+            <SkipForward className="h-3 w-3" />
+          </Button>
+          <div className="flex-1" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onExitReview}
+            title="Return to live game (Esc)"
+            className="h-6 px-2 text-[10px] text-primary hover:text-primary gap-1"
+          >
+            <X className="h-3 w-3" />
+            Live
+          </Button>
+        </div>
+      )}
 
       {/* Move list */}
       <div className="flex-1 overflow-y-auto min-h-0">
@@ -145,35 +224,52 @@ function MoveHistorySidebar({
             <thead>
               <tr className="text-muted-foreground border-b border-border sticky top-0 bg-card">
                 <th className="text-left px-2 py-1.5 w-7">#</th>
-                <th className="text-left px-2 py-1.5">White {capturedPts.b}</th>
-                <th className="text-left px-2 py-1.5">Black {capturedPts.w}</th>
+                <th className="text-left px-2 py-1.5">White {capturedPts.b > 0 ? `+${capturedPts.b}` : ""}</th>
+                <th className="text-left px-2 py-1.5">Black {capturedPts.w > 0 ? `+${capturedPts.w}` : ""}</th>
               </tr>
             </thead>
             <tbody>
-              {pairs.map((pair) => (
-                <tr
-                  key={pair.number}
-                  className={`border-b border-border/30 hover:bg-secondary/40 transition-colors ${
-                    pair.number === pairs.length ? "bg-primary/5" : ""
-                  }`}
-                >
-                  <td className="px-2 py-1.5 text-muted-foreground">{pair.number}.</td>
-                  <td className={`px-2 py-1.5 text-foreground ${
-                    pair.number === pairs.length && moveHistory.length % 2 !== 0
-                      ? "font-bold text-primary"
-                      : "font-semibold"
-                  }`}>
-                    {pair.white}
-                  </td>
-                  <td className={`px-2 py-1.5 ${
-                    pair.number === pairs.length && moveHistory.length % 2 === 0
-                      ? "font-bold text-primary"
-                      : "text-foreground"
-                  }`}>
-                    {pair.black ?? <span className="text-muted-foreground/40">—</span>}
-                  </td>
-                </tr>
-              ))}
+              {pairs.map((pair) => {
+                const whiteActive = isMoveActive(pair.whiteIdx);
+                const blackActive = isMoveActive(pair.blackIdx);
+                const whiteLastLive = isLastLiveMove(pair.whiteIdx);
+                const blackLastLive = isLastLiveMove(pair.blackIdx);
+                const rowRef = (whiteActive || blackActive) ? activeRowRef : null;
+                return (
+                  <tr
+                    key={pair.number}
+                    ref={rowRef}
+                    className="border-b border-border/30 transition-colors"
+                  >
+                    <td className="px-2 py-1 text-muted-foreground">{pair.number}.</td>
+                    <td
+                      onClick={() => onJumpToMove(pair.whiteIdx)}
+                      className={`px-2 py-1 cursor-pointer rounded transition-colors
+                        ${whiteActive
+                          ? "bg-primary text-primary-foreground font-bold"
+                          : whiteLastLive
+                          ? "font-bold text-primary hover:bg-secondary/60"
+                          : "font-semibold text-foreground hover:bg-secondary/60"
+                        }`}
+                    >
+                      {pair.white}
+                    </td>
+                    <td
+                      onClick={() => pair.black && onJumpToMove(pair.blackIdx)}
+                      className={`px-2 py-1 transition-colors
+                        ${pair.black ? "cursor-pointer rounded" : ""}
+                        ${blackActive
+                          ? "bg-primary text-primary-foreground font-bold"
+                          : blackLastLive
+                          ? "font-bold text-primary hover:bg-secondary/60"
+                          : "text-foreground hover:bg-secondary/60"
+                        }`}
+                    >
+                      {pair.black ?? <span className="text-muted-foreground/40">—</span>}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

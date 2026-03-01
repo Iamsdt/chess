@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { Chess } from "chess.js";
 import ControlBar from "@/components/ControlBar";
 import BoardPanel, { playSound } from "@/components/BoardPanel";
@@ -178,11 +178,30 @@ function buildLiveAnalysisMsg(result, fen, lastMoveSan) {
   return out;
 }
 
+// Migrate old moveHistory (string[]) to new shape ({ san, fen, from, to }[])
+function migrateMoveHistory(moves) {
+  if (!moves || moves.length === 0) return [];
+  if (typeof moves[0] !== "string") return moves; // already new format
+  const g = new Chess();
+  return moves.map((san) => {
+    try {
+      const move = g.move(san);
+      if (!move) return { san, fen: g.fen(), from: null, to: null };
+      return { san: move.san, fen: g.fen(), from: move.from, to: move.to };
+    } catch {
+      return { san, fen: g.fen(), from: null, to: null };
+    }
+  });
+}
+
 function App() {
   const gameRef = useRef(new Chess());
   const [fen, setFen] = useState(gameRef.current.fen());
   const [messages, setMessages] = useState([]);
-  const [moveHistory, setMoveHistory] = useState([]);
+  const [moveHistory, setMoveHistory] = useState([]); // { san, fen, from, to }[]
+  const [viewIndex, setViewIndex] = useState(null); // null = live, -1 = start, 0..n-1 = historical
+  const viewIndexRef = useRef(null);
+  useEffect(() => { viewIndexRef.current = viewIndex; }, [viewIndex]);
   const [isLiveMode, setIsLiveMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [moveQuality, setMoveQuality] = useState(null);
@@ -200,6 +219,23 @@ function App() {
   const playerColorRef = useRef(playerColor);
   useEffect(() => { playerColorRef.current = playerColor; }, [playerColor]);
   const [isAIThinking, setIsAIThinking] = useState(false);
+
+  // ── Review mode: derive displayGame and displayLastMoveSquares ──────────
+  const displayGame = useMemo(() => {
+    if (viewIndex === null) return gameRef.current;
+    const g = new Chess();
+    if (viewIndex < 0) return g; // starting position
+    const entry = moveHistory[viewIndex];
+    if (entry?.fen) g.load(entry.fen);
+    return g;
+  }, [viewIndex, moveHistory]);
+
+  const displayLastMoveSquares = useMemo(() => {
+    if (viewIndex === null) return lastMoveSquares;
+    if (viewIndex < 0) return null;
+    const entry = moveHistory[viewIndex];
+    return entry ? { from: entry.from, to: entry.to } : null;
+  }, [viewIndex, moveHistory, lastMoveSquares]);
   const aiTimeoutRef = useRef(null);
 
   // ---- Saved games dialog ----
@@ -223,7 +259,7 @@ function App() {
           game.loadPgn(saved.pgn);
           gameRef.current = game;
           setFen(game.fen());
-          setMoveHistory(saved.moveHistory);
+          setMoveHistory(migrateMoveHistory(saved.moveHistory));
           if (saved.boardOrientation) setBoardOrientation(saved.boardOrientation);
           if (saved.opponent) setOpponent(saved.opponent);
           if (saved.difficulty) setDifficulty(saved.difficulty);
@@ -278,7 +314,7 @@ function App() {
       }
       gameRef.current = game;
       setFen(game.fen());
-      setMoveHistory(saved.moveHistory || []);
+      setMoveHistory(migrateMoveHistory(saved.moveHistory || []));
       setMoveQuality(null);
       setMessages([]);
       setIsAIThinking(false);
@@ -374,7 +410,7 @@ function App() {
           });
           if (!move) return;
 
-          const newHistory = [...currentHistory, move.san];
+          const newHistory = [...currentHistory, { san: move.san, fen: game.fen(), from: move.from, to: move.to }];
           setFen(game.fen());
           setMoveHistory(newHistory);
           setLastMoveSquares({ from: move.from, to: move.to });
@@ -395,11 +431,11 @@ function App() {
             updateEvalBar(game.fen());
             // Detect threats for the player (from opponent's perspective)
             const opponentClr = move.color; // color that just moved (the engine)
-            runThreatDetection(game, opponentClr, move.to, move.san, newHistory);
+            runThreatDetection(game, opponentClr, move.to, move.san, newHistory.map((m) => m.san));
           } else {
             updateEvalBar(game.fen()); // always keep eval bar live
             if (isLiveModeRef.current && coachModeRef.current === "ai" && getApiKey()) {
-              evaluateLastMove(move.san, game.fen(), newHistory);
+              evaluateLastMove(move.san, game.fen(), newHistory.map((m) => m.san));
             }
           }
         } catch (e) {
@@ -433,12 +469,51 @@ function App() {
     [moveHistory.length, opponent, triggerAIMove]
   );
 
+  // ---- Review mode navigation ----
+  const handleJumpToMove = useCallback((index) => {
+    setViewIndex(index);
+  }, []);
+
+  const handleExitReview = useCallback(() => {
+    setViewIndex(null);
+  }, []);
+
+  const handleNavigateBack = useCallback(() => {
+    setViewIndex((prev) => {
+      if (prev === null) return moveHistory.length > 0 ? moveHistory.length - 1 : null;
+      return prev > 0 ? prev - 1 : -1;
+    });
+  }, [moveHistory.length]);
+
+  const handleNavigateForward = useCallback(() => {
+    setViewIndex((prev) => {
+      if (prev === null) return null;
+      const next = prev + 1;
+      return next >= moveHistory.length ? null : next; // null = back to live at end
+    });
+  }, [moveHistory.length]);
+
+  // ---- Keyboard navigation (arrow keys) ----
+  useEffect(() => {
+    function onKey(e) {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      if (e.key === "ArrowLeft") { e.preventDefault(); handleNavigateBack(); }
+      else if (e.key === "ArrowRight") { e.preventDefault(); handleNavigateForward(); }
+      else if (e.key === "Escape" && viewIndexRef.current !== null) handleExitReview();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [handleNavigateBack, handleNavigateForward, handleExitReview]);
+
   // ---- Make a move on the board ----
   const handleMove = useCallback(
     (sourceSquare, targetSquare, piece) => {
       const game = gameRef.current;
       let move = null;
       const preFen = game.fen(); // capture before move for intelligence analysis
+
+      // Block moves while reviewing history
+      if (viewIndexRef.current !== null) return null;
 
       // Block move if it's not the player's turn (when not in manual mode)
       if (opponent !== "manual" && game.turn() !== playerColorRef.current[0]) {
@@ -479,7 +554,7 @@ function App() {
       if (move === null) return null;
 
       setFen(game.fen());
-      setMoveHistory((prev) => [...prev, move.san]);
+      setMoveHistory((prev) => [...prev, { san: move.san, fen: game.fen(), from: move.from, to: move.to }]);
       setMoveQuality(null);
       setLastMoveSquares({ from: sourceSquare, to: targetSquare });
 
@@ -496,7 +571,7 @@ function App() {
 
       // Live analysis / evaluation after human move
       const postFen = game.fen();
-      const newMoveHistory = [...moveHistory, move.san];
+      const newMoveHistory = [...moveHistory, { san: move.san, fen: game.fen(), from: move.from, to: move.to }];
 
       if (isLiveMode && coachMode === "engine") {
         // Analyze the player's move quality vs engine best.
@@ -511,7 +586,7 @@ function App() {
       } else {
         updateEvalBar(postFen); // always keep eval bar live
         if (isLiveMode && coachMode === "ai" && getApiKey()) {
-          evaluateLastMove(move.san, postFen, newMoveHistory);
+          evaluateLastMove(move.san, postFen, newMoveHistory.map((m) => m.san));
         }
         // Trigger AI response if not manual (non-live-engine path)
         if (opponent !== "manual" && !game.isGameOver()) {
@@ -641,6 +716,7 @@ function App() {
 
   // ---- Undo last move ----
   const handleUndo = useCallback(() => {
+    setViewIndex(null); // exit review mode
     const game = gameRef.current;
     const undone = game.undo();
     if (undone) {
@@ -757,7 +833,7 @@ function App() {
     try {
       const explanation = await explainPosition({
         fen: gameRef.current.fen(),
-        moveHistory,
+        moveHistory: moveHistory.map((m) => m.san),
         apiKey,
         model: getModel(),
       });
@@ -794,7 +870,7 @@ function App() {
     try {
       const hint = await getHint({
         fen: gameRef.current.fen(),
-        moveHistory,
+        moveHistory: moveHistory.map((m) => m.san),
         apiKey,
         model: getModel(),
       });
@@ -821,6 +897,7 @@ function App() {
     gameRef.current = new Chess();
     setFen(gameRef.current.fen());
     setMoveHistory([]);
+    setViewIndex(null);
     setMoveQuality(null);
     setMessages([]);
     setLastMoveSquares(null);
@@ -978,6 +1055,11 @@ function App() {
             moveHistory={moveHistory}
             evalScore={evalScore}
             moveQuality={moveQuality}
+            viewIndex={viewIndex}
+            onJumpToMove={handleJumpToMove}
+            onExitReview={handleExitReview}
+            onNavigateBack={handleNavigateBack}
+            onNavigateForward={handleNavigateForward}
             onFlipBoard={() => setBoardOrientation((o) => (o === "white" ? "black" : "white"))}
             onUndo={handleUndo}
           />
@@ -986,11 +1068,12 @@ function App() {
         {/* Center — Board */}
         <div className="flex items-center justify-center bg-background overflow-hidden p-4">
           <BoardPanel
-            game={gameRef.current}
+            game={displayGame}
             onMove={handleMove}
-            lastMoveSquares={lastMoveSquares}
+            lastMoveSquares={displayLastMoveSquares}
             isAIThinking={isAIThinking}
             boardOrientation={boardOrientation}
+            isReviewMode={viewIndex !== null}
           />
         </div>
 
