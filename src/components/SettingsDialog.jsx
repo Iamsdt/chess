@@ -13,18 +13,23 @@ import { Key } from "lucide-react";
 function SettingsDialog({ open, onOpenChange }) {
   const [apiKey, setApiKey] = useState("");
   const [model, setModel] = useState("gpt-4o-mini");
+  const [elo, setElo] = useState("1000");
 
   // Load saved settings
   useEffect(() => {
     const savedKey = localStorage.getItem("chess-coach-api-key") || "";
     const savedModel = localStorage.getItem("chess-coach-model") || "gpt-4o-mini";
+    const savedElo = localStorage.getItem("chess-coach-elo") || "1000";
     setApiKey(savedKey);
     setModel(savedModel);
+    setElo(savedElo);
   }, [open]);
 
   function handleSave() {
     localStorage.setItem("chess-coach-api-key", apiKey);
     localStorage.setItem("chess-coach-model", model);
+    const parsedElo = Math.max(100, Math.min(3000, parseInt(elo, 10) || 1000));
+    localStorage.setItem("chess-coach-elo", String(parsedElo));
     onOpenChange(false);
   }
 
@@ -42,6 +47,22 @@ function SettingsDialog({ open, onOpenChange }) {
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* ELO Rating */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Your ELO Rating</label>
+            <Input
+              type="number"
+              placeholder="1000"
+              min={100}
+              max={3000}
+              value={elo}
+              onChange={(e) => setElo(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Used by the intelligence layer to tailor move suggestions to your level.
+            </p>
+          </div>
+
           {/* API Key */}
           <div className="space-y-2">
             <label className="text-sm font-medium">API Key</label>

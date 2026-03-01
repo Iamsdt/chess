@@ -12,8 +12,7 @@ import {
   evaluateMove,
 } from "@/lib/ai";
 import { getBestMove } from "@/lib/engine";
-import { getStockfishEngine, destroyStockfishEngine, StockfishEngine } from "@/lib/stockfish";
-
+import { getStockfishEngine, destroyStockfishEngine, StockfishEngine } from "@/lib/stockfish";import { buildMyMoveCard, buildThreatCard } from "@/lib/intelligence";
 // ── Stockfish analysis formatting helpers ─────────────────────────────────────
 
 function pvToSan(fen, pvUci) {
@@ -67,35 +66,103 @@ function buildAnalysisMsg(result, fen) {
   return out.trim();
 }
 
-function buildBestMoveMsg(result, fen) {
+// Varied hint messages (piece-agnostic, so they work for any piece)
+const HINT_MESSAGES = [
+  "There's a stronger move hiding in plain sight — look again!",
+  "The engine sees something you might have missed. Think about piece activity.",
+  "One precisely-placed move changes the dynamic significantly here.",
+  "Look for moves that create more than one threat simultaneously.",
+  "Ask yourself: which piece is the least active? It might need to move.",
+  "There's a resource in this position that strong players would spot quickly.",
+  "Think about what your opponent fears most — then do that.",
+  "Scan all forcing moves first: checks, captures, threats.",
+  "Consider improving your worst-placed piece to its ideal square.",
+  "A tempo-gaining move exists here. Can you find it?",
+  "Look for a move that restricts your opponent's options.",
+  "There's an underutilized piece waiting for its moment.",
+  "Strong players always ask: what does the position demand? Find that move.",
+  "A quiet move might be the most powerful option here — not everything is forcing.",
+  "Before moving, check all your opponent's threats and find the most efficient response.",
+];
+
+const HINT_PIECE_CONTEXTS = {
+  p: ["A pawn push could open lines or gain space.", "Pawn moves often open diagonals for your pieces.", "That pawn has a purpose—find where it wants to go."],
+  n: ["Your knight may have an outpost waiting for it.", "Knights love central squares — look for a strong jump.", "An active knight can dominate a position."],
+  b: ["A bishop diagonal may be more powerful than it looks.", "Long diagonals are a bishop's best friend.", "Your bishop wants to be active on an open diagonal."],
+  r: ["Rooks belong on open files or the seventh rank.", "Consider how your rook can become more active.", "A rook on an open file creates lasting pressure."],
+  q: ["Your queen has a lot of potential energy here — unleash it.", "Look for where your queen creates multiple threats.", "Queen moves often combine attack with defence."],
+  k: ["King safety matters — consider your king's position.", "A king move here could activate a 'rook behind' or escape a pin.", "In the endgame, your king is a powerful fighting piece."],
+};
+
+function buildBestMoveCard(result, fen, msgSeed = 0) {
   const { bestMove, scoreCp, isMate, mateIn, pv } = result;
-  if (!bestMove) return "No legal moves in this position.";
+  if (!bestMove) return null;
   const isWhite = new Chess(fen).turn() === "w";
-  const san      = pvToSan(fen, [bestMove]);
-  const pvSan    = pvToSan(fen, (pv || []).slice(0, 5));
-  const scoreStr = fmtScore(scoreCp, isMate, mateIn, isWhite);
-  let out = `💡 Best Move: ${san[0] || bestMove}\n\nEvaluation: ${scoreStr}`;
-  if (pvSan.length > 1) out += `\nLine: ${pvSan.join(" ")}`;
-  return out;
+  const san     = pvToSan(fen, [bestMove]);
+  const pvSan   = pvToSan(fen, (pv || []).slice(0, 6));
+
+  // White-perspective score normalised
+  const wScore  = isMate ? null : (scoreCp !== null ? (isWhite ? scoreCp / 100 : -scoreCp / 100) : null);
+  const evalStr = fmtScore(scoreCp, isMate, mateIn, isWhite);
+
+  // Tactical tags
+  const TACTICAL_TAGS = [
+    "Controls key square", "Activates a piece", "Creates multiple threats",
+    "Improves piece harmony", "Gains space", "Prepares a passed pawn",
+    "Threatens material", "Removes a defender", "Creates a pin",
+    "Forks two pieces", "Opens a file", "Strengthens king safety",
+    "Deflects a key defender", "Centralises the knight", "Seizes the initiative",
+  ];
+  const tacticalTag = TACTICAL_TAGS[msgSeed % TACTICAL_TAGS.length];
+
+  return {
+    type: "best-move-card",
+    moveSan: san[0] || bestMove,
+    evalStr,
+    wScore,
+    line: pvSan,
+    tacticalTag,
+  };
 }
 
-function buildHintMsg(result, fen) {
+function buildHintCard(result, fen, msgSeed = 0) {
   const { bestMove, scoreCp, isMate, mateIn } = result;
   const isWhite  = new Chess(fen).turn() === "w";
-  const scoreStr = fmtScore(scoreCp, isMate, mateIn, isWhite);
-  let hintText = "";
+  const evalStr  = fmtScore(scoreCp, isMate, mateIn, isWhite);
+
+  // White-perspective score
+  const wScore = isMate ? null : (scoreCp !== null ? (isWhite ? scoreCp / 100 : -scoreCp / 100) : null);
+
+  let pieceType  = null;
+  let fromSquare = null;
+  let pieceContext = "";
+
   if (bestMove) {
     try {
       const g  = new Chess(fen);
       const mv = g.move({ from: bestMove.slice(0,2), to: bestMove.slice(2,4), promotion: bestMove[4] });
       if (mv) {
-        const names = { p:"pawn", n:"knight", b:"bishop", r:"rook", q:"queen", k:"king" };
-        hintText = `Consider moving your ${names[mv.piece] || "piece"} (currently on ${mv.from}).`;
+        pieceType  = mv.piece;
+        fromSquare = mv.from;
+        const ctxArr = HINT_PIECE_CONTEXTS[mv.piece] || [];
+        pieceContext = ctxArr[msgSeed % ctxArr.length] || "";
       }
     } catch { /* ignore */ }
   }
-  if (!hintText) hintText = "Look for the best move in this position.";
-  return `🎯 Hint\n\nEvaluation: ${scoreStr}\n\n${hintText}`;
+
+  const PIECE_NAMES = { p: "Pawn", n: "Knight", b: "Bishop", r: "Rook", q: "Queen", k: "King" };
+  const generalMsg  = HINT_MESSAGES[msgSeed % HINT_MESSAGES.length];
+
+  return {
+    type: "hint-card",
+    pieceType,
+    pieceName: pieceType ? PIECE_NAMES[pieceType] : null,
+    fromSquare,
+    pieceContext,
+    generalMsg,
+    evalStr,
+    wScore,
+  };
 }
 
 function buildLiveAnalysisMsg(result, fen, lastMoveSan) {
@@ -133,6 +200,10 @@ function App() {
   useEffect(() => { coachModeRef.current = coachMode; }, [coachMode]);
   const isLiveModeRef = useRef(isLiveMode);
   useEffect(() => { isLiveModeRef.current = isLiveMode; }, [isLiveMode]);
+
+  // ---- Intelligence layer ----
+  const msgSeedRef = useRef(0);
+  const getElo = () => parseInt(localStorage.getItem("chess-coach-elo") || "1000", 10);
 
   const getApiKey = () => localStorage.getItem("chess-coach-api-key") || "";
   const getModel = () =>
@@ -201,7 +272,11 @@ function App() {
 
           // Live analysis after engine/AI move
           if (isLiveModeRef.current && coachModeRef.current === "engine") {
-            engineLiveAnalyze(game.fen(), move.san); // also updates eval bar
+            // Update eval bar with quick analysis
+            updateEvalBar(game.fen());
+            // Detect threats for the player (from opponent's perspective)
+            const opponentClr = move.color; // color that just moved (the engine)
+            runThreatDetection(game, opponentClr, move.to, move.san);
           } else {
             updateEvalBar(game.fen()); // always keep eval bar live
             if (isLiveModeRef.current && coachModeRef.current === "ai" && getApiKey()) {
@@ -230,6 +305,7 @@ function App() {
     (sourceSquare, targetSquare, piece) => {
       const game = gameRef.current;
       let move = null;
+      const preFen = game.fen(); // capture before move for intelligence analysis
 
       // Detect promotion: pawn reaching last rank
       let promotion = undefined;
@@ -281,22 +357,28 @@ function App() {
       }
 
       // Live analysis / evaluation after human move
-      // For engine opponent, eval bar + analysis run after the engine replies (in triggerAIMove)
-      if (opponent === "manual" || opponent === "ai") {
-        if (isLiveMode && coachMode === "engine") {
-          engineLiveAnalyze(game.fen(), move.san); // also updates eval bar
-        } else {
-          updateEvalBar(game.fen()); // always keep eval bar live
-          if (isLiveMode && coachMode === "ai" && getApiKey()) {
-            evaluateLastMove(move.san, game.fen(), [...moveHistory, move.san]);
-          }
-        }
-      }
+      const postFen = game.fen();
+      const newMoveHistory = [...moveHistory, move.san];
 
-      // ---- Trigger AI response if not manual ----
-      if (opponent !== "manual" && !game.isGameOver()) {
-        const newMoveHistory = [...moveHistory, move.san];
-        triggerAIMove(game.fen(), newMoveHistory);
+      if (isLiveMode && coachMode === "engine") {
+        // Analyze the player's move quality vs engine best.
+        // For engine opponents we chain: analysis → then trigger engine reply
+        // to avoid Stockfish conflicts (only one pending op at a time).
+        const playerAnalysis = engineLiveAnalyzePlayerMove(preFen, move.san, postFen);
+        if (opponent !== "manual" && !game.isGameOver()) {
+          playerAnalysis
+            .then(() => triggerAIMove(postFen, newMoveHistory))
+            .catch(() => triggerAIMove(postFen, newMoveHistory));
+        }
+      } else {
+        updateEvalBar(postFen); // always keep eval bar live
+        if (isLiveMode && coachMode === "ai" && getApiKey()) {
+          evaluateLastMove(move.san, postFen, newMoveHistory);
+        }
+        // Trigger AI response if not manual (non-live-engine path)
+        if (opponent !== "manual" && !game.isGameOver()) {
+          triggerAIMove(postFen, newMoveHistory);
+        }
       }
 
       return move;
@@ -333,6 +415,36 @@ function App() {
       .catch(() => { /* silent */ });
   }
 
+  // ---- Intelligence: analyze player's move vs Stockfish best ----
+  async function engineLiveAnalyzePlayerMove(preFen, moveSan, postFen) {
+    const sf = getStockfishEngine();
+    const userElo = getElo();
+    const seed = msgSeedRef.current++;
+    try {
+      // Step 1: analyze pre-move position to get the engine's best
+      const preResult = await sf.analyze(preFen, 14, 1);
+      // Step 2: analyze post-move position for new evaluation
+      const postResult = await sf.analyze(postFen, 10, 1);
+      applyEvalScore(postResult, postFen);
+      const card = buildMyMoveCard(preFen, moveSan, preResult, postResult, userElo, seed);
+      setMessages((prev) => [...prev, { role: "assistant", content: card, type: "my-move-analysis" }]);
+    } catch {
+      // Fallback: just update the eval bar silently
+      updateEvalBar(postFen);
+    }
+  }
+
+  // ---- Intelligence: detect threats after opponent's move ----
+  function runThreatDetection(game, opponentColor, lastMoveTo, moveSan) {
+    const seed = msgSeedRef.current++;
+    try {
+      const card = buildThreatCard(game, opponentColor, lastMoveTo, moveSan, seed);
+      if (card) {
+        setMessages((prev) => [...prev, { role: "assistant", content: card, type: "threat-card" }]);
+      }
+    } catch { /* silent */ }
+  }
+
   // ---- Engine coach: Analyze position ----
   const handleEngineAnalyze = useCallback(async () => {
     setMessages((prev) => [...prev, { role: "user", content: "🔍 Analyze position", type: "engine-query" }]);
@@ -352,14 +464,19 @@ function App() {
 
   // ---- Engine coach: Best move ----
   const handleEngineBestMove = useCallback(async () => {
-    setMessages((prev) => [...prev, { role: "user", content: "💡 Show best move", type: "engine-query" }]);
+    setMessages((prev) => [...prev, { role: "user", content: "💡 Best Move", type: "engine-query" }]);
     setIsLoading(true);
     try {
       const sf     = getStockfishEngine();
       const result = await sf.analyze(gameRef.current.fen(), 15, 1);
       applyEvalScore(result, gameRef.current.fen());
-      const content = buildBestMoveMsg(result, gameRef.current.fen());
-      setMessages((prev) => [...prev, { role: "assistant", content, type: "engine" }]);
+      const seed = msgSeedRef.current++;
+      const card = buildBestMoveCard(result, gameRef.current.fen(), seed);
+      if (card) {
+        setMessages((prev) => [...prev, { role: "assistant", content: card, type: "best-move-card" }]);
+      } else {
+        setMessages((prev) => [...prev, { role: "assistant", content: "No legal moves in this position.", type: "engine" }]);
+      }
     } catch (e) {
       setMessages((prev) => [...prev, { role: "assistant", content: `Engine error: ${e.message}`, type: "engine" }]);
     } finally {
@@ -369,13 +486,14 @@ function App() {
 
   // ---- Engine coach: Hint (vague, no exact move) ----
   const handleEngineHint = useCallback(async () => {
-    setMessages((prev) => [...prev, { role: "user", content: "🎯 Give me a hint", type: "engine-query" }]);
+    setMessages((prev) => [...prev, { role: "user", content: "🎯 Hint", type: "engine-query" }]);
     setIsLoading(true);
     try {
       const sf     = getStockfishEngine();
       const result = await sf.analyze(gameRef.current.fen(), 12, 1);
-      const content = buildHintMsg(result, gameRef.current.fen());
-      setMessages((prev) => [...prev, { role: "assistant", content, type: "engine" }]);
+      const seed = msgSeedRef.current++;
+      const card = buildHintCard(result, gameRef.current.fen(), seed);
+      setMessages((prev) => [...prev, { role: "assistant", content: card, type: "hint-card" }]);
     } catch (e) {
       setMessages((prev) => [...prev, { role: "assistant", content: `Engine error: ${e.message}`, type: "engine" }]);
     } finally {
@@ -579,6 +697,20 @@ function App() {
     }
   }, [opponent]);
 
+  // ---- Ask AI about a threat (placeholder — AI integration coming later) ----
+  const handleAskAI = useCallback((threatCard) => {
+    const threatName = threatCard?.primaryThreat?.name || "this threat";
+    const move = threatCard?.opponentMoveSan || "the last move";
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "assistant",
+        content: `🤖 AI analysis for "${threatName}" after ${move} is coming soon! Set up your API key in Settings and use the AI Coach tab to ask about any position.`,
+        type: "engine",
+      },
+    ]);
+  }, []);
+
   return (
     <div className="flex flex-col h-screen">
       {/* Top Bar */}
@@ -631,6 +763,7 @@ function App() {
             onEngineAnalyze={handleEngineAnalyze}
             onEngineBestMove={handleEngineBestMove}
             onEngineHint={handleEngineHint}
+            onAskAI={handleAskAI}
           />
         </div>
       </div>
