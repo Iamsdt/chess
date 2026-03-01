@@ -13,8 +13,20 @@
 - `src/lib/stockfish.js` — singleton UCI wrapper
 - `src/lib/engine.js` — minimax fallback AI
 - `src/lib/ai.js` — OpenAI chat/hint/evaluate functions
+- `src/lib/db.js` — IndexedDB service (autoSave, loadAutoSave, saveGame, listGames, deleteGame)
+- `src/store/useGameStore.js` — Zustand store (savedGames list, fetchSavedGames, saveCurrentGame, deleteSavedGame)
 - `src/components/ChatPanel.jsx` — message cards + coach tabs
 - `src/components/BoardPanel.jsx` — react-chessboard wrapper
+- `src/components/SavedGamesDialog.jsx` — save/load/delete games UI dialog
+
+## State Management & Persistence
+- **Zustand** (`zustand`) manages saved games list: `useGameStore`
+- **IndexedDB** (`chess-games-db`, store `games`) persists game snapshots
+- Auto-save: `useEffect` on `[fen, moveHistory]` with 500ms debounce → `autoSave()`
+- Auto-load: `useEffect([])` on mount → `loadAutoSave()` → restore full game state via `game.loadPgn(pgn)`
+- Manual save/load: "Save / Load" button in ControlBar → `SavedGamesDialog`
+- Saved game shape: `{ id, name, pgn, fen, moveHistory, opponent, difficulty, boardOrientation, timestamp, isAutosave }`
+- Auto-save key: `id: "autosave"` (upserted on every move)
 
 ## Live Mode Flow
 1. Human move → `handleMove()` → `engineLiveAnalyzePlayerMove()` → `buildMyMoveCard()`

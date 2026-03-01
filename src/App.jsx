@@ -5,6 +5,9 @@ import BoardPanel, { playSound } from "@/components/BoardPanel";
 import ChatPanel from "@/components/ChatPanel";
 import MoveHistorySidebar from "@/components/MoveHistorySidebar";
 import SettingsDialog from "@/components/SettingsDialog";
+import SavedGamesDialog from "@/components/SavedGamesDialog";
+import { autoSave, loadAutoSave } from "@/lib/db";
+import useGameStore from "@/store/useGameStore";
 import {
   sendChatMessage,
   explainPosition,
@@ -191,8 +194,17 @@ function App() {
   // ---- Opponent / difficulty ----
   const [opponent, setOpponent] = useState("engine"); // manual | ai | engine
   const [difficulty, setDifficulty] = useState("medium"); // easy | medium | hard
+
+  // ---- Player color (which side the human plays) ----
+  const [playerColor, setPlayerColor] = useState("white"); // "white" | "black"
+  const playerColorRef = useRef(playerColor);
+  useEffect(() => { playerColorRef.current = playerColor; }, [playerColor]);
   const [isAIThinking, setIsAIThinking] = useState(false);
   const aiTimeoutRef = useRef(null);
+
+  // ---- Saved games dialog ----
+  const [savedGamesOpen, setSavedGamesOpen] = useState(false);
+  const autoSaveTimerRef = useRef(null);
 
   // ---- Coach mode ----
   const [coachMode, setCoachMode] = useState("engine"); // "engine" | "ai"
@@ -200,6 +212,113 @@ function App() {
   useEffect(() => { coachModeRef.current = coachMode; }, [coachMode]);
   const isLiveModeRef = useRef(isLiveMode);
   useEffect(() => { isLiveModeRef.current = isLiveMode; }, [isLiveMode]);
+
+  // ── Auto-load last auto-save on first mount ─────────────────────────────
+  useEffect(() => {
+    loadAutoSave()
+      .then((saved) => {
+        if (!saved?.pgn || !saved?.moveHistory?.length) return;
+        try {
+          const game = new Chess();
+          game.loadPgn(saved.pgn);
+          gameRef.current = game;
+          setFen(game.fen());
+          setMoveHistory(saved.moveHistory);
+          if (saved.boardOrientation) setBoardOrientation(saved.boardOrientation);
+          if (saved.opponent) setOpponent(saved.opponent);
+          if (saved.difficulty) setDifficulty(saved.difficulty);
+          if (saved.playerColor) setPlayerColor(saved.playerColor);
+          const hist = game.history({ verbose: true });
+          if (hist.length > 0) {
+            const last = hist[hist.length - 1];
+            setLastMoveSquares({ from: last.from, to: last.to });
+          }
+          // Trigger eval bar once engine is ready
+          setTimeout(() => {
+            const sf = getStockfishEngine();
+            sf.analyze(game.fen(), 10, 1)
+              .then((result) => applyEvalScore(result, game.fen()))
+              .catch(() => {});
+          }, 800);
+        } catch (e) {
+          console.error("Failed to restore auto-save:", e);
+        }
+      })
+      .catch(console.error);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Auto-save after every move (debounced 500 ms) ──────────────────────
+  useEffect(() => {
+    if (moveHistory.length === 0) return;
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    autoSaveTimerRef.current = setTimeout(() => {
+      autoSave({
+        fen: gameRef.current.fen(),
+        pgn: gameRef.current.pgn(),
+        moveHistory,
+        opponent,
+        difficulty,
+        boardOrientation,
+        playerColor,
+        name: `Auto-save · ${moveHistory.length} moves`,
+      }).catch(console.error);
+    }, 500);
+  }, [fen, moveHistory]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Load a saved game snapshot ──────────────────────────────────────────
+  const handleLoadGame = useCallback((saved) => {
+    if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current);
+    destroyStockfishEngine();
+    try {
+      const game = new Chess();
+      if (saved.pgn) {
+        game.loadPgn(saved.pgn);
+      } else if (saved.fen) {
+        game.load(saved.fen);
+      }
+      gameRef.current = game;
+      setFen(game.fen());
+      setMoveHistory(saved.moveHistory || []);
+      setMoveQuality(null);
+      setMessages([]);
+      setIsAIThinking(false);
+      setEvalScore(null);
+      if (saved.boardOrientation) setBoardOrientation(saved.boardOrientation);
+      if (saved.opponent) setOpponent(saved.opponent);
+      if (saved.difficulty) setDifficulty(saved.difficulty);
+      if (saved.playerColor) setPlayerColor(saved.playerColor);
+      const hist = game.history({ verbose: true });
+      if (hist.length > 0) {
+        const last = hist[hist.length - 1];
+        setLastMoveSquares({ from: last.from, to: last.to });
+      } else {
+        setLastMoveSquares(null);
+      }
+      const loadedFen = game.fen();
+      setTimeout(() => {
+        const sf = getStockfishEngine();
+        sf.analyze(loadedFen, 10, 1)
+          .then((result) => applyEvalScore(result, loadedFen))
+          .catch(() => {});
+      }, 500);
+    } catch (e) {
+      console.error("Failed to load saved game:", e);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Build a snapshot of current game for saving ─────────────────────────
+  const getCurrentSnapshot = useCallback(
+    () => ({
+      fen: gameRef.current.fen(),
+      pgn: gameRef.current.pgn(),
+      moveHistory,
+      opponent,
+      difficulty,
+      boardOrientation,
+      playerColor,
+    }),
+    [moveHistory, opponent, difficulty, boardOrientation, playerColor]
+  );
 
   // ---- Intelligence layer ----
   const msgSeedRef = useRef(0);
@@ -300,12 +419,31 @@ function App() {
     [difficulty, opponent]
   );
 
+  // ---- Handle player-color change (only before game starts) ----
+  const handlePlayerColorChange = useCallback(
+    (color) => {
+      if (moveHistory.length > 0) return; // locked once game is in progress
+      setPlayerColor(color);
+      setBoardOrientation(color);
+      // If player chose Black and has an opponent, let engine play first (as White)
+      if (color === "black" && opponent !== "manual") {
+        setTimeout(() => triggerAIMove(gameRef.current.fen(), []), 150);
+      }
+    },
+    [moveHistory.length, opponent, triggerAIMove]
+  );
+
   // ---- Make a move on the board ----
   const handleMove = useCallback(
     (sourceSquare, targetSquare, piece) => {
       const game = gameRef.current;
       let move = null;
       const preFen = game.fen(); // capture before move for intelligence analysis
+
+      // Block move if it's not the player's turn (when not in manual mode)
+      if (opponent !== "manual" && game.turn() !== playerColorRef.current[0]) {
+        return null;
+      }
 
       // Detect promotion: pawn reaching last rank
       let promotion = undefined;
@@ -688,7 +826,11 @@ function App() {
     setLastMoveSquares(null);
     setIsAIThinking(false);
     setEvalScore(null);
-  }, []);
+    // If player chose Black, engine plays first as White
+    if (playerColorRef.current === "black" && opponent !== "manual") {
+      setTimeout(() => triggerAIMove(gameRef.current.fen(), []), 150);
+    }
+  }, [opponent, triggerAIMove]);
 
   // ---- Pre-warm Stockfish when engine mode is selected ----
   useEffect(() => {
@@ -816,11 +958,15 @@ function App() {
         onToggleLiveMode={setIsLiveMode}
         onNewGame={handleNewGame}
         onOpenSettings={() => setSettingsOpen(true)}
+        onOpenSavedGames={() => setSavedGamesOpen(true)}
         opponent={opponent}
         onOpponentChange={setOpponent}
         difficulty={difficulty}
         onDifficultyChange={setDifficulty}
         isAIThinking={isAIThinking}
+        playerColor={playerColor}
+        onPlayerColorChange={handlePlayerColorChange}
+        isGameInProgress={moveHistory.length > 0}
       />
 
       {/* Main Content */}
@@ -868,6 +1014,14 @@ function App() {
 
       {/* Settings Dialog */}
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+
+      {/* Saved Games Dialog */}
+      <SavedGamesDialog
+        open={savedGamesOpen}
+        onClose={() => setSavedGamesOpen(false)}
+        onLoadGame={handleLoadGame}
+        currentGameSnapshot={getCurrentSnapshot()}
+      />
     </div>
   );
 }

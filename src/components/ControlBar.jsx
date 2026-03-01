@@ -8,11 +8,14 @@ import {
   Bot,
   Cpu,
   ChevronDown,
+  FolderOpen,
+  Crown,
+  CircleUser,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 // ── Simple dropdown component ─────────────────────────────────────────────
-function Dropdown({ label, icon: Icon, options, value, onChange }) {
+function Dropdown({ label, icon: Icon, options, value, onChange, disabled = false }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -29,18 +32,26 @@ function Dropdown({ label, icon: Icon, options, value, onChange }) {
   return (
     <div ref={ref} className="relative">
       <button
-        onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-secondary hover:bg-secondary/80 border border-border text-xs font-medium transition-colors"
+        onClick={() => !disabled && setOpen((o) => !o)}
+        disabled={disabled}
+        title={disabled ? "Cannot change sides during a game" : undefined}
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-secondary border border-border text-xs font-medium transition-colors ${
+          disabled
+            ? "opacity-50 cursor-not-allowed"
+            : "hover:bg-secondary/80 cursor-pointer"
+        }`}
       >
         {Icon && <Icon className="h-3.5 w-3.5 text-muted-foreground" />}
         <span className="text-foreground">{label}:</span>
         <span className="text-primary font-semibold">{selected?.label || value}</span>
-        <ChevronDown
-          className={`h-3 w-3 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
-        />
+        {!disabled && (
+          <ChevronDown
+            className={`h-3 w-3 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+          />
+        )}
       </button>
 
-      {open && (
+      {open && !disabled && (
         <div className="absolute top-full left-0 mt-1 z-50 bg-card border border-border rounded-md shadow-xl min-w-[160px] py-1 overflow-hidden">
           {options.map((opt) => (
             <button
@@ -75,17 +86,26 @@ const DIFFICULTY_OPTIONS = [
   { value: "hard",   label: "Hard",   desc: "depth 3" },
 ];
 
+const PLAYER_COLOR_OPTIONS = [
+  { value: "white", label: "White", icon: Crown },
+  { value: "black", label: "Black", icon: CircleUser },
+];
+
 // ── ControlBar ─────────────────────────────────────────────────────────────
 function ControlBar({
   isLiveMode,
   onToggleLiveMode,
   onNewGame,
   onOpenSettings,
+  onOpenSavedGames,
   opponent,
   onOpponentChange,
   difficulty,
   onDifficultyChange,
   isAIThinking,
+  playerColor,
+  onPlayerColorChange,
+  isGameInProgress,
 }) {
   return (
     <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card gap-2 flex-wrap">
@@ -117,6 +137,18 @@ function ControlBar({
           />
         )}
 
+        {/* Play as — pick side; disabled once game has started */}
+        {opponent !== "manual" && (
+          <Dropdown
+            label="Play as"
+            icon={playerColor === "white" ? Crown : CircleUser}
+            options={PLAYER_COLOR_OPTIONS}
+            value={playerColor}
+            onChange={onPlayerColorChange}
+            disabled={isGameInProgress}
+          />
+        )}
+
         {/* AI thinking indicator */}
         {isAIThinking && (
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-primary/10 border border-primary/20 text-xs text-primary animate-pulse">
@@ -140,6 +172,11 @@ function ControlBar({
         <Button variant="ghost" size="sm" onClick={onNewGame}>
           <RotateCcw className="h-4 w-4" />
           New Game
+        </Button>
+
+        <Button variant="ghost" size="sm" onClick={onOpenSavedGames}>
+          <FolderOpen className="h-4 w-4" />
+          Save / Load
         </Button>
       </div>
 
