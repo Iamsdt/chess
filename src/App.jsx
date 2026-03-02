@@ -16,6 +16,7 @@ import SavedGamesDialog from "@/components/saved-games-dialog";
 import SettingsDialog from "@/components/settings-dialog";
 import useAiChat from "@/hooks/use-ai-chat";
 import { useChessClock, TIME_CONTROLS } from "@/hooks/use-chess-clock";
+import useDarkMode from "@/hooks/use-dark-mode";
 import useEngineCoach from "@/hooks/use-engine-coach";
 import { migrateMoveHistory } from "@/lib/chess-helpers";
 import { autoSave, loadAutoSave } from "@/lib/db";
@@ -59,6 +60,9 @@ const App = () => {
     playerColorReference.current = playerColor;
   }, [playerColor]);
   const [isAIThinking, setIsAIThinking] = useState(false);
+
+  // ── Dark mode ────────────────────────────────────────────────────────────
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   // ── Review mode ──────────────────────────────────────────────────────────
   const displayGame = useMemo(() => {
@@ -787,9 +791,8 @@ const App = () => {
         onOpponentChange={setOpponent}
         difficulty={difficulty}
         onDifficultyChange={setDifficulty}
-        isAIThinking={isAIThinking}
-        playerColor={playerColor}
-        onPlayerColorChange={handlePlayerColorChange}
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={toggleDarkMode}
         isGameInProgress={moveHistory.length > 0}
         onSetPosition={() => setPositionSetupOpen(true)}
         onOpenPuzzles={() => setPuzzleOpen(true)}

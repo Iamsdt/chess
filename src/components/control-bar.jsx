@@ -14,6 +14,8 @@ import {
   BookOpen,
   Timer,
   BarChart2,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
@@ -287,6 +289,8 @@ const ControlBar = ({
   difficulty,
   onDifficultyChange,
   onSetPosition,
+  isDarkMode,
+  onToggleDarkMode,
   // Train
   onOpenPuzzles,
   onOpenOpeningDrill,
@@ -377,15 +381,24 @@ const ControlBar = ({
       />
     </div>
 
-    {/* Right — settings */}
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={onOpenSettings}
-      className="shrink-0"
-    >
-      <Settings className="h-4 w-4" />
-    </Button>
+    {/* Right — dark mode + settings */}
+    <div className="flex items-center gap-1 shrink-0">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onToggleDarkMode}
+        title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+      >
+        {isDarkMode ? (
+          <Sun className="h-4 w-4" />
+        ) : (
+          <Moon className="h-4 w-4" />
+        )}
+      </Button>
+      <Button variant="ghost" size="icon" onClick={onOpenSettings}>
+        <Settings className="h-4 w-4" />
+      </Button>
+    </div>
   </div>
 );
 

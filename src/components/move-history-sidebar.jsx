@@ -27,17 +27,40 @@ const qualityVariantMap = {
 };
 
 /**
- *
+ * Renders the evaluation bar.
+ * Accepts score as null | { cp: number|null, mate: number|null }
  */
 const EvalBar = ({ score }) => {
-  const clamped = score === null ? 0 : Math.max(-5, Math.min(5, score));
+  // Normalise: extract a numeric centipawn value and optional mate count
+  let numericScore = null;
+  let mateIn = null;
+
+  if (score !== null && typeof score === "object") {
+    if (score.mate !== null && score.mate !== undefined) {
+      mateIn = score.mate;
+      // Push bar to the winning edge
+      numericScore = score.mate > 0 ? 5 : -5;
+    } else if (score.cp !== null && score.cp !== undefined) {
+      numericScore = score.cp / 100;
+    }
+  } else if (typeof score === "number") {
+    // Backward-compat: plain number
+    numericScore = score;
+  }
+
+  const clamped =
+    numericScore === null ? 0 : Math.max(-5, Math.min(5, numericScore));
   const whitePercent = Math.round(50 + (clamped / 5) * 40);
   const label =
-    score === null
-      ? "—"
-      : score > 0
-        ? `+${score.toFixed(1)}`
-        : score.toFixed(1);
+    mateIn !== null
+      ? mateIn > 0
+        ? `+M${Math.abs(mateIn)}`
+        : `-M${Math.abs(mateIn)}`
+      : numericScore === null
+        ? "—"
+        : numericScore > 0
+          ? `+${numericScore.toFixed(1)}`
+          : numericScore.toFixed(1);
 
   return (
     <div className="p-3 border-t border-border shrink-0">
