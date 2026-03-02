@@ -1,4 +1,3 @@
-import { Chess } from "chess.js";
 import { useRef, useCallback } from "react";
 
 import { analyzeFullGame } from "@/lib/analyzer";

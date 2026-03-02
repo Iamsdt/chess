@@ -124,7 +124,6 @@ const MoveHistorySidebar = ({
   annotations = {},
   onAnnotationChange = null,
 }) => {
-  const fen = game.fen();
   const { capturedPts } = useMemo(() => getCapturedPieces(game), [game]);
 
   // Build pairs from { san }[] entries
@@ -164,17 +163,11 @@ const MoveHistorySidebar = ({
     }
   }, [viewIndex, isReviewMode]);
 
-  /**
-   *
-   */
   const isMoveActive = (index) => {
     if (viewIndex === null) return false;
     return viewIndex === index;
   };
 
-  /**
-   *
-   */
   const isLastLiveMove = (index) => {
     if (viewIndex !== null) return false;
     return index === moveHistory.length - 1;

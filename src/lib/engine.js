@@ -118,7 +118,7 @@ const minimax = (game, depth, alpha, beta, isMaximizing) => {
 /**
  * Returns the best SAN move string for the current position.
  * @param {string} fen - Current board FEN
- * @param {'easy'|'medium'|'hard'} difficulty
+ * @param {'easy'|'medium'|'hard'} difficulty - Difficulty level
  * @returns {string|null} SAN move string or null if no moves
  */
 export const getBestMove = (fen, difficulty = "medium") => {

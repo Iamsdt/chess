@@ -31,10 +31,10 @@ const WinBar = ({ wins, draws, losses }) => {
 export default function OpeningStatsPanel({ open, onClose }) {
   const [clearFlag, setClearFlag] = useState(false);
 
-  const stats = useMemo(
-    () => (open ? getOpeningStats() : []),
-    [open, clearFlag],
-  );
+  const stats = useMemo(() => {
+    void clearFlag; // trigger recompute when clearFlag changes
+    return open ? getOpeningStats() : [];
+  }, [open, clearFlag]);
 
   if (!open) return null;
 

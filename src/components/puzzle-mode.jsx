@@ -199,7 +199,7 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
   );
 
   // Total puzzles solved in the session
-  const totalDone = sessionStats.solved + sessionStats.failed;
+  const _totalDone = sessionStats.solved + sessionStats.failed;
 
   const statusMessage =
     {

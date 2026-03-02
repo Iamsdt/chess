@@ -2,14 +2,14 @@
  * Endgame practice scenarios.
  *
  * Each entry:
- *   id          – unique key
- *   title       – display name
- *   fen         – starting FEN (active color = the side the student plays)
- *   description – what the position is and why it matters
- *   goal        – "checkmate" | "promote" | "draw" | "technique"
- *   goalText    – human-readable goal string for the UI
- *   category    – "KQK" | "KRK" | "KPK" | "KBK" | "KRPKR" | "pawn" | "rook" | "queen" | "other"
- *   difficulty  – "beginner" | "intermediate" | "advanced"
+ * id          – unique key
+ * title       – display name
+ * fen         – starting FEN (active color = the side the student plays)
+ * description – what the position is and why it matters
+ * goal        – "checkmate" | "promote" | "draw" | "technique"
+ * goalText    – human-readable goal string for the UI
+ * category    – "KQK" | "KRK" | "KPK" | "KBK" | "KRPKR" | "pawn" | "rook" | "queen" | "other"
+ * difficulty  – "beginner" | "intermediate" | "advanced"
  */
 
 export const ENDGAMES = [

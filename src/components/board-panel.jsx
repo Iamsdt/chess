@@ -111,7 +111,7 @@ const getCapturedPieces = (game) => {
 
 // ── Captured piece row — defined outside BoardPanel to avoid React warnings ──
 const CapturedRow = ({ totalPts, adv }) => (
-  <div className="flex items-center gap-1.5 min-h-[22px]">
+  <div className="flex items-center gap-1.5 min-h-5.5">
     {totalPts > 0 && (
       <span className="text-xs font-medium text-foreground tabular-nums">
         {totalPts} pts

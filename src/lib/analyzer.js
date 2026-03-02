@@ -145,13 +145,13 @@ export const analyzeFullGame = async (
   const evalHistory = [];
 
   // Starting eval (from White's perspective)
-  const startRes = engineResults[0];
-  const startScore = startRes
+  const startResult = engineResults[0];
+  const startScore = startResult
     ? clampEval(
         normalizeToWhite(
-          startRes.scoreCp,
-          startRes.isMate,
-          startRes.mateIn,
+          startResult.scoreCp,
+          startResult.isMate,
+          startResult.mateIn,
           "w",
         ) / 100,
       )
@@ -165,18 +165,23 @@ export const analyzeFullGame = async (
     const preTurn = side; // the player who just moved was side-to-move at preFen
     const postTurn = side === "w" ? "b" : "w";
 
-    const preRes = engineResults[index];
-    const postRes = engineResults[index + 1];
+    const preResult = engineResults[index];
+    const postResult = engineResults[index + 1];
 
     // Score from White's perspective (in centipawns)
-    const scoreBeforeWhiteCp = preRes
-      ? normalizeToWhite(preRes.scoreCp, preRes.isMate, preRes.mateIn, preTurn)
-      : null;
-    const scoreAfterWhiteCp = postRes
+    const scoreBeforeWhiteCp = preResult
       ? normalizeToWhite(
-          postRes.scoreCp,
-          postRes.isMate,
-          postRes.mateIn,
+          preResult.scoreCp,
+          preResult.isMate,
+          preResult.mateIn,
+          preTurn,
+        )
+      : null;
+    const scoreAfterWhiteCp = postResult
+      ? normalizeToWhite(
+          postResult.scoreCp,
+          postResult.isMate,
+          postResult.mateIn,
           postTurn,
         )
       : null;
@@ -192,7 +197,7 @@ export const analyzeFullGame = async (
     }
 
     const quality = classifyMove(cpLost ?? 70); // default "Good" when unknown
-    const bestSan = uciBestToSan(preFen, preRes?.bestMove);
+    const bestSan = uciBestToSan(preFen, preResult?.bestMove);
 
     // Eval for graph: score after the move, from White's perspective
     const evalScore =

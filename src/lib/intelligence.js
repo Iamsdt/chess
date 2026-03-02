@@ -386,10 +386,10 @@ export const buildMyMoveCard = (
     ? null
     : postResult?.scoreCp !== null
       ? (() => {
-          const fromWhite =
-            postFenTurn === "w" ? postResult.scoreCp : -postResult.scoreCp;
-          return fromWhite / 100;
-        })()
+        const fromWhite =
+          postFenTurn === "w" ? postResult.scoreCp : -postResult.scoreCp;
+        return fromWhite / 100;
+      })()
       : null;
 
   const evalAfter = postResult?.isMate
@@ -576,8 +576,8 @@ const PIN_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 100 };
 
 /**
  * Scan all opponent sliding pieces along rays looking for:
- *   • Absolute / relative pins: slider → player's piece (lower value) → player's piece (higher value incl. king)
- *   • Skewers:                  slider → player's high-value piece → player's piece (any)
+ * • Absolute / relative pins: slider → player's piece (lower value) → player's piece (higher value incl. king)
+ * • Skewers:                  slider → player's high-value piece → player's piece (any)
  *
  * Returns { pins: PinInfo[], skewers: SkewInfo[] }
  */
@@ -675,12 +675,12 @@ export const buildThreatCard = (
   const opening = detectOpening(moveHistory);
   const knownPattern = opening
     ? {
-        type: "opening",
-        name: opening.name,
-        eco: opening.eco,
-        category: opening.category,
-        idea: opening.idea,
-      }
+      type: "opening",
+      name: opening.name,
+      eco: opening.eco,
+      category: opening.category,
+      idea: opening.idea,
+    }
     : null;
 
   // 1. Check
@@ -769,28 +769,28 @@ export const buildThreatCard = (
     knownPattern ??
     (threats.some((t) => t.id === "fork")
       ? {
-          type: "tactical",
-          name: "Fork Tactic",
-          eco: null,
-          category: "tactical",
-          idea: "A fork attacks two or more of your pieces at once, forcing a difficult choice about which piece to save. Learning to spot forks before they land is essential for every chess player.",
-        }
+        type: "tactical",
+        name: "Fork Tactic",
+        eco: null,
+        category: "tactical",
+        idea: "A fork attacks two or more of your pieces at once, forcing a difficult choice about which piece to save. Learning to spot forks before they land is essential for every chess player.",
+      }
       : threats.some((t) => t.id === "pin")
         ? {
-            type: "tactical",
-            name: "Pin Tactic",
-            eco: null,
-            category: "tactical",
-            idea: "A pin immobilizes a piece because moving it would expose a more valuable piece behind it (often the king). Recognizing and breaking pins is a critical defensive skill.",
-          }
+          type: "tactical",
+          name: "Pin Tactic",
+          eco: null,
+          category: "tactical",
+          idea: "A pin immobilizes a piece because moving it would expose a more valuable piece behind it (often the king). Recognizing and breaking pins is a critical defensive skill.",
+        }
         : threats.some((t) => t.id === "skewer")
           ? {
-              type: "tactical",
-              name: "Skewer Tactic",
-              eco: null,
-              category: "tactical",
-              idea: "A skewer is like a reversed pin: a valuable piece is attacked and forced to move, exposing a less valuable piece behind it. Similar to a pin but targeting the more valuable piece first.",
-            }
+            type: "tactical",
+            name: "Skewer Tactic",
+            eco: null,
+            category: "tactical",
+            idea: "A skewer is like a reversed pin: a valuable piece is attacked and forced to move, exposing a less valuable piece behind it. Similar to a pin but targeting the more valuable piece first.",
+          }
           : null);
 
   return {

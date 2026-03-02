@@ -327,7 +327,7 @@ const BlunderReviewMode = ({ blunders = [], onClose }) => {
             <div className="flex flex-wrap gap-1.5 justify-center py-1">
               {blunders.map((b, index_) => (
                 <button
-                  key={index_}
+                  key={b.id}
                   onClick={() => jumpTo(index_)}
                   title={`${b.side === "w" ? "White" : "Black"} move ${b.moveNum}: ${b.san} (${b.quality})`}
                   className={`w-2.5 h-2.5 rounded-full transition-all ${

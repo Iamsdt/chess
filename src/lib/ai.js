@@ -69,13 +69,7 @@ export const explainPosition = async ({ fen, moveHistory, apiKey, model }) => {
 /**
  * Request a hint from the AI.
  */
-export const getHint = async ({
-  fen,
-  moveHistory,
-  apiKey,
-  model,
-  hintLevel = 1,
-}) => {
+export const getHint = async ({ fen, apiKey, model, hintLevel = 1 }) => {
   const levels = {
     1: "Give me a general hint about what I should focus on in this position. Don't reveal the exact move.",
     2: "Give me a specific directional hint. Which piece should I consider moving and roughly where?",
@@ -98,13 +92,7 @@ export const getHint = async ({
 /**
  * Evaluate the quality of the last move.
  */
-export const evaluateMove = async ({
-  fen,
-  lastMove,
-  moveHistory,
-  apiKey,
-  model,
-}) =>
+export const evaluateMove = async ({ fen, lastMove, apiKey, model }) =>
   sendChatMessage({
     messages: [
       {

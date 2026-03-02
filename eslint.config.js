@@ -56,6 +56,7 @@ export default [
         AudioContext: "readonly",
         webkitAudioContext: "readonly",
         Worker: "readonly",
+        indexedDB: "readonly",
       },
     },
 
@@ -75,6 +76,8 @@ export default [
       "sonarjs/cognitive-complexity": ["warn", 30],
       // Large functions are acceptable in game logic hooks
       "max-lines-per-function": ["warn", { max: 400, skipBlankLines: true, skipComments: true }],
+      // Chess engine code has deeply nested loops/conditions
+      "max-depth": ["warn", { max: 10 }],
 
       // ── Naming conventions ───────────────────────────────────────────────
       // Allow common abbreviations used in chess code
@@ -98,12 +101,14 @@ export default [
             fen: true,
             san: true,
             uci: true,
+            uci: true,
             pgn: true,
             pv: true,
             adv: true,
             idx: true,
             osc: true,
             cls: true,
+            db: true,
           },
         },
       ],
@@ -112,18 +117,35 @@ export default [
       // Relax promise rules — fire-and-forget patterns are common in UI code
       "promise/always-return": "warn",
       "promise/no-nesting": "warn",
+      // Allow custom promise constructor parameter names (used in stockfish wrapper)
+      "promise/param-names": "off",
 
       // ── Duplicates ───────────────────────────────────────────────────────
       // Increase threshold for duplicate literals (chess notation is repetitive)
       "sonarjs/no-duplicate-string": ["warn", { threshold: 5 }],
 
-      // ── Misc ─────────────────────────────────────────────────────────────
-      // Allow consistent returns in functions that sometimes return early
-      "consistent-return": "warn",
-      // Disable handler naming rule
-      "react/jsx-handler-names": "off",
+      // ── React Hooks ──────────────────────────────────────────────────────
       // React compiler memoization preservation — warn instead of error
       "react-hooks/preserve-manual-memoization": "warn",
+      // setState in effects is acceptable for init patterns (loading from storage etc.)
+      "react-hooks/set-state-in-effect": "warn",
+      // Ref mutations outside effects are acceptable for sync patterns
+      "react-hooks/refs": "warn",
+
+      // ── Code structure ───────────────────────────────────────────────────
+      // Consistent returns in functions that sometimes return early
+      "consistent-return": "warn",
+      // Array destructuring not always clearer for position-based access
+      "prefer-destructuring": "warn",
+      // JSDoc indentation should be consistent but not a hard error
+      "jsdoc/check-indentation": "warn",
+
+      // ── Accessibility ───────────────────────────────────────────────────
+      // A11y rules as warnings — chess UI interactivity is non-standard
+      "jsx-a11y/click-events-have-key-events": "warn",
+      "jsx-a11y/no-static-element-interactions": "warn",
+      "jsx-a11y/no-autofocus": "warn",
+      "jsx-a11y/label-has-associated-control": "warn",
     },
 
     settings: {

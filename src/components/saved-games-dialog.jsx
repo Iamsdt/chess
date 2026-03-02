@@ -9,20 +9,7 @@ import useGameStore from "@/store/use-game-store";
 /**
  *
  */
-const timeAgo = (ts) => {
-  const diff = Date.now() - ts;
-  const m = Math.floor(diff / 60000);
-  const h = Math.floor(diff / 3600000);
-  const d = Math.floor(diff / 86400000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
-  if (h < 24) return `${h}h ago`;
-  return `${d}d ago`;
-};
 
-/**
- *
- */
 const formatDate = (ts) =>
   new Date(ts).toLocaleString(undefined, {
     month: "short",
