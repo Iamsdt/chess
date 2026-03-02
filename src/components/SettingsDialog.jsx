@@ -18,7 +18,8 @@ function SettingsDialog({ open, onOpenChange }) {
   // Load saved settings
   useEffect(() => {
     const savedKey = localStorage.getItem("chess-coach-api-key") || "";
-    const savedModel = localStorage.getItem("chess-coach-model") || "gpt-4o-mini";
+    const savedModel =
+      localStorage.getItem("chess-coach-model") || "gpt-4o-mini";
     const savedElo = localStorage.getItem("chess-coach-elo") || "1000";
     setApiKey(savedKey);
     setModel(savedModel);
@@ -59,7 +60,8 @@ function SettingsDialog({ open, onOpenChange }) {
               onChange={(e) => setElo(e.target.value)}
             />
             <p className="text-xs text-muted-foreground">
-              Used by the intelligence layer to tailor move suggestions to your level.
+              Used by the intelligence layer to tailor move suggestions to your
+              level.
             </p>
           </div>
 

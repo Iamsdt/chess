@@ -1,18 +1,30 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/Dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 
 // ── Quality color mapping ─────────────────────────────────────────────────────
 const QUALITY_COLORS = {
-  Brilliant:  { bar: "#06b6d4", text: "text-cyan-400"    },
-  Excellent:  { bar: "#10b981", text: "text-emerald-400" },
-  Good:       { bar: "#22c55e", text: "text-green-400"   },
-  Inaccuracy: { bar: "#eab308", text: "text-yellow-400"  },
-  Mistake:    { bar: "#f97316", text: "text-orange-400"  },
-  Blunder:    { bar: "#ef4444", text: "text-red-400"     },
+  Brilliant: { bar: "#06b6d4", text: "text-cyan-400" },
+  Excellent: { bar: "#10b981", text: "text-emerald-400" },
+  Good: { bar: "#22c55e", text: "text-green-400" },
+  Inaccuracy: { bar: "#eab308", text: "text-yellow-400" },
+  Mistake: { bar: "#f97316", text: "text-orange-400" },
+  Blunder: { bar: "#ef4444", text: "text-red-400" },
 };
 
-const QUALITY_ORDER = ["Brilliant", "Excellent", "Good", "Inaccuracy", "Mistake", "Blunder"];
+const QUALITY_ORDER = [
+  "Brilliant",
+  "Excellent",
+  "Good",
+  "Inaccuracy",
+  "Mistake",
+  "Blunder",
+];
 
 // ── Accuracy color ────────────────────────────────────────────────────────────
 function accuracyColor(pct) {
@@ -83,13 +95,21 @@ function EvalGraph({ evalHistory, onJumpToMove }) {
           <clipPath id="whiteClip">
             <rect x={0} y={0} width={W} height={midY} />
           </clipPath>
-          <polygon points={whiteFill} fill="#ffffff22" clipPath="url(#whiteClip)" />
+          <polygon
+            points={whiteFill}
+            fill="#ffffff22"
+            clipPath="url(#whiteClip)"
+          />
 
           {/* Black-advantage region (below midline) */}
           <clipPath id="blackClip">
             <rect x={0} y={midY} width={W} height={H - midY} />
           </clipPath>
-          <polygon points={blackFill} fill="#00000044" clipPath="url(#blackClip)" />
+          <polygon
+            points={blackFill}
+            fill="#00000044"
+            clipPath="url(#blackClip)"
+          />
 
           {/* Midline */}
           <line
@@ -121,7 +141,12 @@ function EvalGraph({ evalHistory, onJumpToMove }) {
               className="cursor-pointer"
               onClick={() => onJumpToMove && onJumpToMove(i - 1)}
             >
-              <title>{p.label}{p.score !== null ? ` (${p.score > 0 ? "+" : ""}${p.score?.toFixed(1)})` : ""}</title>
+              <title>
+                {p.label}
+                {p.score !== null
+                  ? ` (${p.score > 0 ? "+" : ""}${p.score?.toFixed(1)})`
+                  : ""}
+              </title>
             </circle>
           ))}
         </svg>
@@ -142,12 +167,26 @@ function AccuracyRing({ accuracy, label }) {
   const r = 30;
   const circ = 2 * Math.PI * r;
   const dashOffset = circ * (1 - accuracy / 100);
-  const color = accuracy >= 80 ? "#10b981" : accuracy >= 60 ? "#22c55e" : accuracy >= 45 ? "#eab308" : "#ef4444";
+  const color =
+    accuracy >= 80
+      ? "#10b981"
+      : accuracy >= 60
+        ? "#22c55e"
+        : accuracy >= 45
+          ? "#eab308"
+          : "#ef4444";
 
   return (
     <div className="flex flex-col items-center gap-1">
       <svg width="80" height="80" viewBox="0 0 80 80">
-        <circle cx="40" cy="40" r={r} fill="none" stroke="#ffffff15" strokeWidth="6" />
+        <circle
+          cx="40"
+          cy="40"
+          r={r}
+          fill="none"
+          stroke="#ffffff15"
+          strokeWidth="6"
+        />
         <circle
           cx="40"
           cy="40"
@@ -161,11 +200,20 @@ function AccuracyRing({ accuracy, label }) {
           transform="rotate(-90 40 40)"
           style={{ transition: "stroke-dashoffset 0.8s ease" }}
         />
-        <text x="40" y="44" textAnchor="middle" fontSize="16" fontWeight="700" fill="white">
+        <text
+          x="40"
+          y="44"
+          textAnchor="middle"
+          fontSize="16"
+          fontWeight="700"
+          fill="white"
+        >
           {accuracy}%
         </text>
       </svg>
-      <span className="text-xs font-semibold text-muted-foreground">{label}</span>
+      <span className="text-xs font-semibold text-muted-foreground">
+        {label}
+      </span>
     </div>
   );
 }
@@ -200,19 +248,21 @@ export default function GameReportDialog({
 }) {
   if (!report) return null;
 
-  const { white, black, evalHistory, criticalMoveIdx, moveSummary, blunders } = report;
+  const { white, black, evalHistory, criticalMoveIdx, moveSummary, blunders } =
+    report;
 
   const whiteTotalMoves = moveHistory.filter((_, i) => i % 2 === 0).length;
   const blackTotalMoves = moveHistory.filter((_, i) => i % 2 !== 0).length;
-  const criticalMove = criticalMoveIdx >= 0 ? moveSummary[criticalMoveIdx] : null;
+  const criticalMove =
+    criticalMoveIdx >= 0 ? moveSummary[criticalMoveIdx] : null;
 
   const QUALITY_META = {
-    Brilliant:  { emoji: "💎", bar: "#06b6d4" },
-    Excellent:  { emoji: "✨", bar: "#10b981" },
-    Good:       { emoji: "👍", bar: "#22c55e" },
+    Brilliant: { emoji: "💎", bar: "#06b6d4" },
+    Excellent: { emoji: "✨", bar: "#10b981" },
+    Good: { emoji: "👍", bar: "#22c55e" },
     Inaccuracy: { emoji: "⚠️", bar: "#eab308" },
-    Mistake:    { emoji: "❌", bar: "#f97316" },
-    Blunder:    { emoji: "💥", bar: "#ef4444" },
+    Mistake: { emoji: "❌", bar: "#f97316" },
+    Blunder: { emoji: "💥", bar: "#ef4444" },
   };
 
   return (
@@ -306,7 +356,10 @@ export default function GameReportDialog({
             </p>
             {criticalMove.bestSan && (
               <p className="text-xs text-muted-foreground mt-0.5">
-                Better was <span className="text-green-400 font-semibold">{criticalMove.bestSan}</span>
+                Better was{" "}
+                <span className="text-green-400 font-semibold">
+                  {criticalMove.bestSan}
+                </span>
               </p>
             )}
             <button
@@ -332,10 +385,13 @@ export default function GameReportDialog({
                 onReviewBlunders && onReviewBlunders();
               }}
             >
-              🔍 Review {blunders.length} Error{blunders.length !== 1 ? "s" : ""}
+              🔍 Review {blunders.length} Error
+              {blunders.length !== 1 ? "s" : ""}
             </Button>
           ) : (
-            <p className="text-xs text-muted-foreground">No blunders or mistakes — clean game! 🎉</p>
+            <p className="text-xs text-muted-foreground">
+              No blunders or mistakes — clean game! 🎉
+            </p>
           )}
           <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
             Close

@@ -22,7 +22,14 @@ import { useState, useRef, useEffect } from "react";
 import { TIME_CONTROLS } from "@/hooks/useChessClock";
 
 // ── Simple dropdown component ─────────────────────────────────────────────
-export function Dropdown({ label, icon: Icon, options, value, onChange, disabled = false }) {
+export function Dropdown({
+  label,
+  icon: Icon,
+  options,
+  value,
+  onChange,
+  disabled = false,
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -50,7 +57,9 @@ export function Dropdown({ label, icon: Icon, options, value, onChange, disabled
       >
         {Icon && <Icon className="h-3.5 w-3.5 text-muted-foreground" />}
         <span className="text-foreground">{label}:</span>
-        <span className="text-primary font-semibold">{selected?.label || value}</span>
+        <span className="text-primary font-semibold">
+          {selected?.label || value}
+        </span>
         {!disabled && (
           <ChevronDown
             className={`h-3 w-3 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
@@ -63,15 +72,22 @@ export function Dropdown({ label, icon: Icon, options, value, onChange, disabled
           {options.map((opt) => (
             <button
               key={opt.value}
-              onClick={() => { onChange(opt.value); setOpen(false); }}
+              onClick={() => {
+                onChange(opt.value);
+                setOpen(false);
+              }}
               className={`w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-secondary transition-colors text-left ${
-                opt.value === value ? "text-primary bg-primary/5" : "text-foreground"
+                opt.value === value
+                  ? "text-primary bg-primary/5"
+                  : "text-foreground"
               }`}
             >
               {opt.icon && <opt.icon className="h-3.5 w-3.5" />}
               <span>{opt.label}</span>
               {opt.desc && (
-                <span className="text-muted-foreground ml-auto">{opt.desc}</span>
+                <span className="text-muted-foreground ml-auto">
+                  {opt.desc}
+                </span>
               )}
             </button>
           ))}
@@ -98,7 +114,10 @@ function TrainDropdown({
 
   useEffect(() => {
     function handle(e) {
-      if (ref.current && !ref.current.contains(e.target)) { setOpen(false); setShowClock(false); }
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+        setShowClock(false);
+      }
     }
     document.addEventListener("mousedown", handle);
     return () => document.removeEventListener("mousedown", handle);
@@ -107,18 +126,26 @@ function TrainDropdown({
   return (
     <div ref={ref} className="relative">
       <button
-        onClick={() => { setOpen((o) => !o); setShowClock(false); }}
+        onClick={() => {
+          setOpen((o) => !o);
+          setShowClock(false);
+        }}
         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-secondary border border-border text-xs font-medium hover:bg-secondary/80 cursor-pointer transition-colors"
       >
         <Dumbbell className="h-3.5 w-3.5 text-muted-foreground" />
         <span className="text-foreground">Train</span>
-        <ChevronDown className={`h-3 w-3 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown
+          className={`h-3 w-3 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+        />
       </button>
 
       {open && (
         <div className="absolute top-full left-0 mt-1 z-50 bg-card border border-border rounded-md shadow-xl w-52 py-1 overflow-hidden">
           <button
-            onClick={() => { onOpenPuzzles(); setOpen(false); }}
+            onClick={() => {
+              onOpenPuzzles();
+              setOpen(false);
+            }}
             className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-secondary transition-colors text-left text-foreground"
           >
             <Puzzle className="h-3.5 w-3.5 text-primary" />
@@ -126,7 +153,10 @@ function TrainDropdown({
           </button>
 
           <button
-            onClick={() => { onOpenOpeningDrill(); setOpen(false); }}
+            onClick={() => {
+              onOpenOpeningDrill();
+              setOpen(false);
+            }}
             className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-secondary transition-colors text-left text-foreground"
           >
             <BookOpen className="h-3.5 w-3.5 text-primary" />
@@ -134,7 +164,10 @@ function TrainDropdown({
           </button>
 
           <button
-            onClick={() => { onOpenEndgame(); setOpen(false); }}
+            onClick={() => {
+              onOpenEndgame();
+              setOpen(false);
+            }}
             className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-secondary transition-colors text-left text-foreground"
           >
             <Crown className="h-3.5 w-3.5 text-primary" />
@@ -142,7 +175,10 @@ function TrainDropdown({
           </button>
 
           <button
-            onClick={() => { onOpenOpeningStats(); setOpen(false); }}
+            onClick={() => {
+              onOpenOpeningStats();
+              setOpen(false);
+            }}
             className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-secondary transition-colors text-left text-foreground"
           >
             <BarChart2 className="h-3.5 w-3.5 text-primary" />
@@ -156,11 +192,20 @@ function TrainDropdown({
             onClick={() => setShowClock((s) => !s)}
             className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-secondary transition-colors text-left"
           >
-            <Timer className={`h-3.5 w-3.5 ${clockEnabled ? "text-primary" : "text-muted-foreground"}`} />
-            <span className={clockEnabled ? "text-primary font-semibold" : "text-foreground"}>
-              Chess Clock {clockEnabled ? `(${clockTimeControl?.label ?? "on"})` : "(off)"}
+            <Timer
+              className={`h-3.5 w-3.5 ${clockEnabled ? "text-primary" : "text-muted-foreground"}`}
+            />
+            <span
+              className={
+                clockEnabled ? "text-primary font-semibold" : "text-foreground"
+              }
+            >
+              Chess Clock{" "}
+              {clockEnabled ? `(${clockTimeControl?.label ?? "on"})` : "(off)"}
             </span>
-            <ChevronDown className={`h-3 w-3 ml-auto text-muted-foreground transition-transform ${showClock ? "rotate-180" : ""}`} />
+            <ChevronDown
+              className={`h-3 w-3 ml-auto text-muted-foreground transition-transform ${showClock ? "rotate-180" : ""}`}
+            />
           </button>
 
           {showClock && (
@@ -169,7 +214,10 @@ function TrainDropdown({
                 {TIME_CONTROLS.map((tc) => (
                   <button
                     key={tc.label}
-                    onClick={() => { onSetTimeControl(tc); if (!clockEnabled) onToggleClock(); }}
+                    onClick={() => {
+                      onSetTimeControl(tc);
+                      if (!clockEnabled) onToggleClock();
+                    }}
                     className={`px-2 py-0.5 rounded text-[10px] font-mono border transition-colors ${
                       clockTimeControl?.label === tc.label
                         ? "border-primary bg-primary/10 text-primary"
@@ -199,15 +247,15 @@ function TrainDropdown({
 }
 
 const OPPONENT_OPTIONS = [
-  { value: "engine",  label: "Chess Engine",  icon: Cpu,  desc: "strongest" },
-  { value: "ai",      label: "AI",            icon: Bot,  desc: "minimax"   },
-  { value: "manual",  label: "Manual",        icon: User, desc: "2 players" },
+  { value: "engine", label: "Chess Engine", icon: Cpu, desc: "strongest" },
+  { value: "ai", label: "AI", icon: Bot, desc: "minimax" },
+  { value: "manual", label: "Manual", icon: User, desc: "2 players" },
 ];
 
 const DIFFICULTY_OPTIONS = [
-  { value: "easy",   label: "Easy",   desc: "random"  },
+  { value: "easy", label: "Easy", desc: "random" },
   { value: "medium", label: "Medium", desc: "depth 2" },
-  { value: "hard",   label: "Hard",   desc: "depth 3" },
+  { value: "hard", label: "Hard", desc: "depth 3" },
 ];
 
 // ── ControlBar ─────────────────────────────────────────────────────────────

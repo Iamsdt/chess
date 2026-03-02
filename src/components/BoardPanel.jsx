@@ -5,11 +5,10 @@ import {
   Trophy,
   Handshake,
   Eye,
-    Crown,
+  Crown,
   CircleUser,
 } from "lucide-react";
 import { Dropdown } from "./ControlBar";
-
 
 const PLAYER_COLOR_OPTIONS = [
   { value: "white", label: "White", icon: Crown },
@@ -33,25 +32,29 @@ function playSound(type) {
       osc.frequency.value = 400;
       osc.type = "sine";
       gain.gain.setTargetAtTime(0, ctx.currentTime + 0.06, 0.02);
-      osc.start(); osc.stop(ctx.currentTime + 0.1);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.1);
     } else if (type === "capture") {
       osc.frequency.value = 300;
       osc.type = "triangle";
       gain.gain.value = 0.12;
       gain.gain.setTargetAtTime(0, ctx.currentTime + 0.08, 0.03);
-      osc.start(); osc.stop(ctx.currentTime + 0.15);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
     } else if (type === "check") {
       osc.frequency.value = 600;
       osc.type = "square";
       gain.gain.value = 0.06;
       gain.gain.setTargetAtTime(0, ctx.currentTime + 0.15, 0.04);
-      osc.start(); osc.stop(ctx.currentTime + 0.2);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.2);
     } else if (type === "end") {
       osc.frequency.value = 250;
       osc.type = "sawtooth";
       gain.gain.value = 0.1;
       gain.gain.setTargetAtTime(0, ctx.currentTime + 0.4, 0.1);
-      osc.start(); osc.stop(ctx.currentTime + 0.5);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.5);
     }
   } catch {
     // audio not available
@@ -65,7 +68,10 @@ function getCapturedPieces(game) {
     b: { p: 8, n: 2, b: 2, r: 2, q: 1 },
   };
   const board = game.board();
-  const current = { w: { p: 0, n: 0, b: 0, r: 0, q: 0 }, b: { p: 0, n: 0, b: 0, r: 0, q: 0 } };
+  const current = {
+    w: { p: 0, n: 0, b: 0, r: 0, q: 0 },
+    b: { p: 0, n: 0, b: 0, r: 0, q: 0 },
+  };
   for (const row of board) {
     for (const sq of row) {
       if (sq) current[sq.color][sq.type]++;
@@ -85,8 +91,14 @@ function getCapturedPieces(game) {
     }
   }
   // material advantage: positive = white remaining material > black remaining material
-  const whiteTotal = Object.entries(current.w).reduce((s, [p, c]) => s + (PIECE_VALUES[p] || 0) * c, 0);
-  const blackTotal = Object.entries(current.b).reduce((s, [p, c]) => s + (PIECE_VALUES[p] || 0) * c, 0);
+  const whiteTotal = Object.entries(current.w).reduce(
+    (s, [p, c]) => s + (PIECE_VALUES[p] || 0) * c,
+    0,
+  );
+  const blackTotal = Object.entries(current.b).reduce(
+    (s, [p, c]) => s + (PIECE_VALUES[p] || 0) * c,
+    0,
+  );
   return { captured, capturedPts, advantage: whiteTotal - blackTotal };
 }
 
@@ -144,15 +156,20 @@ function BoardPanel({
 
   // ── Game status message ──
   const gameStatus = useMemo(() => {
-    if (isCheckmate) return { text: "Checkmate!", icon: Trophy, type: "checkmate" };
-    if (isStalemate) return { text: "Stalemate", icon: Handshake, type: "draw" };
+    if (isCheckmate)
+      return { text: "Checkmate!", icon: Trophy, type: "checkmate" };
+    if (isStalemate)
+      return { text: "Stalemate", icon: Handshake, type: "draw" };
     if (isDraw) return { text: "Draw", icon: Handshake, type: "draw" };
     if (inCheck) return { text: "Check!", icon: AlertTriangle, type: "check" };
     return null;
   }, [inCheck, isCheckmate, isStalemate, isDraw]);
 
   // ── Captured pieces ──
-  const { capturedPts, advantage } = useMemo(() => getCapturedPieces(game), [fen]);
+  const { capturedPts, advantage } = useMemo(
+    () => getCapturedPieces(game),
+    [fen],
+  );
 
   // ── Find king square when in check ──
   const checkSquare = useMemo(() => {
@@ -188,7 +205,8 @@ function BoardPanel({
       moves.forEach((move) => {
         newSquares[move.to] = {
           background:
-            game.get(move.to) && game.get(move.to).color !== game.get(square)?.color
+            game.get(move.to) &&
+            game.get(move.to).color !== game.get(square)?.color
               ? "radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)"
               : "radial-gradient(circle, rgba(0,0,0,.2) 25%, transparent 25%)",
           borderRadius: "50%",
@@ -198,7 +216,7 @@ function BoardPanel({
       setSelectedSquare(square);
       return true;
     },
-    [game, isReviewMode]
+    [game, isReviewMode],
   );
 
   // ── Handle square click (click-to-move) ──
@@ -335,22 +353,33 @@ function BoardPanel({
     // Premove highlight — cyan/teal
     if (premove) {
       styles[premove.from] = { backgroundColor: "rgba(20, 184, 166, 0.45)" };
-      styles[premove.to]   = { backgroundColor: "rgba(20, 184, 166, 0.65)" };
+      styles[premove.to] = { backgroundColor: "rgba(20, 184, 166, 0.65)" };
     }
 
     return styles;
-  }, [lastMoveSquares, checkSquare, optionSquares, rightClickedSquares, invalidSquare, premove]);
+  }, [
+    lastMoveSquares,
+    checkSquare,
+    optionSquares,
+    rightClickedSquares,
+    invalidSquare,
+    premove,
+  ]);
 
   // ── Captured piece row ──
   function CapturedRow({ totalPts, adv }) {
     return (
       <div className="flex items-center gap-1.5 min-h-[22px]">
         {totalPts > 0 && (
-          <span className="text-xs font-medium text-foreground tabular-nums">{totalPts} pts</span>
+          <span className="text-xs font-medium text-foreground tabular-nums">
+            {totalPts} pts
+          </span>
         )}
         {adv > 0 && (
-          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-semibold
-            bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
+          <span
+            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-semibold
+            bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"
+          >
             +{adv}
           </span>
         )}
@@ -359,8 +388,10 @@ function BoardPanel({
   }
 
   return (
-    <div ref={containerRef} className="flex flex-col items-center justify-center gap-2 w-full h-full">
-
+    <div
+      ref={containerRef}
+      className="flex flex-col items-center justify-center gap-2 w-full h-full"
+    >
       {/* Game status banner */}
       {gameStatus && (
         <div
@@ -368,8 +399,8 @@ function BoardPanel({
             gameStatus.type === "checkmate"
               ? "bg-yellow-500/15 text-yellow-400"
               : gameStatus.type === "check"
-              ? "bg-red-500/15 text-red-400"
-              : "bg-blue-500/15 text-blue-400"
+                ? "bg-red-500/15 text-red-400"
+                : "bg-blue-500/15 text-blue-400"
           }`}
         >
           <gameStatus.icon className="h-4 w-4" />
@@ -383,24 +414,40 @@ function BoardPanel({
       )}
 
       {/* Captured pieces — opponent (top) */}
-      <div className="w-full flex justify-between items-center px-1" style={{ maxWidth: boardWidth }}>
+      <div
+        className="w-full flex justify-between items-center px-1"
+        style={{ maxWidth: boardWidth }}
+      >
         <Dropdown
-            label="Play as"
-            icon={playerColor === "white" ? Crown : CircleUser}
-            options={PLAYER_COLOR_OPTIONS}
-            value={playerColor}
-            onChange={onPlayerColorChange}
-            disabled={isGameInProgress}
-          />
+          label="Play as"
+          icon={playerColor === "white" ? Crown : CircleUser}
+          options={PLAYER_COLOR_OPTIONS}
+          value={playerColor}
+          onChange={onPlayerColorChange}
+          disabled={isGameInProgress}
+        />
         <CapturedRow
-          totalPts={boardOrientation === "white" ? capturedPts.w : capturedPts.b}
-          adv={boardOrientation === "white" ? (advantage < 0 ? -advantage : 0) : (advantage > 0 ? advantage : 0)}
+          totalPts={
+            boardOrientation === "white" ? capturedPts.w : capturedPts.b
+          }
+          adv={
+            boardOrientation === "white"
+              ? advantage < 0
+                ? -advantage
+                : 0
+              : advantage > 0
+                ? advantage
+                : 0
+          }
         />
         <div className="flex items-center gap-1">
-          <div className={`h-2.5 w-2.5 rounded-full ${
-            (boardOrientation === "white" ? "b" : "w") === turn && !isGameOver
-              ? "bg-primary animate-pulse" : "bg-muted-foreground/30"
-          }`} />
+          <div
+            className={`h-2.5 w-2.5 rounded-full ${
+              (boardOrientation === "white" ? "b" : "w") === turn && !isGameOver
+                ? "bg-primary animate-pulse"
+                : "bg-muted-foreground/30"
+            }`}
+          />
           <span className="text-xs text-muted-foreground">
             {boardOrientation === "white" ? "Black" : "White"}
           </span>
@@ -449,8 +496,12 @@ function BoardPanel({
             position: fen,
             onPieceDrop: ({ sourceSquare, targetSquare, piece }) =>
               onDrop(sourceSquare, targetSquare, piece),
-            onSquareClick: (isAIThinking || isReviewMode) ? () => {} : onSquareClick,
-            onPieceClick: (isAIThinking || isReviewMode) ? () => {} : ({ square }) => onSquareClick({ square }),
+            onSquareClick:
+              isAIThinking || isReviewMode ? () => {} : onSquareClick,
+            onPieceClick:
+              isAIThinking || isReviewMode
+                ? () => {}
+                : ({ square }) => onSquareClick({ square }),
             onSquareRightClick,
             onPieceDrag,
             boardOrientation,
@@ -471,22 +522,37 @@ function BoardPanel({
       </div>
 
       {/* Captured pieces — player (bottom) */}
-      <div className="w-full flex justify-between items-center px-1" style={{ maxWidth: boardWidth }}>
+      <div
+        className="w-full flex justify-between items-center px-1"
+        style={{ maxWidth: boardWidth }}
+      >
         <CapturedRow
-          totalPts={boardOrientation === "white" ? capturedPts.b : capturedPts.w}
-          adv={boardOrientation === "white" ? (advantage > 0 ? advantage : 0) : (advantage < 0 ? -advantage : 0)}
+          totalPts={
+            boardOrientation === "white" ? capturedPts.b : capturedPts.w
+          }
+          adv={
+            boardOrientation === "white"
+              ? advantage > 0
+                ? advantage
+                : 0
+              : advantage < 0
+                ? -advantage
+                : 0
+          }
         />
         <div className="flex items-center gap-1">
-          <div className={`h-2.5 w-2.5 rounded-full ${
-            (boardOrientation === "white" ? "w" : "b") === turn && !isGameOver
-              ? "bg-primary animate-pulse" : "bg-muted-foreground/30"
-          }`} />
+          <div
+            className={`h-2.5 w-2.5 rounded-full ${
+              (boardOrientation === "white" ? "w" : "b") === turn && !isGameOver
+                ? "bg-primary animate-pulse"
+                : "bg-muted-foreground/30"
+            }`}
+          />
           <span className="text-xs text-muted-foreground">
             {boardOrientation === "white" ? "White" : "Black"}
           </span>
         </div>
       </div>
-
     </div>
   );
 }

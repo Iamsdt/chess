@@ -22,17 +22,19 @@
 const KEY = "chess-opening-stats";
 
 function load() {
-    try {
-        return JSON.parse(localStorage.getItem(KEY) || "{}");
-    } catch {
-        return {};
-    }
+  try {
+    return JSON.parse(localStorage.getItem(KEY) || "{}");
+  } catch {
+    return {};
+  }
 }
 
 function save(data) {
-    try {
-        localStorage.setItem(KEY, JSON.stringify(data));
-    } catch { /* storage full */ }
+  try {
+    localStorage.setItem(KEY, JSON.stringify(data));
+  } catch {
+    /* storage full */
+  }
 }
 
 /**
@@ -44,47 +46,48 @@ function save(data) {
  * @param {"w"|"b"} params.playerColor     - which side the human played
  */
 export function recordOpeningResult({ eco, name, gameResult, playerColor }) {
-    if (!eco || !name) return;
-    const data = load();
-    const key = eco || name;
+  if (!eco || !name) return;
+  const data = load();
+  const key = eco || name;
 
-    if (!data[key]) {
-        data[key] = { eco, name, wins: 0, losses: 0, draws: 0, lastPlayed: 0 };
-    }
+  if (!data[key]) {
+    data[key] = { eco, name, wins: 0, losses: 0, draws: 0, lastPlayed: 0 };
+  }
 
-    const entry = data[key];
-    entry.lastPlayed = Date.now();
+  const entry = data[key];
+  entry.lastPlayed = Date.now();
 
-    if (gameResult === "d") {
-        entry.draws += 1;
-    } else if (gameResult === playerColor) {
-        entry.wins += 1;
-    } else {
-        entry.losses += 1;
-    }
+  if (gameResult === "d") {
+    entry.draws += 1;
+  } else if (gameResult === playerColor) {
+    entry.wins += 1;
+  } else {
+    entry.losses += 1;
+  }
 
-    save(data);
+  save(data);
 }
 
 /**
  * Returns array of opening stat entries, sorted by total games played descending.
  */
 export function getOpeningStats() {
-    const data = load();
-    return Object.values(data)
-        .map((e) => ({
-            ...e,
-            total: e.wins + e.losses + e.draws,
-            winPct: e.wins + e.losses + e.draws > 0
-                ? Math.round((e.wins / (e.wins + e.losses + e.draws)) * 100)
-                : 0,
-        }))
-        .sort((a, b) => b.total - a.total);
+  const data = load();
+  return Object.values(data)
+    .map((e) => ({
+      ...e,
+      total: e.wins + e.losses + e.draws,
+      winPct:
+        e.wins + e.losses + e.draws > 0
+          ? Math.round((e.wins / (e.wins + e.losses + e.draws)) * 100)
+          : 0,
+    }))
+    .sort((a, b) => b.total - a.total);
 }
 
 /** Remove all opening stats. */
 export function clearOpeningStats() {
-    localStorage.removeItem(KEY);
+  localStorage.removeItem(KEY);
 }
 
 /**
@@ -96,26 +99,29 @@ export function clearOpeningStats() {
  * @returns {{ eco, name } | null}
  */
 export function detectOpening(sanMoves, openings) {
-    if (!sanMoves || sanMoves.length === 0) return null;
+  if (!sanMoves || sanMoves.length === 0) return null;
 
-    let bestMatch = null;
-    let bestLength = 0;
+  let bestMatch = null;
+  let bestLength = 0;
 
-    for (const opening of openings) {
-        const opMoves = opening.moves.trim().split(/\s+/);
-        if (opMoves.length === 0) continue;
+  for (const opening of openings) {
+    const opMoves = opening.moves.trim().split(/\s+/);
+    if (opMoves.length === 0) continue;
 
-        // Check if all opening moves match the beginning of the game
-        let matches = true;
-        for (let i = 0; i < opMoves.length; i++) {
-            if (sanMoves[i] !== opMoves[i]) { matches = false; break; }
-        }
-
-        if (matches && opMoves.length > bestLength) {
-            bestLength = opMoves.length;
-            bestMatch = { eco: opening.eco, name: opening.name };
-        }
+    // Check if all opening moves match the beginning of the game
+    let matches = true;
+    for (let i = 0; i < opMoves.length; i++) {
+      if (sanMoves[i] !== opMoves[i]) {
+        matches = false;
+        break;
+      }
     }
 
-    return bestMatch;
+    if (matches && opMoves.length > bestLength) {
+      bestLength = opMoves.length;
+      bestMatch = { eco: opening.eco, name: opening.name };
+    }
+  }
+
+  return bestMatch;
 }

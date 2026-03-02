@@ -2,7 +2,13 @@ import { useState, useMemo } from "react";
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
 import { Button } from "@/components/ui/Button";
-import { X, ChevronLeft, ChevronRight, SkipForward, Target } from "lucide-react";
+import {
+  X,
+  ChevronLeft,
+  ChevronRight,
+  SkipForward,
+  Target,
+} from "lucide-react";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 function getMoveSquares(fen, san) {
@@ -36,18 +42,34 @@ export default function BlunderReviewMode({ blunders = [], onClose }) {
   // ── Compute arrows & highlights ────────────────────────────────────────────
   // Before answered: red arrow showing the blunder that was played
   // After answered: green arrow showing the best move
-  const blunderSquares = useMemo(() => getMoveSquares(blunder.preFen, blunder.san), [blunder]);
+  const blunderSquares = useMemo(
+    () => getMoveSquares(blunder.preFen, blunder.san),
+    [blunder],
+  );
   const bestSquares = useMemo(
-    () => (blunder.bestSan ? getMoveSquares(blunder.preFen, blunder.bestSan) : null),
-    [blunder]
+    () =>
+      blunder.bestSan ? getMoveSquares(blunder.preFen, blunder.bestSan) : null,
+    [blunder],
   );
 
   const arrows = useMemo(() => {
     if (answered && bestSquares) {
-      return [{ startSquare: bestSquares.from, endSquare: bestSquares.to, color: "#22c55e" }];
+      return [
+        {
+          startSquare: bestSquares.from,
+          endSquare: bestSquares.to,
+          color: "#22c55e",
+        },
+      ];
     }
     if (!answered && blunderSquares) {
-      return [{ startSquare: blunderSquares.from, endSquare: blunderSquares.to, color: "#ef4444" }];
+      return [
+        {
+          startSquare: blunderSquares.from,
+          endSquare: blunderSquares.to,
+          color: "#ef4444",
+        },
+      ];
     }
     return [];
   }, [answered, blunderSquares, bestSquares]);
@@ -57,10 +79,10 @@ export default function BlunderReviewMode({ blunders = [], onClose }) {
     const styles = {};
     if (answered && bestSquares) {
       styles[bestSquares.from] = { backgroundColor: "rgba(34,197,94,0.25)" };
-      styles[bestSquares.to]   = { backgroundColor: "rgba(34,197,94,0.35)" };
+      styles[bestSquares.to] = { backgroundColor: "rgba(34,197,94,0.35)" };
     } else if (!answered && blunderSquares) {
       styles[blunderSquares.from] = { backgroundColor: "rgba(239,68,68,0.22)" };
-      styles[blunderSquares.to]   = { backgroundColor: "rgba(239,68,68,0.32)" };
+      styles[blunderSquares.to] = { backgroundColor: "rgba(239,68,68,0.32)" };
     }
     return styles;
   }, [answered, blunderSquares, bestSquares]);
@@ -70,7 +92,11 @@ export default function BlunderReviewMode({ blunders = [], onClose }) {
     if (answered) return false;
     try {
       const g = new Chess(blunder.preFen);
-      const move = g.move({ from: sourceSquare, to: targetSquare, promotion: "q" });
+      const move = g.move({
+        from: sourceSquare,
+        to: targetSquare,
+        promotion: "q",
+      });
       if (!move) return false;
       const isRight = move.san === blunder.bestSan;
       setPlayerMoveSan(move.san);
@@ -89,7 +115,10 @@ export default function BlunderReviewMode({ blunders = [], onClose }) {
   }
 
   function handleNext() {
-    if (isLastItem) { onClose(); return; }
+    if (isLastItem) {
+      onClose();
+      return;
+    }
     setIdx((i) => i + 1);
     setAnswered(false);
     setPlayerMoveSan(null);
@@ -114,14 +143,15 @@ export default function BlunderReviewMode({ blunders = [], onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-3 sm:p-5">
       <div className="bg-card border border-border rounded-2xl shadow-2xl flex flex-col lg:flex-row w-full max-w-245 max-h-[95vh] overflow-hidden">
-
         {/* ── Board section ────────────────────────────────────────────────── */}
         <div className="lg:shrink-0 lg:w-130 flex flex-col items-center justify-center p-3 sm:p-5 bg-black/30">
           {/* Board header */}
           <div className="w-full mb-2 flex items-center justify-between">
             <span className="text-xs text-muted-foreground font-medium">
               {answered ? (
-                <span className="text-green-400 font-semibold">Best move shown ↓</span>
+                <span className="text-green-400 font-semibold">
+                  Best move shown ↓
+                </span>
               ) : (
                 <span className="text-red-400 font-semibold">
                   ← Blunder: {blunder.qualityEmoji} {blunder.san}
@@ -134,7 +164,10 @@ export default function BlunderReviewMode({ blunders = [], onClose }) {
           </div>
 
           {/* The board – full width of its container */}
-          <div className="w-full" style={{ maxWidth: "min(100%, calc(95vh - 220px))" }}>
+          <div
+            className="w-full"
+            style={{ maxWidth: "min(100%, calc(95vh - 220px))" }}
+          >
             <Chessboard
               options={{
                 id: "blunder-review-board",
@@ -158,7 +191,6 @@ export default function BlunderReviewMode({ blunders = [], onClose }) {
 
         {/* ── Info panel ───────────────────────────────────────────────────── */}
         <div className="flex flex-col flex-1 p-5 gap-4 min-w-0 overflow-y-auto">
-
           {/* Header */}
           <div className="flex items-start justify-between gap-2">
             <div>
@@ -190,7 +222,8 @@ export default function BlunderReviewMode({ blunders = [], onClose }) {
                 {blunder.qualityEmoji} {blunder.san}
               </span>
               <span className="text-[11px] text-muted-foreground">
-                {blunder.quality}{blunder.cpLost ? ` (−${blunder.cpLost} cp)` : ""}
+                {blunder.quality}
+                {blunder.cpLost ? ` (−${blunder.cpLost} cp)` : ""}
               </span>
             </div>
             <p className="text-[11px] text-muted-foreground mt-1.5">
@@ -230,19 +263,25 @@ export default function BlunderReviewMode({ blunders = [], onClose }) {
                       : "border-orange-500/30 bg-orange-500/8"
                   }`}
                 >
-                  <p className={`text-sm font-bold mb-1 ${isCorrect ? "text-green-400" : "text-orange-400"}`}>
+                  <p
+                    className={`text-sm font-bold mb-1 ${isCorrect ? "text-green-400" : "text-orange-400"}`}
+                  >
                     {isCorrect ? "✓ Correct!" : "✗ Not quite"}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     You played:{" "}
-                    <strong className={`${isCorrect ? "text-green-300" : "text-orange-300"}`}>
+                    <strong
+                      className={`${isCorrect ? "text-green-300" : "text-orange-300"}`}
+                    >
                       {playerMoveSan}
                     </strong>
                   </p>
                 </div>
               ) : (
                 <div className="rounded-xl p-3.5 border border-border bg-secondary/20">
-                  <p className="text-xs text-muted-foreground">Answer revealed</p>
+                  <p className="text-xs text-muted-foreground">
+                    Answer revealed
+                  </p>
                 </div>
               )}
 
@@ -251,7 +290,9 @@ export default function BlunderReviewMode({ blunders = [], onClose }) {
                 <p className="text-[10px] uppercase tracking-widest text-green-400/80 font-semibold mb-1.5">
                   Best Move
                 </p>
-                <p className="text-2xl font-bold text-green-300 tracking-wide">{blunder.bestSan}</p>
+                <p className="text-2xl font-bold text-green-300 tracking-wide">
+                  {blunder.bestSan}
+                </p>
                 <p className="text-xs text-muted-foreground mt-1.5">
                   The green arrow on the board shows the correct move.
                 </p>
@@ -271,8 +312,8 @@ export default function BlunderReviewMode({ blunders = [], onClose }) {
                     i === idx
                       ? "ring-2 ring-primary ring-offset-1 ring-offset-card bg-primary scale-110"
                       : b.quality === "Blunder"
-                      ? "bg-red-500/50 hover:bg-red-500/80"
-                      : "bg-orange-500/50 hover:bg-orange-500/80"
+                        ? "bg-red-500/50 hover:bg-red-500/80"
+                        : "bg-orange-500/50 hover:bg-orange-500/80"
                   }`}
                 />
               ))}

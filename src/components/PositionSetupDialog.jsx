@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/Dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Chess } from "chess.js";
@@ -7,14 +12,21 @@ import { Chess } from "chess.js";
 const STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 const PRESET_POSITIONS = [
-  { label: "Starting Position",      fen: STARTING_FEN },
-  { label: "King & Rook vs King",    fen: "4k3/8/8/8/8/8/8/4K2R w K - 0 1" },
-  { label: "King & Queen vs King",   fen: "4k3/8/8/8/8/8/8/4KQ2 w - - 0 1" },
-  { label: "Scholar's Mate threat",  fen: "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4" },
-  { label: "King & Pawn vs King",    fen: "4k3/4P3/4K3/8/8/8/8/8 w - - 0 1" },
+  { label: "Starting Position", fen: STARTING_FEN },
+  { label: "King & Rook vs King", fen: "4k3/8/8/8/8/8/8/4K2R w K - 0 1" },
+  { label: "King & Queen vs King", fen: "4k3/8/8/8/8/8/8/4KQ2 w - - 0 1" },
+  {
+    label: "Scholar's Mate threat",
+    fen: "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
+  },
+  { label: "King & Pawn vs King", fen: "4k3/4P3/4K3/8/8/8/8/8 w - - 0 1" },
 ];
 
-export default function PositionSetupDialog({ open, onOpenChange, onLoadPosition }) {
+export default function PositionSetupDialog({
+  open,
+  onOpenChange,
+  onLoadPosition,
+}) {
   const [tab, setTab] = useState("fen"); // "fen" | "pgn"
   const [fenInput, setFenInput] = useState("");
   const [pgnInput, setPgnInput] = useState("");
@@ -70,7 +82,12 @@ export default function PositionSetupDialog({ open, onOpenChange, onLoadPosition
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) handleClose();
+      }}
+    >
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Set Position</DialogTitle>
@@ -81,7 +98,10 @@ export default function PositionSetupDialog({ open, onOpenChange, onLoadPosition
           {["fen", "pgn"].map((t) => (
             <button
               key={t}
-              onClick={() => { setTab(t); setError(""); }}
+              onClick={() => {
+                setTab(t);
+                setError("");
+              }}
               className={`flex-1 py-1.5 rounded text-xs font-semibold transition-colors ${
                 tab === t
                   ? "bg-card text-foreground shadow-sm"
@@ -101,7 +121,10 @@ export default function PositionSetupDialog({ open, onOpenChange, onLoadPosition
               </label>
               <Input
                 value={fenInput}
-                onChange={(e) => { setFenInput(e.target.value); setError(""); }}
+                onChange={(e) => {
+                  setFenInput(e.target.value);
+                  setError("");
+                }}
                 placeholder={STARTING_FEN}
                 className="font-mono text-xs"
                 onKeyDown={(e) => e.key === "Enter" && handleLoadFen()}
@@ -136,7 +159,10 @@ export default function PositionSetupDialog({ open, onOpenChange, onLoadPosition
             </label>
             <textarea
               value={pgnInput}
-              onChange={(e) => { setPgnInput(e.target.value); setError(""); }}
+              onChange={(e) => {
+                setPgnInput(e.target.value);
+                setError("");
+              }}
               placeholder={"1. e4 e5 2. Nf3 Nc6 ..."}
               rows={6}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono

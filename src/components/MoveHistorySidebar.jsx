@@ -1,5 +1,18 @@
 import { useRef, useEffect, useMemo, useState, Fragment } from "react";
-import { ArrowDownUp, ChevronLeft, BookOpen, SkipBack, SkipForward, ChevronRight, X, Copy, BarChart2, Loader2, Timer, MessageSquare } from "lucide-react";
+import {
+  ArrowDownUp,
+  ChevronLeft,
+  BookOpen,
+  SkipBack,
+  SkipForward,
+  ChevronRight,
+  X,
+  Copy,
+  BarChart2,
+  Loader2,
+  Timer,
+  MessageSquare,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { formatTime } from "@/hooks/useChessClock";
@@ -16,9 +29,11 @@ function EvalBar({ score }) {
   const clamped = score === null ? 0 : Math.max(-5, Math.min(5, score));
   const whitePercent = Math.round(50 + (clamped / 5) * 40);
   const label =
-    score === null ? "—"
-    : score > 0   ? `+${score.toFixed(1)}`
-    :                score.toFixed(1);
+    score === null
+      ? "—"
+      : score > 0
+        ? `+${score.toFixed(1)}`
+        : score.toFixed(1);
 
   return (
     <div className="p-3 border-t border-border shrink-0">
@@ -26,7 +41,9 @@ function EvalBar({ score }) {
         <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Evaluation
         </span>
-        <span className="text-xs font-semibold tabular-nums text-foreground">{label}</span>
+        <span className="text-xs font-semibold tabular-nums text-foreground">
+          {label}
+        </span>
       </div>
       <div className="relative h-2 rounded-full overflow-hidden bg-black border border-border/40">
         <div
@@ -51,7 +68,10 @@ function getCapturedPieces(game) {
     b: { p: 8, n: 2, b: 2, r: 2, q: 1 },
   };
   const board = game.board();
-  const current = { w: { p: 0, n: 0, b: 0, r: 0, q: 0 }, b: { p: 0, n: 0, b: 0, r: 0, q: 0 } };
+  const current = {
+    w: { p: 0, n: 0, b: 0, r: 0, q: 0 },
+    b: { p: 0, n: 0, b: 0, r: 0, q: 0 },
+  };
   for (const row of board) {
     for (const sq of row) {
       if (sq) current[sq.color][sq.type]++;
@@ -75,7 +95,7 @@ function MoveHistorySidebar({
   onCopyPgn,
   moveQuality,
   game,
-  viewIndex,        // null = live, -1 = start, 0..n-1 = historical
+  viewIndex, // null = live, -1 = start, 0..n-1 = historical
   onJumpToMove,
   onExitReview,
   onNavigateBack,
@@ -104,7 +124,9 @@ function MoveHistorySidebar({
       number: Math.floor(i / 2) + 1,
       white: moveHistory[i]?.san ?? moveHistory[i],
       whiteIdx: i,
-      black: moveHistory[i + 1] ? (moveHistory[i + 1]?.san ?? moveHistory[i + 1]) : null,
+      black: moveHistory[i + 1]
+        ? (moveHistory[i + 1]?.san ?? moveHistory[i + 1])
+        : null,
       blackIdx: i + 1,
     });
   }
@@ -125,7 +147,10 @@ function MoveHistorySidebar({
   // Scroll active (reviewed) move into view
   useEffect(() => {
     if (isReviewMode && activeRowRef.current) {
-      activeRowRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      activeRowRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
     }
   }, [viewIndex, isReviewMode]);
 
@@ -155,7 +180,10 @@ function MoveHistorySidebar({
         </Button>
 
         {moveQuality && !isReviewMode && (
-          <Badge variant={qualityVariantMap[moveQuality.toLowerCase()] || "default"} className="text-[10px]">
+          <Badge
+            variant={qualityVariantMap[moveQuality.toLowerCase()] || "default"}
+            className="text-[10px]"
+          >
             {moveQuality}
           </Badge>
         )}
@@ -246,15 +274,21 @@ function MoveHistorySidebar({
           <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
             <BookOpen className="h-8 w-8 mb-2 opacity-20" />
             <p className="text-xs">No moves yet</p>
-            <p className="text-[10px] mt-1 opacity-60">Make a move to see history</p>
+            <p className="text-[10px] mt-1 opacity-60">
+              Make a move to see history
+            </p>
           </div>
         ) : (
           <table className="w-full text-xs font-mono border-collapse">
             <thead>
               <tr className="text-muted-foreground border-b border-border sticky top-0 bg-card">
                 <th className="text-left px-2 py-1.5 w-7">#</th>
-                <th className="text-left px-2 py-1.5">White {capturedPts.b > 0 ? `+${capturedPts.b}` : ""}</th>
-                <th className="text-left px-2 py-1.5">Black {capturedPts.w > 0 ? `+${capturedPts.w}` : ""}</th>
+                <th className="text-left px-2 py-1.5">
+                  White {capturedPts.b > 0 ? `+${capturedPts.b}` : ""}
+                </th>
+                <th className="text-left px-2 py-1.5">
+                  Black {capturedPts.w > 0 ? `+${capturedPts.w}` : ""}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -263,7 +297,7 @@ function MoveHistorySidebar({
                 const blackActive = isMoveActive(pair.blackIdx);
                 const whiteLastLive = isLastLiveMove(pair.whiteIdx);
                 const blackLastLive = isLastLiveMove(pair.blackIdx);
-                const rowRef = (whiteActive || blackActive) ? activeRowRef : null;
+                const rowRef = whiteActive || blackActive ? activeRowRef : null;
                 const whiteNote = annotations[pair.whiteIdx];
                 const blackNote = annotations[pair.blackIdx];
 
@@ -275,7 +309,10 @@ function MoveHistorySidebar({
 
                 function saveAnnotation() {
                   if (onAnnotationChange && editingAnnotationIdx !== null) {
-                    onAnnotationChange(editingAnnotationIdx, annotationDraft.trim());
+                    onAnnotationChange(
+                      editingAnnotationIdx,
+                      annotationDraft.trim(),
+                    );
                   }
                   setEditingAnnotationIdx(null);
                   setAnnotationDraft("");
@@ -287,27 +324,34 @@ function MoveHistorySidebar({
                       ref={rowRef}
                       className="border-b border-border/30 transition-colors group"
                     >
-                      <td className="px-2 py-1 text-muted-foreground">{pair.number}.</td>
+                      <td className="px-2 py-1 text-muted-foreground">
+                        {pair.number}.
+                      </td>
                       {/* White move cell */}
                       <td className="px-2 py-1">
                         <div className="flex items-center gap-1">
                           <span
                             onClick={() => onJumpToMove(pair.whiteIdx)}
                             className={`cursor-pointer rounded transition-colors
-                              ${whiteActive
-                                ? "bg-primary text-primary-foreground font-bold px-1"
-                                : whiteLastLive
-                                ? "font-bold text-primary hover:bg-secondary/60"
-                                : "font-semibold text-foreground hover:bg-secondary/60"
+                              ${
+                                whiteActive
+                                  ? "bg-primary text-primary-foreground font-bold px-1"
+                                  : whiteLastLive
+                                    ? "font-bold text-primary hover:bg-secondary/60"
+                                    : "font-semibold text-foreground hover:bg-secondary/60"
                               }`}
                           >
                             {pair.white}
                           </span>
                           {onAnnotationChange && (
                             <button
-                              onClick={() => openAnnotation(pair.whiteIdx, whiteNote)}
+                              onClick={() =>
+                                openAnnotation(pair.whiteIdx, whiteNote)
+                              }
                               className={`opacity-0 group-hover:opacity-100 transition-opacity rounded p-0.5 hover:bg-secondary ${
-                                whiteNote ? "!opacity-100 text-primary" : "text-muted-foreground"
+                                whiteNote
+                                  ? "!opacity-100 text-primary"
+                                  : "text-muted-foreground"
                               }`}
                               title={whiteNote || "Add annotation"}
                             >
@@ -316,7 +360,9 @@ function MoveHistorySidebar({
                           )}
                         </div>
                         {whiteNote && (
-                          <p className="text-[10px] text-primary/70 italic mt-0.5 font-sans">{whiteNote}</p>
+                          <p className="text-[10px] text-primary/70 italic mt-0.5 font-sans">
+                            {whiteNote}
+                          </p>
                         )}
                       </td>
                       {/* Black move cell */}
@@ -326,20 +372,25 @@ function MoveHistorySidebar({
                             <span
                               onClick={() => onJumpToMove(pair.blackIdx)}
                               className={`cursor-pointer rounded transition-colors
-                                ${blackActive
-                                  ? "bg-primary text-primary-foreground font-bold px-1"
-                                  : blackLastLive
-                                  ? "font-bold text-primary hover:bg-secondary/60"
-                                  : "text-foreground hover:bg-secondary/60"
+                                ${
+                                  blackActive
+                                    ? "bg-primary text-primary-foreground font-bold px-1"
+                                    : blackLastLive
+                                      ? "font-bold text-primary hover:bg-secondary/60"
+                                      : "text-foreground hover:bg-secondary/60"
                                 }`}
                             >
                               {pair.black}
                             </span>
                             {onAnnotationChange && (
                               <button
-                                onClick={() => openAnnotation(pair.blackIdx, blackNote)}
+                                onClick={() =>
+                                  openAnnotation(pair.blackIdx, blackNote)
+                                }
                                 className={`opacity-0 group-hover:opacity-100 transition-opacity rounded p-0.5 hover:bg-secondary ${
-                                  blackNote ? "!opacity-100 text-primary" : "text-muted-foreground"
+                                  blackNote
+                                    ? "!opacity-100 text-primary"
+                                    : "text-muted-foreground"
                                 }`}
                                 title={blackNote || "Add annotation"}
                               >
@@ -351,23 +402,36 @@ function MoveHistorySidebar({
                           <span className="text-muted-foreground/40">—</span>
                         )}
                         {blackNote && (
-                          <p className="text-[10px] text-primary/70 italic mt-0.5 font-sans">{blackNote}</p>
+                          <p className="text-[10px] text-primary/70 italic mt-0.5 font-sans">
+                            {blackNote}
+                          </p>
                         )}
                       </td>
                     </tr>
                     {/* Inline annotation editor row */}
                     {editingAnnotationIdx !== null &&
-                      (editingAnnotationIdx === pair.whiteIdx || editingAnnotationIdx === pair.blackIdx) && (
-                        <tr key={`note-${pair.number}`} className="bg-primary/5">
+                      (editingAnnotationIdx === pair.whiteIdx ||
+                        editingAnnotationIdx === pair.blackIdx) && (
+                        <tr
+                          key={`note-${pair.number}`}
+                          className="bg-primary/5"
+                        >
                           <td colSpan={3} className="px-2 py-1.5">
                             <div className="flex gap-1 items-end">
                               <textarea
                                 autoFocus
                                 value={annotationDraft}
-                                onChange={(e) => setAnnotationDraft(e.target.value)}
+                                onChange={(e) =>
+                                  setAnnotationDraft(e.target.value)
+                                }
                                 onKeyDown={(e) => {
-                                  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); saveAnnotation(); }
-                                  if (e.key === "Escape") { setEditingAnnotationIdx(null); }
+                                  if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    saveAnnotation();
+                                  }
+                                  if (e.key === "Escape") {
+                                    setEditingAnnotationIdx(null);
+                                  }
                                 }}
                                 placeholder="Add a note… (Enter to save, Esc to cancel)"
                                 className="flex-1 bg-secondary/50 border border-primary/30 rounded px-2 py-1 text-[11px] text-foreground placeholder-muted-foreground resize-none outline-none focus:border-primary/70 font-sans"
@@ -418,36 +482,58 @@ function MoveHistorySidebar({
         <div className="shrink-0 border-t border-border px-3 py-2 bg-secondary/10">
           <div className="flex items-center gap-1 mb-1.5">
             <Timer className="h-3 w-3 text-muted-foreground" />
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Clock</span>
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
+              Clock
+            </span>
           </div>
           <div className="flex gap-2">
             {/* Black clock */}
-            <div className={`flex-1 rounded-md border px-2 py-1.5 text-center transition-colors ${
-              clockFlagged === "b" ? "border-red-500/60 bg-red-500/10"
-              : currentTurn === "b" && !clockFlagged ? "border-primary/70 bg-primary/10"
-              : "border-border bg-secondary/30"
-            }`}>
-              <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-0.5">Black</p>
-              <p className={`text-lg font-mono font-bold tabular-nums leading-none ${
-                clockFlagged === "b" ? "text-red-400"
-                : currentTurn === "b" && !clockFlagged ? "text-primary"
-                : "text-foreground"
-              }`}>
+            <div
+              className={`flex-1 rounded-md border px-2 py-1.5 text-center transition-colors ${
+                clockFlagged === "b"
+                  ? "border-red-500/60 bg-red-500/10"
+                  : currentTurn === "b" && !clockFlagged
+                    ? "border-primary/70 bg-primary/10"
+                    : "border-border bg-secondary/30"
+              }`}
+            >
+              <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-0.5">
+                Black
+              </p>
+              <p
+                className={`text-lg font-mono font-bold tabular-nums leading-none ${
+                  clockFlagged === "b"
+                    ? "text-red-400"
+                    : currentTurn === "b" && !clockFlagged
+                      ? "text-primary"
+                      : "text-foreground"
+                }`}
+              >
                 {clockFlagged === "b" ? "⏱ TIME" : formatTime(timeBlack)}
               </p>
             </div>
             {/* White clock */}
-            <div className={`flex-1 rounded-md border px-2 py-1.5 text-center transition-colors ${
-              clockFlagged === "w" ? "border-red-500/60 bg-red-500/10"
-              : currentTurn === "w" && !clockFlagged ? "border-primary/70 bg-primary/10"
-              : "border-border bg-secondary/30"
-            }`}>
-              <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-0.5">White</p>
-              <p className={`text-lg font-mono font-bold tabular-nums leading-none ${
-                clockFlagged === "w" ? "text-red-400"
-                : currentTurn === "w" && !clockFlagged ? "text-primary"
-                : "text-foreground"
-              }`}>
+            <div
+              className={`flex-1 rounded-md border px-2 py-1.5 text-center transition-colors ${
+                clockFlagged === "w"
+                  ? "border-red-500/60 bg-red-500/10"
+                  : currentTurn === "w" && !clockFlagged
+                    ? "border-primary/70 bg-primary/10"
+                    : "border-border bg-secondary/30"
+              }`}
+            >
+              <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-0.5">
+                White
+              </p>
+              <p
+                className={`text-lg font-mono font-bold tabular-nums leading-none ${
+                  clockFlagged === "w"
+                    ? "text-red-400"
+                    : currentTurn === "w" && !clockFlagged
+                      ? "text-primary"
+                      : "text-foreground"
+                }`}
+              >
                 {clockFlagged === "w" ? "⏱ TIME" : formatTime(timeWhite)}
               </p>
             </div>

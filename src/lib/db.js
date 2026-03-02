@@ -28,7 +28,7 @@ function dbPut(record) {
         const req = tx.objectStore(STORE_NAME).put(record);
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
-      })
+      }),
   );
 }
 
@@ -40,7 +40,7 @@ function dbGet(id) {
         const req = tx.objectStore(STORE_NAME).get(id);
         req.onsuccess = () => resolve(req.result ?? null);
         req.onerror = () => reject(req.error);
-      })
+      }),
   );
 }
 
@@ -52,7 +52,7 @@ function dbGetAll() {
         const req = tx.objectStore(STORE_NAME).getAll();
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
-      })
+      }),
   );
 }
 
@@ -64,7 +64,7 @@ function dbDelete(id) {
         const req = tx.objectStore(STORE_NAME).delete(id);
         req.onsuccess = () => resolve();
         req.onerror = () => reject(req.error);
-      })
+      }),
   );
 }
 
@@ -91,9 +91,12 @@ export function loadAutoSave() {
  */
 export function saveGame(gameData) {
   const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  return dbPut({ ...gameData, id, timestamp: Date.now(), isAutosave: false }).then(
-    () => id
-  );
+  return dbPut({
+    ...gameData,
+    id,
+    timestamp: Date.now(),
+    isAutosave: false,
+  }).then(() => id);
 }
 
 /** List all manually saved games, newest first. */
@@ -101,7 +104,7 @@ export function listGames() {
   return dbGetAll().then((all) =>
     all
       .filter((g) => g.id !== AUTOSAVE_ID)
-      .sort((a, b) => b.timestamp - a.timestamp)
+      .sort((a, b) => b.timestamp - a.timestamp),
   );
 }
 

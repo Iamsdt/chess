@@ -26,7 +26,12 @@ import {
   evaluateMove,
 } from "@/lib/ai";
 import { getBestMove } from "@/lib/engine";
-import { getStockfishEngine, destroyStockfishEngine, StockfishEngine } from "@/lib/stockfish";import { buildMyMoveCard, buildThreatCard } from "@/lib/intelligence";
+import {
+  getStockfishEngine,
+  destroyStockfishEngine,
+  StockfishEngine,
+} from "@/lib/stockfish";
+import { buildMyMoveCard, buildThreatCard } from "@/lib/intelligence";
 // ── Stockfish analysis formatting helpers ─────────────────────────────────────
 
 function pvToSan(fen, pvUci) {
@@ -34,29 +39,39 @@ function pvToSan(fen, pvUci) {
     const g = new Chess(fen);
     const sans = [];
     for (const uci of (pvUci || []).slice(0, 6)) {
-      const mv = g.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] });
+      const mv = g.move({
+        from: uci.slice(0, 2),
+        to: uci.slice(2, 4),
+        promotion: uci[4],
+      });
       if (!mv) break;
       sans.push(mv.san);
     }
     return sans;
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 
 function fmtScore(scoreCp, isMate, mateIn, isWhiteToMove) {
   if (isMate) {
-    const wWins = (mateIn > 0) === isWhiteToMove;
+    const wWins = mateIn > 0 === isWhiteToMove;
     return `Mate in ${Math.abs(mateIn)} — ${wWins ? "White" : "Black"} wins`;
   }
   if (scoreCp === null) return "—";
   const score = scoreCp / 100;
   const wScore = isWhiteToMove ? score : -score; // normalize to White perspective
-  const raw  = wScore > 0 ? `+${wScore.toFixed(2)}` : wScore.toFixed(2);
-  const abs  = Math.abs(wScore);
-  const who  = wScore >= 0 ? "White" : "Black";
-  const desc = abs < 0.25 ? "equal"
-             : abs < 0.75 ? `slight ${who} edge`
-             : abs < 2.0  ? `${who} is better`
-             : `${who} is clearly better`;
+  const raw = wScore > 0 ? `+${wScore.toFixed(2)}` : wScore.toFixed(2);
+  const abs = Math.abs(wScore);
+  const who = wScore >= 0 ? "White" : "Black";
+  const desc =
+    abs < 0.25
+      ? "equal"
+      : abs < 0.75
+        ? `slight ${who} edge`
+        : abs < 2.0
+          ? `${who} is better`
+          : `${who} is clearly better`;
   return `${raw}  (${desc})`;
 }
 
@@ -70,10 +85,13 @@ function buildAnalysisMsg(result, fen) {
     const nums = ["①", "②", "③"];
     lines.slice(0, 3).forEach((l, i) => {
       const san = pvToSan(fen, l.pv);
-      const sc  = l.isMate ? `M${Math.abs(l.mateIn)}`
-                : l.scoreCp !== null
-                  ? (l.scoreCp >= 0 ? `+${(l.scoreCp / 100).toFixed(1)}` : (l.scoreCp / 100).toFixed(1))
-                  : "";
+      const sc = l.isMate
+        ? `M${Math.abs(l.mateIn)}`
+        : l.scoreCp !== null
+          ? l.scoreCp >= 0
+            ? `+${(l.scoreCp / 100).toFixed(1)}`
+            : (l.scoreCp / 100).toFixed(1)
+          : "";
       out += `${nums[i]}  ${san.slice(0, 4).join(" ")}  ${sc}\n`;
     });
   }
@@ -100,32 +118,72 @@ const HINT_MESSAGES = [
 ];
 
 const HINT_PIECE_CONTEXTS = {
-  p: ["A pawn push could open lines or gain space.", "Pawn moves often open diagonals for your pieces.", "That pawn has a purpose—find where it wants to go."],
-  n: ["Your knight may have an outpost waiting for it.", "Knights love central squares — look for a strong jump.", "An active knight can dominate a position."],
-  b: ["A bishop diagonal may be more powerful than it looks.", "Long diagonals are a bishop's best friend.", "Your bishop wants to be active on an open diagonal."],
-  r: ["Rooks belong on open files or the seventh rank.", "Consider how your rook can become more active.", "A rook on an open file creates lasting pressure."],
-  q: ["Your queen has a lot of potential energy here — unleash it.", "Look for where your queen creates multiple threats.", "Queen moves often combine attack with defence."],
-  k: ["King safety matters — consider your king's position.", "A king move here could activate a 'rook behind' or escape a pin.", "In the endgame, your king is a powerful fighting piece."],
+  p: [
+    "A pawn push could open lines or gain space.",
+    "Pawn moves often open diagonals for your pieces.",
+    "That pawn has a purpose—find where it wants to go.",
+  ],
+  n: [
+    "Your knight may have an outpost waiting for it.",
+    "Knights love central squares — look for a strong jump.",
+    "An active knight can dominate a position.",
+  ],
+  b: [
+    "A bishop diagonal may be more powerful than it looks.",
+    "Long diagonals are a bishop's best friend.",
+    "Your bishop wants to be active on an open diagonal.",
+  ],
+  r: [
+    "Rooks belong on open files or the seventh rank.",
+    "Consider how your rook can become more active.",
+    "A rook on an open file creates lasting pressure.",
+  ],
+  q: [
+    "Your queen has a lot of potential energy here — unleash it.",
+    "Look for where your queen creates multiple threats.",
+    "Queen moves often combine attack with defence.",
+  ],
+  k: [
+    "King safety matters — consider your king's position.",
+    "A king move here could activate a 'rook behind' or escape a pin.",
+    "In the endgame, your king is a powerful fighting piece.",
+  ],
 };
 
 function buildBestMoveCard(result, fen, msgSeed = 0) {
   const { bestMove, scoreCp, isMate, mateIn, pv } = result;
   if (!bestMove) return null;
   const isWhite = new Chess(fen).turn() === "w";
-  const san     = pvToSan(fen, [bestMove]);
-  const pvSan   = pvToSan(fen, (pv || []).slice(0, 6));
+  const san = pvToSan(fen, [bestMove]);
+  const pvSan = pvToSan(fen, (pv || []).slice(0, 6));
 
   // White-perspective score normalised
-  const wScore  = isMate ? null : (scoreCp !== null ? (isWhite ? scoreCp / 100 : -scoreCp / 100) : null);
+  const wScore = isMate
+    ? null
+    : scoreCp !== null
+      ? isWhite
+        ? scoreCp / 100
+        : -scoreCp / 100
+      : null;
   const evalStr = fmtScore(scoreCp, isMate, mateIn, isWhite);
 
   // Tactical tags
   const TACTICAL_TAGS = [
-    "Controls key square", "Activates a piece", "Creates multiple threats",
-    "Improves piece harmony", "Gains space", "Prepares a passed pawn",
-    "Threatens material", "Removes a defender", "Creates a pin",
-    "Forks two pieces", "Opens a file", "Strengthens king safety",
-    "Deflects a key defender", "Centralises the knight", "Seizes the initiative",
+    "Controls key square",
+    "Activates a piece",
+    "Creates multiple threats",
+    "Improves piece harmony",
+    "Gains space",
+    "Prepares a passed pawn",
+    "Threatens material",
+    "Removes a defender",
+    "Creates a pin",
+    "Forks two pieces",
+    "Opens a file",
+    "Strengthens king safety",
+    "Deflects a key defender",
+    "Centralises the knight",
+    "Seizes the initiative",
   ];
   const tacticalTag = TACTICAL_TAGS[msgSeed % TACTICAL_TAGS.length];
 
@@ -141,31 +199,50 @@ function buildBestMoveCard(result, fen, msgSeed = 0) {
 
 function buildHintCard(result, fen, msgSeed = 0) {
   const { bestMove, scoreCp, isMate, mateIn } = result;
-  const isWhite  = new Chess(fen).turn() === "w";
-  const evalStr  = fmtScore(scoreCp, isMate, mateIn, isWhite);
+  const isWhite = new Chess(fen).turn() === "w";
+  const evalStr = fmtScore(scoreCp, isMate, mateIn, isWhite);
 
   // White-perspective score
-  const wScore = isMate ? null : (scoreCp !== null ? (isWhite ? scoreCp / 100 : -scoreCp / 100) : null);
+  const wScore = isMate
+    ? null
+    : scoreCp !== null
+      ? isWhite
+        ? scoreCp / 100
+        : -scoreCp / 100
+      : null;
 
-  let pieceType  = null;
+  let pieceType = null;
   let fromSquare = null;
   let pieceContext = "";
 
   if (bestMove) {
     try {
-      const g  = new Chess(fen);
-      const mv = g.move({ from: bestMove.slice(0,2), to: bestMove.slice(2,4), promotion: bestMove[4] });
+      const g = new Chess(fen);
+      const mv = g.move({
+        from: bestMove.slice(0, 2),
+        to: bestMove.slice(2, 4),
+        promotion: bestMove[4],
+      });
       if (mv) {
-        pieceType  = mv.piece;
+        pieceType = mv.piece;
         fromSquare = mv.from;
         const ctxArr = HINT_PIECE_CONTEXTS[mv.piece] || [];
         pieceContext = ctxArr[msgSeed % ctxArr.length] || "";
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
-  const PIECE_NAMES = { p: "Pawn", n: "Knight", b: "Bishop", r: "Rook", q: "Queen", k: "King" };
-  const generalMsg  = HINT_MESSAGES[msgSeed % HINT_MESSAGES.length];
+  const PIECE_NAMES = {
+    p: "Pawn",
+    n: "Knight",
+    b: "Bishop",
+    r: "Rook",
+    q: "Queen",
+    k: "King",
+  };
+  const generalMsg = HINT_MESSAGES[msgSeed % HINT_MESSAGES.length];
 
   return {
     type: "hint-card",
@@ -181,9 +258,9 @@ function buildHintCard(result, fen, msgSeed = 0) {
 
 function buildLiveAnalysisMsg(result, fen, lastMoveSan) {
   const { scoreCp, isMate, mateIn, pv } = result;
-  const isWhite  = new Chess(fen).turn() === "w";
+  const isWhite = new Chess(fen).turn() === "w";
   const scoreStr = fmtScore(scoreCp, isMate, mateIn, isWhite);
-  const pvSan    = pvToSan(fen, (pv || []).slice(0, 4));
+  const pvSan = pvToSan(fen, (pv || []).slice(0, 4));
   let out = `⚙ After ${lastMoveSan}\n\nEvaluation: ${scoreStr}`;
   if (pvSan.length > 0) out += `\nBest continuation: ${pvSan.join(" ")}`;
   return out;
@@ -212,7 +289,9 @@ function App() {
   const [moveHistory, setMoveHistory] = useState([]); // { san, fen, from, to }[]
   const [viewIndex, setViewIndex] = useState(null); // null = live, -1 = start, 0..n-1 = historical
   const viewIndexRef = useRef(null);
-  useEffect(() => { viewIndexRef.current = viewIndex; }, [viewIndex]);
+  useEffect(() => {
+    viewIndexRef.current = viewIndex;
+  }, [viewIndex]);
   const [isLiveMode, setIsLiveMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [moveQuality, setMoveQuality] = useState(null);
@@ -228,7 +307,9 @@ function App() {
   // ---- Player color (which side the human plays) ----
   const [playerColor, setPlayerColor] = useState("white"); // "white" | "black"
   const playerColorRef = useRef(playerColor);
-  useEffect(() => { playerColorRef.current = playerColor; }, [playerColor]);
+  useEffect(() => {
+    playerColorRef.current = playerColor;
+  }, [playerColor]);
   const [isAIThinking, setIsAIThinking] = useState(false);
 
   // ── Review mode: derive displayGame and displayLastMoveSquares ──────────
@@ -284,14 +365,20 @@ function App() {
   const [premove, setPremove] = useState(null);
   const premoveRef = useRef(null);
   // Keep premoveRef in sync
-  useEffect(() => { premoveRef.current = premove; }, [premove]);
+  useEffect(() => {
+    premoveRef.current = premove;
+  }, [premove]);
 
   // ---- Coach mode ----
   const [coachMode, setCoachMode] = useState("engine"); // "engine" | "ai"
   const coachModeRef = useRef(coachMode);
-  useEffect(() => { coachModeRef.current = coachMode; }, [coachMode]);
+  useEffect(() => {
+    coachModeRef.current = coachMode;
+  }, [coachMode]);
   const isLiveModeRef = useRef(isLiveMode);
-  useEffect(() => { isLiveModeRef.current = isLiveMode; }, [isLiveMode]);
+  useEffect(() => {
+    isLiveModeRef.current = isLiveMode;
+  }, [isLiveMode]);
 
   // ---- Chess clock hook ----
   const clock = useChessClock({
@@ -303,7 +390,9 @@ function App() {
     isReviewMode: viewIndex !== null,
   });
   const clockRef = useRef(clock);
-  useEffect(() => { clockRef.current = clock; });
+  useEffect(() => {
+    clockRef.current = clock;
+  });
 
   // ── Auto-load last auto-save on first mount ─────────────────────────────
   useEffect(() => {
@@ -316,7 +405,8 @@ function App() {
           gameRef.current = game;
           setFen(game.fen());
           setMoveHistory(migrateMoveHistory(saved.moveHistory));
-          if (saved.boardOrientation) setBoardOrientation(saved.boardOrientation);
+          if (saved.boardOrientation)
+            setBoardOrientation(saved.boardOrientation);
           if (saved.opponent) setOpponent(saved.opponent);
           if (saved.difficulty) setDifficulty(saved.difficulty);
           if (saved.playerColor) setPlayerColor(saved.playerColor);
@@ -417,12 +507,13 @@ function App() {
       boardOrientation,
       playerColor,
     }),
-    [moveHistory, opponent, difficulty, boardOrientation, playerColor]
+    [moveHistory, opponent, difficulty, boardOrientation, playerColor],
   );
 
   // ---- Intelligence layer ----
   const msgSeedRef = useRef(0);
-  const getElo = () => parseInt(localStorage.getItem("chess-coach-elo") || "1000", 10);
+  const getElo = () =>
+    parseInt(localStorage.getItem("chess-coach-elo") || "1000", 10);
 
   const getApiKey = () => localStorage.getItem("chess-coach-api-key") || "";
   const getModel = () =>
@@ -474,7 +565,10 @@ function App() {
           });
           if (!move) return;
 
-          const newHistory = [...currentHistory, { san: move.san, fen: game.fen(), from: move.from, to: move.to }];
+          const newHistory = [
+            ...currentHistory,
+            { san: move.san, fen: game.fen(), from: move.from, to: move.to },
+          ];
           setFen(game.fen());
           setMoveHistory(newHistory);
           setLastMoveSquares({ from: move.from, to: move.to });
@@ -484,11 +578,19 @@ function App() {
             playSound("end");
             // Record opening stats
             const gameResult = game.isCheckmate()
-              ? (move.color)  // color that just moved (checkmated the king) is the winner
+              ? move.color // color that just moved (checkmated the king) is the winner
               : "d";
-            const openingMatch = detectOpening(newHistory.map((m) => m.san), OPENINGS);
+            const openingMatch = detectOpening(
+              newHistory.map((m) => m.san),
+              OPENINGS,
+            );
             if (openingMatch) {
-              recordOpeningResult({ eco: openingMatch.eco, name: openingMatch.name, gameResult, playerColor: playerColorRef.current[0] });
+              recordOpeningResult({
+                eco: openingMatch.eco,
+                name: openingMatch.name,
+                gameResult,
+                playerColor: playerColorRef.current[0],
+              });
             }
             // Snapshot history for analysis (wait for Stockfish to be freed)
             const snapshot = newHistory;
@@ -507,11 +609,25 @@ function App() {
             updateEvalBar(game.fen());
             // Detect threats for the player (from opponent's perspective)
             const opponentClr = move.color; // color that just moved (the engine)
-            runThreatDetection(game, opponentClr, move.to, move.san, newHistory.map((m) => m.san));
+            runThreatDetection(
+              game,
+              opponentClr,
+              move.to,
+              move.san,
+              newHistory.map((m) => m.san),
+            );
           } else {
             updateEvalBar(game.fen()); // always keep eval bar live
-            if (isLiveModeRef.current && coachModeRef.current === "ai" && getApiKey()) {
-              evaluateLastMove(move.san, game.fen(), newHistory.map((m) => m.san));
+            if (
+              isLiveModeRef.current &&
+              coachModeRef.current === "ai" &&
+              getApiKey()
+            ) {
+              evaluateLastMove(
+                move.san,
+                game.fen(),
+                newHistory.map((m) => m.san),
+              );
             }
           }
         } catch (e) {
@@ -523,7 +639,10 @@ function App() {
           if (pm && !gameRef.current.isGameOver()) {
             setPremove(null);
             premoveRef.current = null;
-            setTimeout(() => handleMoveRef.current?.(pm.from, pm.to, pm.piece), 60);
+            setTimeout(
+              () => handleMoveRef.current?.(pm.from, pm.to, pm.piece),
+              60,
+            );
           }
         }
       };
@@ -535,7 +654,7 @@ function App() {
         aiTimeoutRef.current = setTimeout(executeMove, 400);
       }
     },
-    [difficulty, opponent]
+    [difficulty, opponent],
   );
 
   // ---- Handle player-color change (only before game starts) ----
@@ -549,7 +668,7 @@ function App() {
         setTimeout(() => triggerAIMove(gameRef.current.fen(), []), 150);
       }
     },
-    [moveHistory.length, opponent, triggerAIMove]
+    [moveHistory.length, opponent, triggerAIMove],
   );
 
   // ---- Review mode navigation ----
@@ -563,7 +682,8 @@ function App() {
 
   const handleNavigateBack = useCallback(() => {
     setViewIndex((prev) => {
-      if (prev === null) return moveHistory.length > 0 ? moveHistory.length - 1 : null;
+      if (prev === null)
+        return moveHistory.length > 0 ? moveHistory.length - 1 : null;
       return prev > 0 ? prev - 1 : -1;
     });
   }, [moveHistory.length]);
@@ -579,10 +699,16 @@ function App() {
   // ---- Keyboard navigation (arrow keys) ----
   useEffect(() => {
     function onKey(e) {
-      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
-      if (e.key === "ArrowLeft") { e.preventDefault(); handleNavigateBack(); }
-      else if (e.key === "ArrowRight") { e.preventDefault(); handleNavigateForward(); }
-      else if (e.key === "Escape" && viewIndexRef.current !== null) handleExitReview();
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")
+        return;
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        handleNavigateBack();
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        handleNavigateForward();
+      } else if (e.key === "Escape" && viewIndexRef.current !== null)
+        handleExitReview();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -605,7 +731,9 @@ function App() {
           let promotion = undefined;
           if (piece) {
             const isPawn = piece[1] === "P" || piece[1] === "p";
-            const isLastRank = (piece[0] === "w" && targetSquare[1] === "8") || (piece[0] === "b" && targetSquare[1] === "1");
+            const isLastRank =
+              (piece[0] === "w" && targetSquare[1] === "8") ||
+              (piece[0] === "b" && targetSquare[1] === "1");
             if (isPawn && isLastRank) promotion = "q";
           }
           const pm = { from: sourceSquare, to: targetSquare, promotion, piece };
@@ -649,7 +777,10 @@ function App() {
       if (move === null) return null;
 
       setFen(game.fen());
-      setMoveHistory((prev) => [...prev, { san: move.san, fen: game.fen(), from: move.from, to: move.to }]);
+      setMoveHistory((prev) => [
+        ...prev,
+        { san: move.san, fen: game.fen(), from: move.from, to: move.to },
+      ]);
       setMoveQuality(null);
       setLastMoveSquares({ from: sourceSquare, to: targetSquare });
       setBestMoveArrows([]);
@@ -659,7 +790,10 @@ function App() {
       premoveRef.current = null;
 
       // Build move history snapshot now (used for game-over analysis + live analysis below)
-      const newMoveHistory = [...moveHistory, { san: move.san, fen: game.fen(), from: move.from, to: move.to }];
+      const newMoveHistory = [
+        ...moveHistory,
+        { san: move.san, fen: game.fen(), from: move.from, to: move.to },
+      ];
 
       // Play sound
       if (game.isCheckmate() || game.isStalemate() || game.isDraw()) {
@@ -667,9 +801,17 @@ function App() {
         const snapshot = newMoveHistory;
         // Record opening stats
         const playerGameResult = game.isCheckmate() ? move.color : "d";
-        const openingMatchPlayer = detectOpening(snapshot.map((m) => m.san), OPENINGS);
+        const openingMatchPlayer = detectOpening(
+          snapshot.map((m) => m.san),
+          OPENINGS,
+        );
         if (openingMatchPlayer) {
-          recordOpeningResult({ eco: openingMatchPlayer.eco, name: openingMatchPlayer.name, gameResult: playerGameResult, playerColor: playerColorRef.current[0] });
+          recordOpeningResult({
+            eco: openingMatchPlayer.eco,
+            name: openingMatchPlayer.name,
+            gameResult: playerGameResult,
+            playerColor: playerColorRef.current[0],
+          });
         }
         setTimeout(() => triggerPostGameAnalysis(snapshot), 1200);
       } else if (game.inCheck()) {
@@ -687,7 +829,11 @@ function App() {
         // Analyze the player's move quality vs engine best.
         // For engine opponents we chain: analysis → then trigger engine reply
         // to avoid Stockfish conflicts (only one pending op at a time).
-        const playerAnalysis = engineLiveAnalyzePlayerMove(preFen, move.san, postFen);
+        const playerAnalysis = engineLiveAnalyzePlayerMove(
+          preFen,
+          move.san,
+          postFen,
+        );
         if (opponent !== "manual" && !game.isGameOver()) {
           playerAnalysis
             .then(() => triggerAIMove(postFen, newMoveHistory))
@@ -696,7 +842,11 @@ function App() {
       } else {
         updateEvalBar(postFen); // always keep eval bar live
         if (isLiveMode && coachMode === "ai" && getApiKey()) {
-          evaluateLastMove(move.san, postFen, newMoveHistory.map((m) => m.san));
+          evaluateLastMove(
+            move.san,
+            postFen,
+            newMoveHistory.map((m) => m.san),
+          );
         }
         // Trigger AI response if not manual (non-live-engine path)
         if (opponent !== "manual" && !game.isGameOver()) {
@@ -706,12 +856,14 @@ function App() {
 
       return move;
     },
-    [isLiveMode, coachMode, moveHistory, opponent, triggerAIMove]
+    [isLiveMode, coachMode, moveHistory, opponent, triggerAIMove],
   );
 
   // Stable ref so triggerAIMove can call handleMove without capturing stale closure
   const handleMoveRef = useRef(null);
-  useEffect(() => { handleMoveRef.current = handleMove; }, [handleMove]);
+  useEffect(() => {
+    handleMoveRef.current = handleMove;
+  }, [handleMove]);
 
   // ---- Helper: extract White-perspective score from engine result ----
   function applyEvalScore(result, fen) {
@@ -727,7 +879,9 @@ function App() {
     const sf = getStockfishEngine();
     sf.analyze(fen, 10, 1)
       .then((result) => applyEvalScore(result, fen))
-      .catch(() => { /* silent */ });
+      .catch(() => {
+        /* silent */
+      });
   }
 
   // ---- Engine live analysis (auto, after moves) ----
@@ -737,9 +891,14 @@ function App() {
       .then((result) => {
         applyEvalScore(result, fen);
         const content = buildLiveAnalysisMsg(result, fen, lastMoveSan);
-        setMessages((prev) => [...prev, { role: "assistant", content, type: "engine" }]);
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content, type: "engine" },
+        ]);
       })
-      .catch(() => { /* silent */ });
+      .catch(() => {
+        /* silent */
+      });
   }
 
   // ---- Intelligence: analyze player's move vs Stockfish best ----
@@ -753,8 +912,18 @@ function App() {
       // Step 2: analyze post-move position for new evaluation
       const postResult = await sf.analyze(postFen, 10, 1);
       applyEvalScore(postResult, postFen);
-      const card = buildMyMoveCard(preFen, moveSan, preResult, postResult, userElo, seed);
-      setMessages((prev) => [...prev, { role: "assistant", content: card, type: "my-move-analysis" }]);
+      const card = buildMyMoveCard(
+        preFen,
+        moveSan,
+        preResult,
+        postResult,
+        userElo,
+        seed,
+      );
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: card, type: "my-move-analysis" },
+      ]);
     } catch {
       // Fallback: just update the eval bar silently
       updateEvalBar(postFen);
@@ -762,28 +931,59 @@ function App() {
   }
 
   // ---- Intelligence: detect threats after opponent's move ----
-  function runThreatDetection(game, opponentColor, lastMoveTo, moveSan, moveHistory) {
+  function runThreatDetection(
+    game,
+    opponentColor,
+    lastMoveTo,
+    moveSan,
+    moveHistory,
+  ) {
     const seed = msgSeedRef.current++;
     try {
-      const card = buildThreatCard(game, opponentColor, lastMoveTo, moveSan, seed, moveHistory);
+      const card = buildThreatCard(
+        game,
+        opponentColor,
+        lastMoveTo,
+        moveSan,
+        seed,
+        moveHistory,
+      );
       if (card) {
-        setMessages((prev) => [...prev, { role: "assistant", content: card, type: "threat-card" }]);
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: card, type: "threat-card" },
+        ]);
       }
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }
 
   // ---- Engine coach: Analyze position ----
   const handleEngineAnalyze = useCallback(async () => {
-    setMessages((prev) => [...prev, { role: "user", content: "🔍 Analyze position", type: "engine-query" }]);
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", content: "🔍 Analyze position", type: "engine-query" },
+    ]);
     setIsLoading(true);
     try {
-      const sf     = getStockfishEngine();
+      const sf = getStockfishEngine();
       const result = await sf.analyze(gameRef.current.fen(), 18, 3);
       applyEvalScore(result, gameRef.current.fen());
       const content = buildAnalysisMsg(result, gameRef.current.fen());
-      setMessages((prev) => [...prev, { role: "assistant", content, type: "engine" }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content, type: "engine" },
+      ]);
     } catch (e) {
-      setMessages((prev) => [...prev, { role: "assistant", content: `Engine error: ${e.message}`, type: "engine" }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: `Engine error: ${e.message}`,
+          type: "engine",
+        },
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -797,10 +997,8 @@ function App() {
     setAnalysisProgress(0);
     setGameReport(null);
     try {
-      const report = await analyzeFullGame(
-        history,
-        10,
-        (done, total) => setAnalysisProgress(Math.round((done / total) * 100))
+      const report = await analyzeFullGame(history, 10, (done, total) =>
+        setAnalysisProgress(Math.round((done / total) * 100)),
       );
       if (report) {
         setGameReport(report);
@@ -816,32 +1014,62 @@ function App() {
 
   // ---- Engine coach: Best move ----
   const handleEngineBestMove = useCallback(async () => {
-    setMessages((prev) => [...prev, { role: "user", content: "💡 Best Move", type: "engine-query" }]);
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", content: "💡 Best Move", type: "engine-query" },
+    ]);
     setIsLoading(true);
     try {
-      const sf     = getStockfishEngine();
+      const sf = getStockfishEngine();
       const result = await sf.analyze(gameRef.current.fen(), 15, 1);
       applyEvalScore(result, gameRef.current.fen());
       const seed = msgSeedRef.current++;
       const card = buildBestMoveCard(result, gameRef.current.fen(), seed);
       if (card) {
-        setMessages((prev) => [...prev, { role: "assistant", content: card, type: "best-move-card" }]);
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: card, type: "best-move-card" },
+        ]);
         // ── Draw arrows for best move (primary = green, response = blue) ──
         const arrows = [];
         if (result.pv && result.pv.length > 0) {
           const mv1 = result.pv[0];
-          if (mv1?.length >= 4) arrows.push({ startSquare: mv1.slice(0,2), endSquare: mv1.slice(2,4), color: "#22c55e" });
+          if (mv1?.length >= 4)
+            arrows.push({
+              startSquare: mv1.slice(0, 2),
+              endSquare: mv1.slice(2, 4),
+              color: "#22c55e",
+            });
         }
         if (result.pv && result.pv.length > 1) {
           const mv2 = result.pv[1];
-          if (mv2?.length >= 4) arrows.push({ startSquare: mv2.slice(0,2), endSquare: mv2.slice(2,4), color: "#3b82f6" });
+          if (mv2?.length >= 4)
+            arrows.push({
+              startSquare: mv2.slice(0, 2),
+              endSquare: mv2.slice(2, 4),
+              color: "#3b82f6",
+            });
         }
         setBestMoveArrows(arrows);
       } else {
-        setMessages((prev) => [...prev, { role: "assistant", content: "No legal moves in this position.", type: "engine" }]);
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: "No legal moves in this position.",
+            type: "engine",
+          },
+        ]);
       }
     } catch (e) {
-      setMessages((prev) => [...prev, { role: "assistant", content: `Engine error: ${e.message}`, type: "engine" }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: `Engine error: ${e.message}`,
+          type: "engine",
+        },
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -849,16 +1077,29 @@ function App() {
 
   // ---- Engine coach: Hint (vague, no exact move) ----
   const handleEngineHint = useCallback(async () => {
-    setMessages((prev) => [...prev, { role: "user", content: "🎯 Hint", type: "engine-query" }]);
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", content: "🎯 Hint", type: "engine-query" },
+    ]);
     setIsLoading(true);
     try {
-      const sf     = getStockfishEngine();
+      const sf = getStockfishEngine();
       const result = await sf.analyze(gameRef.current.fen(), 12, 1);
       const seed = msgSeedRef.current++;
       const card = buildHintCard(result, gameRef.current.fen(), seed);
-      setMessages((prev) => [...prev, { role: "assistant", content: card, type: "hint-card" }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: card, type: "hint-card" },
+      ]);
     } catch (e) {
-      setMessages((prev) => [...prev, { role: "assistant", content: `Engine error: ${e.message}`, type: "engine" }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: `Engine error: ${e.message}`,
+          type: "engine",
+        },
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -905,7 +1146,7 @@ function App() {
         "Blunder",
       ];
       const matched = validQualities.find(
-        (q) => q.toLowerCase() === quality.toLowerCase()
+        (q) => q.toLowerCase() === quality.toLowerCase(),
       );
       if (matched) {
         setMoveQuality(matched);
@@ -949,10 +1190,7 @@ function App() {
           model: getModel(),
         });
 
-        setMessages((prev) => [
-          ...prev,
-          { role: "assistant", content: reply },
-        ]);
+        setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
       } catch (err) {
         setMessages((prev) => [
           ...prev,
@@ -962,7 +1200,7 @@ function App() {
         setIsLoading(false);
       }
     },
-    [messages]
+    [messages],
   );
 
   // ---- Explain button ----
@@ -1070,53 +1308,56 @@ function App() {
   }, [opponent, triggerAIMove]);
 
   // ---- Load a position from FEN or PGN ----
-  const handleLoadPosition = useCallback(({ type, fen, pgn, game: loadedGame }) => {
-    if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current);
-    destroyStockfishEngine();
-    try {
-      const g = loadedGame || new Chess();
-      if (!loadedGame) {
-        if (type === "fen") g.load(fen);
-        else if (type === "pgn") g.loadPgn(pgn);
+  const handleLoadPosition = useCallback(
+    ({ type, fen, pgn, game: loadedGame }) => {
+      if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current);
+      destroyStockfishEngine();
+      try {
+        const g = loadedGame || new Chess();
+        if (!loadedGame) {
+          if (type === "fen") g.load(fen);
+          else if (type === "pgn") g.loadPgn(pgn);
+        }
+        gameRef.current = g;
+        setFen(g.fen());
+        const hist = g.history({ verbose: true });
+        const tempG = new Chess();
+        const newHistory = hist.map((m) => {
+          tempG.move(m);
+          return { san: m.san, fen: tempG.fen(), from: m.from, to: m.to };
+        });
+        setMoveHistory(newHistory);
+        setViewIndex(null);
+        setBestMoveArrows([]);
+        setMoveQuality(null);
+        setMessages([]);
+        setIsAIThinking(false);
+        setEvalScore(null);
+        setGameReport(null);
+        setIsAnalyzing(false);
+        setAnalysisProgress(0);
+        setBlunderReviewOpen(false);
+        isAnalyzingRef.current = false;
+        setPremove(null);
+        premoveRef.current = null;
+        setAnnotations({});
+        if (hist.length > 0) {
+          const last = hist[hist.length - 1];
+          setLastMoveSquares({ from: last.from, to: last.to });
+        } else {
+          setLastMoveSquares(null);
+        }
+        setPositionSetupOpen(false);
+        // If loaded game is already over (e.g. importing a complete PGN), trigger analysis automatically
+        if (g.isGameOver() && newHistory.length > 0) {
+          setTimeout(() => triggerPostGameAnalysis(newHistory), 1200);
+        }
+      } catch (e) {
+        console.error("Failed to load position:", e);
       }
-      gameRef.current = g;
-      setFen(g.fen());
-      const hist = g.history({ verbose: true });
-      const tempG = new Chess();
-      const newHistory = hist.map((m) => {
-        tempG.move(m);
-        return { san: m.san, fen: tempG.fen(), from: m.from, to: m.to };
-      });
-      setMoveHistory(newHistory);
-      setViewIndex(null);
-      setBestMoveArrows([]);
-      setMoveQuality(null);
-      setMessages([]);
-      setIsAIThinking(false);
-      setEvalScore(null);
-      setGameReport(null);
-      setIsAnalyzing(false);
-      setAnalysisProgress(0);
-      setBlunderReviewOpen(false);
-      isAnalyzingRef.current = false;
-      setPremove(null);
-      premoveRef.current = null;
-      setAnnotations({});
-      if (hist.length > 0) {
-        const last = hist[hist.length - 1];
-        setLastMoveSquares({ from: last.from, to: last.to });
-      } else {
-        setLastMoveSquares(null);
-      }
-      setPositionSetupOpen(false);
-      // If loaded game is already over (e.g. importing a complete PGN), trigger analysis automatically
-      if (g.isGameOver() && newHistory.length > 0) {
-        setTimeout(() => triggerPostGameAnalysis(newHistory), 1200);
-      }
-    } catch (e) {
-      console.error("Failed to load position:", e);
-    }
-  }, [triggerPostGameAnalysis]);
+    },
+    [triggerPostGameAnalysis],
+  );
 
   // ---- Copy current game as PGN ----
   const handleCopyPgn = useCallback(() => {
@@ -1142,7 +1383,7 @@ function App() {
       setBoardOrientation(pc);
       handleLoadPosition({ type: "fen", fen: scenarioFen });
     },
-    [handleLoadPosition]
+    [handleLoadPosition],
   );
 
   // ---- Pre-warm Stockfish when engine mode is selected ----
@@ -1153,115 +1394,126 @@ function App() {
   }, [opponent]);
 
   // ---- Ask AI to explain a tactical threat ----
-  const handleAskAI = useCallback(
-    async (threatCard) => {
-      const apiKey = getApiKey();
-      const threatName = threatCard?.primaryThreat?.name || "this threat";
-      const moveSan = threatCard?.opponentMoveSan || "the last move";
+  const handleAskAI = useCallback(async (threatCard) => {
+    const apiKey = getApiKey();
+    const threatName = threatCard?.primaryThreat?.name || "this threat";
+    const moveSan = threatCard?.opponentMoveSan || "the last move";
 
-      if (!apiKey) {
-        setCoachMode("ai");
-        setMessages((prev) => [
-          ...prev,
-          { role: "assistant", content: "Please set your API key in Settings (gear icon) to use AI coaching." },
-        ]);
-        return;
-      }
-
+    if (!apiKey) {
       setCoachMode("ai");
-      const prompt = `My opponent just played ${moveSan}, creating a ${threatName}. The current position (FEN): ${gameRef.current.fen()}. Please briefly explain what this threat is and what my best defensive options are.`;
-      const userMsg = { role: "user", content: `Explain: ${threatName} after ${moveSan}` };
-      setMessages((prev) => [...prev, userMsg]);
-      setIsLoading(true);
-      try {
-        const reply = await sendChatMessage({
-          messages: [{ role: "user", content: prompt }],
-          fen: gameRef.current.fen(),
-          apiKey,
-          model: getModel(),
-        });
-        setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
-      } catch (err) {
-        setMessages((prev) => [...prev, { role: "assistant", content: `Error: ${err.message}` }]);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content:
+            "Please set your API key in Settings (gear icon) to use AI coaching.",
+        },
+      ]);
+      return;
+    }
+
+    setCoachMode("ai");
+    const prompt = `My opponent just played ${moveSan}, creating a ${threatName}. The current position (FEN): ${gameRef.current.fen()}. Please briefly explain what this threat is and what my best defensive options are.`;
+    const userMsg = {
+      role: "user",
+      content: `Explain: ${threatName} after ${moveSan}`,
+    };
+    setMessages((prev) => [...prev, userMsg]);
+    setIsLoading(true);
+    try {
+      const reply = await sendChatMessage({
+        messages: [{ role: "user", content: prompt }],
+        fen: gameRef.current.fen(),
+        apiKey,
+        model: getModel(),
+      });
+      setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: `Error: ${err.message}` },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   // ---- Learn with AI — deep teaching moment for openings & patterns ----
-  const handleLearnWithAI = useCallback(
-    async (card) => {
-      const apiKey = getApiKey();
-      const userElo = getElo();
-      const pattern = card.knownPattern;
-      const moveSan = card.opponentMoveSan;
-      const currentFen = gameRef.current.fen();
+  const handleLearnWithAI = useCallback(async (card) => {
+    const apiKey = getApiKey();
+    const userElo = getElo();
+    const pattern = card.knownPattern;
+    const moveSan = card.opponentMoveSan;
+    const currentFen = gameRef.current.fen();
 
-      if (!apiKey) {
-        setCoachMode("ai");
-        setMessages((prev) => [
-          ...prev,
-          { role: "assistant", content: "Please set your API key in Settings (gear icon) to use AI coaching." },
-        ]);
-        return;
-      }
-
-      // Switch to AI Coach tab so the response is visible
+    if (!apiKey) {
       setCoachMode("ai");
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content:
+            "Please set your API key in Settings (gear icon) to use AI coaching.",
+        },
+      ]);
+      return;
+    }
 
-      let prompt = "";
-      let userLabel = "";
+    // Switch to AI Coach tab so the response is visible
+    setCoachMode("ai");
 
-      if (pattern?.type === "opening") {
-        userLabel = `📚 Learn: ${pattern.name}`;
-        prompt =
-          `I'm learning chess (rated ~${userElo}). My opponent just played ${moveSan}, a theoretical move ` +
-          `in the ${pattern.name} (ECO ${pattern.eco}). ` +
-          `Current position FEN: ${currentFen}. ` +
-          `Please teach me (concisely, 3-4 paragraphs):\n` +
-          `1. What is the ${pattern.name} and why is it so popular?\n` +
-          `2. What are the key ideas and plans for both sides?\n` +
-          `3. How should I respond as the defending player?\n` +
-          `4. One important pattern or trap to remember from this opening.`;
-      } else if (pattern?.type === "tactical") {
-        userLabel = `📚 Learn: ${pattern.name}`;
-        prompt =
-          `I'm learning chess (rated ~${userElo}). My opponent just played ${moveSan} creating a ${pattern.name}. ` +
-          `Current position FEN: ${currentFen}. ` +
-          `Please teach me (concisely, 3-4 paragraphs):\n` +
-          `1. What exactly is a ${pattern.name} and why is it powerful?\n` +
-          `2. In this specific position, what is being attacked and why is it hard to defend?\n` +
-          `3. What are my best defensive options right now?\n` +
-          `4. How can I learn to spot and avoid this pattern in future games?`;
-      } else {
-        userLabel = `📚 Learn: ${moveSan}`;
-        prompt =
-          `I'm learning chess (rated ~${userElo}). My opponent just played ${moveSan}. ` +
-          `Position FEN: ${currentFen}. ` +
-          `Please explain what's happening, what this move accomplishes, and what I should focus on next.`;
-      }
+    let prompt = "";
+    let userLabel = "";
 
-      const userMsg = { role: "user", content: userLabel };
-      setMessages((prev) => [...prev, userMsg]);
-      setIsLoading(true);
-      try {
-        const reply = await sendChatMessage({
-          messages: [{ role: "user", content: prompt }],
-          fen: currentFen,
-          apiKey,
-          model: getModel(),
-        });
-        setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
-      } catch (err) {
-        setMessages((prev) => [...prev, { role: "assistant", content: `Error: ${err.message}` }]);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
+    if (pattern?.type === "opening") {
+      userLabel = `📚 Learn: ${pattern.name}`;
+      prompt =
+        `I'm learning chess (rated ~${userElo}). My opponent just played ${moveSan}, a theoretical move ` +
+        `in the ${pattern.name} (ECO ${pattern.eco}). ` +
+        `Current position FEN: ${currentFen}. ` +
+        `Please teach me (concisely, 3-4 paragraphs):\n` +
+        `1. What is the ${pattern.name} and why is it so popular?\n` +
+        `2. What are the key ideas and plans for both sides?\n` +
+        `3. How should I respond as the defending player?\n` +
+        `4. One important pattern or trap to remember from this opening.`;
+    } else if (pattern?.type === "tactical") {
+      userLabel = `📚 Learn: ${pattern.name}`;
+      prompt =
+        `I'm learning chess (rated ~${userElo}). My opponent just played ${moveSan} creating a ${pattern.name}. ` +
+        `Current position FEN: ${currentFen}. ` +
+        `Please teach me (concisely, 3-4 paragraphs):\n` +
+        `1. What exactly is a ${pattern.name} and why is it powerful?\n` +
+        `2. In this specific position, what is being attacked and why is it hard to defend?\n` +
+        `3. What are my best defensive options right now?\n` +
+        `4. How can I learn to spot and avoid this pattern in future games?`;
+    } else {
+      userLabel = `📚 Learn: ${moveSan}`;
+      prompt =
+        `I'm learning chess (rated ~${userElo}). My opponent just played ${moveSan}. ` +
+        `Position FEN: ${currentFen}. ` +
+        `Please explain what's happening, what this move accomplishes, and what I should focus on next.`;
+    }
+
+    const userMsg = { role: "user", content: userLabel };
+    setMessages((prev) => [...prev, userMsg]);
+    setIsLoading(true);
+    try {
+      const reply = await sendChatMessage({
+        messages: [{ role: "user", content: prompt }],
+        fen: currentFen,
+        apiKey,
+        model: getModel(),
+      });
+      setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: `Error: ${err.message}` },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   return (
     <div className="flex flex-col h-screen">
@@ -1305,7 +1557,9 @@ function App() {
             onExitReview={handleExitReview}
             onNavigateBack={handleNavigateBack}
             onNavigateForward={handleNavigateForward}
-            onFlipBoard={() => setBoardOrientation((o) => (o === "white" ? "black" : "white"))}
+            onFlipBoard={() =>
+              setBoardOrientation((o) => (o === "white" ? "black" : "white"))
+            }
             onUndo={handleUndo}
             onCopyPgn={handleCopyPgn}
             isAnalyzing={isAnalyzing}
@@ -1336,7 +1590,10 @@ function App() {
             playerColor={playerColor}
             onPlayerColorChange={handlePlayerColorChange}
             isGameInProgress={moveHistory.length > 0}
-            onCancelPremove={() => { setPremove(null); premoveRef.current = null; }}
+            onCancelPremove={() => {
+              setPremove(null);
+              premoveRef.current = null;
+            }}
           />
         </div>
 
@@ -1396,16 +1653,21 @@ function App() {
 
       {/* Training Modes */}
       {puzzleOpen && <PuzzleMode onClose={() => setPuzzleOpen(false)} />}
-      {openingDrillOpen && <OpeningDrillMode onClose={() => setOpeningDrillOpen(false)} />}
+      {openingDrillOpen && (
+        <OpeningDrillMode onClose={() => setOpeningDrillOpen(false)} />
+      )}
       {endgameOpen && (
         <EndgameMode
           onClose={() => setEndgameOpen(false)}
           onLoadScenario={handleLoadEndgameScenario}
         />
       )}
-      <OpeningStatsPanel open={openingStatsOpen} onClose={() => setOpeningStatsOpen(false)} />
+      <OpeningStatsPanel
+        open={openingStatsOpen}
+        onClose={() => setOpeningStatsOpen(false)}
+      />
     </div>
   );
 }
 
-export default App
+export default App;

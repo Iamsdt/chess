@@ -31,7 +31,9 @@ function GameRow({ game, onLoad, onDelete, isAutoSave = false }) {
     <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-secondary/40 hover:bg-secondary/70 border border-border/50 transition-colors group">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-sm font-medium text-foreground truncate">{game.name}</span>
+          <span className="text-sm font-medium text-foreground truncate">
+            {game.name}
+          </span>
           {isAutoSave && (
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-semibold shrink-0">
               AUTO
@@ -96,7 +98,9 @@ export default function SavedGamesDialog({
   useEffect(() => {
     if (!open) return;
     fetchSavedGames();
-    loadAutoSave().then(setAutoSaveEntry).catch(() => {});
+    loadAutoSave()
+      .then(setAutoSaveEntry)
+      .catch(() => {});
   }, [open, fetchSavedGames]);
 
   const handleSave = useCallback(async () => {
@@ -122,14 +126,14 @@ export default function SavedGamesDialog({
       onLoadGame(game);
       onClose();
     },
-    [onLoadGame, onClose]
+    [onLoadGame, onClose],
   );
 
   const handleDelete = useCallback(
     async (id) => {
       await deleteSavedGame(id);
     },
-    [deleteSavedGame]
+    [deleteSavedGame],
   );
 
   if (!open) return null;
@@ -213,7 +217,9 @@ export default function SavedGamesDialog({
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
               Saved Games{" "}
               {savedGames.length > 0 && (
-                <span className="text-primary font-bold">{savedGames.length}</span>
+                <span className="text-primary font-bold">
+                  {savedGames.length}
+                </span>
               )}
             </h3>
 
