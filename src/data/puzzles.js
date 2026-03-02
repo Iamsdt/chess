@@ -2,15 +2,15 @@
  * Curated tactical puzzle dataset.
  *
  * Each puzzle:
- *  id         – unique string
- *  title      – display name
- *  fen        – starting position (side-to-move must play the tactic)
- *  solution   – array of UCI moves (e.g. ["e2e4", "e7e5"])
- *               Multi-move: player plays [0], engine responds [1], player plays [2], …
- *  theme      – tactical tag: "checkmate" | "fork" | "pin" | "skewer" | "discovered"
- *               | "deflection" | "back-rank" | "hanging" | "promotion"
- *  difficulty – "easy" | "medium" | "hard"
- *  description– short challenge text shown below the board
+ * id         – unique string
+ * title      – display nameß
+ * fen        – starting position (side-to-move must play the tactic)
+ * solution   – array of UCI moves (e.g. ["e2e4", "e7e5"])
+ * Multi-move: player plays [0], engine responds [1], player plays [2], …
+ * theme      – tactical tag: "checkmate" | "fork" | "pin" | "skewer" | "discovered"
+ * | "deflection" | "back-rank" | "hanging" | "promotion"
+ * difficulty – "easy" | "medium" | "hard"
+ * description– short challenge text shown below the board
  */
 
 export const PUZZLES = [
