@@ -1333,6 +1333,9 @@ function App() {
             isReviewMode={viewIndex !== null}
             arrows={bestMoveArrows}
             premove={premove}
+            playerColor={playerColor}
+            onPlayerColorChange={handlePlayerColorChange}
+            isGameInProgress={moveHistory.length > 0}
             onCancelPremove={() => { setPremove(null); premoveRef.current = null; }}
           />
         </div>

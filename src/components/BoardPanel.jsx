@@ -5,7 +5,16 @@ import {
   Trophy,
   Handshake,
   Eye,
+    Crown,
+  CircleUser,
 } from "lucide-react";
+import { Dropdown } from "./ControlBar";
+
+
+const PLAYER_COLOR_OPTIONS = [
+  { value: "white", label: "White", icon: Crown },
+  { value: "black", label: "Black", icon: CircleUser },
+];
 
 // ── piece value map for captured material calculation ──
 const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9 };
@@ -85,6 +94,9 @@ function BoardPanel({
   game,
   onMove,
   lastMoveSquares,
+  playerColor,
+  onPlayerColorChange,
+  isGameInProgress,
   isAIThinking = false,
   boardOrientation = "white",
   arrows = [],
@@ -372,6 +384,14 @@ function BoardPanel({
 
       {/* Captured pieces — opponent (top) */}
       <div className="w-full flex justify-between items-center px-1" style={{ maxWidth: boardWidth }}>
+        <Dropdown
+            label="Play as"
+            icon={playerColor === "white" ? Crown : CircleUser}
+            options={PLAYER_COLOR_OPTIONS}
+            value={playerColor}
+            onChange={onPlayerColorChange}
+            disabled={isGameInProgress}
+          />
         <CapturedRow
           totalPts={boardOrientation === "white" ? capturedPts.w : capturedPts.b}
           adv={boardOrientation === "white" ? (advantage < 0 ? -advantage : 0) : (advantage > 0 ? advantage : 0)}

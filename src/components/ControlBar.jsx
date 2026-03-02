@@ -22,7 +22,7 @@ import { useState, useRef, useEffect } from "react";
 import { TIME_CONTROLS } from "@/hooks/useChessClock";
 
 // ── Simple dropdown component ─────────────────────────────────────────────
-function Dropdown({ label, icon: Icon, options, value, onChange, disabled = false }) {
+export function Dropdown({ label, icon: Icon, options, value, onChange, disabled = false }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -210,11 +210,6 @@ const DIFFICULTY_OPTIONS = [
   { value: "hard",   label: "Hard",   desc: "depth 3" },
 ];
 
-const PLAYER_COLOR_OPTIONS = [
-  { value: "white", label: "White", icon: Crown },
-  { value: "black", label: "Black", icon: CircleUser },
-];
-
 // ── ControlBar ─────────────────────────────────────────────────────────────
 function ControlBar({
   isLiveMode,
@@ -270,7 +265,7 @@ function ControlBar({
           />
         )}
 
-        {/* Play as — pick side; disabled once game has started */}
+        {/* Play as — pick side; disabled once game has started 
         {opponent !== "manual" && (
           <Dropdown
             label="Play as"
@@ -280,7 +275,7 @@ function ControlBar({
             onChange={onPlayerColorChange}
             disabled={isGameInProgress}
           />
-        )}
+        )} */}
 
         <div className="w-px h-4 bg-border mx-1" />
 
