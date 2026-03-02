@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "jsx": "react-jsx",
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@lib/*": ["./src/lib/*"],
+      "@context/*": ["./src/lib/context/*"],
+      "@pages/*": ["./src/pages/*"],
+      "@constants/*": ["./src/lib/constants/*"],
+      "@api/*": ["./src/services/api/*"],
+      "@query/*": ["./src/services/query/*"],
+      "@store/*": ["./src/services/store/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
+}
