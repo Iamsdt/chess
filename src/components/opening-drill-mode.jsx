@@ -36,10 +36,10 @@ export default function OpeningDrillMode({ onClose }) {
   const [moveList, setMoveList] = useState([]); // parsed SAN moves for the opening
   const [drillIndex, setDrillIndex] = useState(0); // current step in the move list
   const [status, setStatus] = useState("idle"); // "idle"|"wrong"|"opponent"|"complete"
-  const [wrongAttempt, setWrongAttempt] = useState(false);
+  const [_wrongAttempt, setWrongAttempt] = useState(false);
   const [lastMoveSquares, setLastMoveSquares] = useState({});
   const [correctArrow, setCorrectArrow] = useState([]);
-  const [masteredCount, setMasteredCount] = useState(0);
+  const [_masteredCount, setMasteredCount] = useState(0);
   const [totalMoves, setTotalMoves] = useState(0);
 
   const opponentTimeoutReference = useRef(null);
@@ -188,6 +188,7 @@ export default function OpeningDrillMode({ onClose }) {
 
       return false;
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [chess, moveList, drillIndex, playerSide, status],
   );
 

@@ -2,21 +2,21 @@
  * Opening statistics tracker — persisted in localStorage as a flat JSON map.
  *
  * Schema: localStorage["chess-opening-stats"] = JSON of:
- *   {
- *     [ecoKey: string]: {
- *       eco: string,
- *       name: string,
- *       wins: number,
- *       losses: number,
- *       draws: number,
- *       lastPlayed: number  // timestamp ms
- *     }
- *   }
+ * {
+ * [ecoKey: string]: {
+ * eco: string,
+ * name: string,
+ * wins: number,
+ * losses: number,
+ * draws: number,
+ * lastPlayed: number  // timestamp ms
+ * }
+ * }
  *
  * Usage:
- *   recordOpeningResult({ eco, name, result: "w"|"b"|"d", playerColor: "w"|"b" })
- *   getOpeningStats() → array sorted by totalGames desc
- *   clearOpeningStats()
+ * recordOpeningResult({ eco, name, result: "w"|"b"|"d", playerColor: "w"|"b" })
+ * getOpeningStats() → array sorted by totalGames desc
+ * clearOpeningStats()
  */
 
 const KEY = "chess-opening-stats";
@@ -45,7 +45,7 @@ const save = (data) => {
 
 /**
  * Record one opening result.
- * @param {object} params
+ * @param {object} params - parameters
  * @param {string} params.eco       - ECO code (e.g. "C60")
  * @param {string} params.name      - Opening name
  * @param {"w"|"b"|"d"} params.gameResult  - "w"=white wins, "b"=black wins, "d"=draw
@@ -101,7 +101,7 @@ export const clearOpeningStats = () => {
  * against the openings database. Returns the best (longest) match.
  * @param {string[]} sanMoves - Array of SAN move strings
  * @param {import("./openings").OpeningEntry[]} openings - Opening database
- * @returns {{ eco, name } | null}
+ * @returns {{ eco, name } | null} ECO code and name of best matching opening, or null if no match
  */
 export const detectOpening = (sanMoves, openings) => {
   if (!sanMoves || sanMoves.length === 0) return null;

@@ -6,16 +6,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-// ── Quality color mapping ─────────────────────────────────────────────────────
-const QUALITY_COLORS = {
-  Brilliant: { bar: "#06b6d4", text: "text-cyan-400" },
-  Excellent: { bar: "#10b981", text: "text-emerald-400" },
-  Good: { bar: "#22c55e", text: "text-green-400" },
-  Inaccuracy: { bar: "#eab308", text: "text-yellow-400" },
-  Mistake: { bar: "#f97316", text: "text-orange-400" },
-  Blunder: { bar: "#ef4444", text: "text-red-400" },
-};
-
 const QUALITY_ORDER = [
   "Brilliant",
   "Excellent",
@@ -24,19 +14,6 @@ const QUALITY_ORDER = [
   "Mistake",
   "Blunder",
 ];
-
-// ── Accuracy color ────────────────────────────────────────────────────────────
-/**
- *
- */
-const accuracyColor = (pct) => {
-  if (pct >= 90) return "text-cyan-400";
-  if (pct >= 75) return "text-emerald-400";
-  if (pct >= 60) return "text-green-400";
-  if (pct >= 45) return "text-yellow-400";
-  if (pct >= 30) return "text-orange-400";
-  return "text-red-400";
-};
 
 // ── Eval Graph ────────────────────────────────────────────────────────────────
 /**

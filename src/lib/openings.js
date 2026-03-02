@@ -5,11 +5,11 @@
  * so we can offer "Learn with AI" educational moments during live games.
  *
  * Each entry has:
- *   eco      – ECO classification code
- *   name     – Full opening name
- *   moves    – Space-separated SAN move sequence (as chess.js produces)
- *   category – "open" | "semi-open" | "closed" | "flank"
- *   idea     – One-line educational description of the key idea
+ * eco      – ECO classification code
+ * name     – Full opening name
+ * moves    – Space-separated SAN move sequence (as chess.js produces)
+ * category – "open" | "semi-open" | "closed" | "flank"
+ * idea     – One-line educational description of the key idea
  */
 
 export const OPENINGS = [
@@ -406,7 +406,7 @@ export const OPENINGS = [
  * Detect if the current game's move history matches a known opening.
  * Returns the longest (most specific) matching opening, or null.
  * @param {string[]} moveHistory - Array of SAN moves played so far
- * @returns {{ eco, name, category, idea, moves } | null}
+ * @returns {{ eco, name, category, idea, moves } | null} Opening info if matched, otherwise null
  */
 export const detectOpening = (moveHistory) => {
   if (!moveHistory || moveHistory.length === 0) return null;

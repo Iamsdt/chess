@@ -1,8 +1,8 @@
 import { X, Trash2, TrendingUp, BarChart2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
-import { getOpeningStats, clearOpeningStats } from "@/lib/openingStats";
+import { getOpeningStats, clearOpeningStats } from "@/lib/opening-stats";
 
 /**
  *
@@ -29,11 +29,12 @@ const WinBar = ({ wins, draws, losses }) => {
  *
  */
 export default function OpeningStatsPanel({ open, onClose }) {
-  const [stats, setStats] = useState([]);
+  const [clearFlag, setClearFlag] = useState(false);
 
-  useEffect(() => {
-    if (open) setStats(getOpeningStats());
-  }, [open]);
+  const stats = useMemo(
+    () => (open ? getOpeningStats() : []),
+    [open, clearFlag],
+  );
 
   if (!open) return null;
 
@@ -52,7 +53,7 @@ export default function OpeningStatsPanel({ open, onClose }) {
       window.confirm("Clear all opening statistics? This cannot be undone.")
     ) {
       clearOpeningStats();
-      setStats([]);
+      setClearFlag((f) => !f);
     }
   };
 

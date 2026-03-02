@@ -3,9 +3,9 @@
  * Loads the lite single-threaded WASM build served from /public.
  *
  * Difficulty → Skill Level + movetime mapping:
- *   easy   → Skill Level  3,  movetime  150 ms
- *   medium → Skill Level 12,  movetime  800 ms
- *   hard   → Skill Level 20,  movetime 2000 ms
+ * easy   → Skill Level  3,  movetime  150 ms
+ * medium → Skill Level 12,  movetime  800 ms
+ * hard   → Skill Level 20,  movetime 2000 ms
  *
  * Analysis (full strength, depth-based, multi-PV).
  */
@@ -18,7 +18,6 @@ export class StockfishEngine {
     this._worker = null;
     this._ready = false;
     this._initPromise = null;
-    /** @type {{ type: 'move'|'analyze', resolve: Function, reject: Function, infoLines?: object }|null} */
     this._pending = null;
   }
 
@@ -133,8 +132,8 @@ export class StockfishEngine {
 
   // ── Get best move (game mode) ─────────────────────────────────────────────
   /**
-   * @param {string} fen
-   * @param {'easy'|'medium'|'hard'} difficulty
+   * @param {string} fen fen string representing the position
+   * @param {'easy'|'medium'|'hard'} difficulty controls skill level and movetime
    * @returns {Promise<string|null>} UCI move like "e2e4"
    */
   async getMove(fen, difficulty = "medium") {
@@ -155,10 +154,10 @@ export class StockfishEngine {
 
   // ── Analyze position (coach mode) ────────────────────────────────────────
   /**
-   * @param {string} fen
-   * @param {number} [depth]
+   * @param {string} fen fen string representing the position
+   * @param {number} [depth] search depth
    * @param {number} [multiPV]   number of top lines to return
-   * @returns {Promise<{ lines, bestMove, scoreCp, isMate, mateIn, pv }>}
+   * @returns {Promise<{ lines, bestMove, scoreCp, isMate, mateIn, pv }>} analysis result with multiple lines and best move
    */
   async analyze(fen, depth = 18, multiPV = 3) {
     await this.init();

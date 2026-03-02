@@ -23,9 +23,7 @@ const GOAL_ICON = { checkmate: "♔", promote: "♛", draw: "½", technique: "�
  * Endgame Scenario Picker.
  * When the user picks a scenario the parent loads it onto the main board.
  *
- * Props:
- *   onClose        – close without loading
- *   onLoadScenario – ({ fen, title, playerColor: "white"|"black" }) => void
+ * Props: onClose (close without loading), onLoadScenario ({ fen, title, playerColor })
  */
 export default function EndgameMode({ onClose, onLoadScenario }) {
   const [category, setCategory] = useState("all");

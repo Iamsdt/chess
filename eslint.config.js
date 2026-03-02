@@ -55,6 +55,7 @@ export default [
         process: "readonly",
         AudioContext: "readonly",
         webkitAudioContext: "readonly",
+        Worker: "readonly",
       },
     },
 

@@ -18,7 +18,7 @@ import {
   TrendingDown,
   Minus,
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, createElement } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -166,7 +166,6 @@ const MoveLine = ({ moves, startMoveNum: startMoveNumber = 1 }) => {
 const MyMoveCard = ({ card }) => {
   const qs = QUALITY_STYLES[card.quality] || QUALITY_STYLES.Good;
   const hasSuggestion = card.suggestion && card.suggestion.bestMove;
-  const EvalIcon = evalIcon(card.evalAfterRaw ?? null);
 
   return (
     <div
@@ -236,7 +235,6 @@ const MyMoveCard = ({ card }) => {
  *
  */
 const BestMoveCard = ({ card }) => {
-  const EvalIcon = evalIcon(card.wScore);
   const eColor = evalColor(card.wScore);
 
   return (
@@ -262,7 +260,9 @@ const BestMoveCard = ({ card }) => {
         <div
           className={`flex items-center gap-1 text-xs font-mono tabular-nums ${eColor}`}
         >
-          <EvalIcon className="h-3 w-3 shrink-0" />
+          {createElement(evalIcon(card.wScore), {
+            className: "h-3 w-3 shrink-0",
+          })}
           <span>{card.evalStr}</span>
         </div>
       </div>
@@ -294,7 +294,6 @@ const PIECE_ICONS = {
  *
  */
 const HintCard = ({ card }) => {
-  const EvalIcon = evalIcon(card.wScore);
   const eColor = evalColor(card.wScore);
 
   return (
@@ -309,7 +308,9 @@ const HintCard = ({ card }) => {
           <div
             className={`flex items-center gap-1 text-xs font-mono tabular-nums ${eColor}`}
           >
-            <EvalIcon className="h-3 w-3 shrink-0" />
+            {createElement(evalIcon(card.wScore), {
+              className: "h-3 w-3 shrink-0",
+            })}
             <span>{card.evalStr}</span>
           </div>
         )}
@@ -780,22 +781,14 @@ const ChatPanel = ({
   const messagesEndReference = useRef(null);
   const [glossaryOpen, setGlossaryOpen] = useState(false);
 
-  const [activeTab, setActiveTab] = useState(
-    coachMode === "ai" ? "ai" : "engine",
-  );
+  const activeTab = coachMode === "ai" ? "ai" : "engine";
 
   /**
    *
    */
   const handleTabClick = (tab) => {
-    setActiveTab(tab);
     onCoachModeChange?.(tab);
   };
-
-  // Keep tab in sync if coachMode is changed externally
-  useEffect(() => {
-    if (coachMode !== activeTab) setActiveTab(coachMode);
-  }, [coachMode]);
 
   useEffect(() => {
     messagesEndReference.current?.scrollIntoView({ behavior: "smooth" });

@@ -125,7 +125,7 @@ const MoveHistorySidebar = ({
   onAnnotationChange = null,
 }) => {
   const fen = game.fen();
-  const { capturedPts } = useMemo(() => getCapturedPieces(game), [game, fen]);
+  const { capturedPts } = useMemo(() => getCapturedPieces(game), [game]);
 
   // Build pairs from { san }[] entries
   const pairs = [];
@@ -354,7 +354,14 @@ const MoveHistorySidebar = ({
                       <td className="px-2 py-1">
                         <div className="flex items-center gap-1">
                           <span
+                            role="button"
+                            tabIndex={0}
                             onClick={() => onJumpToMove(pair.whiteIdx)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                onJumpToMove(pair.whiteIdx);
+                              }
+                            }}
                             className={`cursor-pointer rounded transition-colors
                               ${
                                 whiteActive
@@ -393,7 +400,14 @@ const MoveHistorySidebar = ({
                         {pair.black ? (
                           <div className="flex items-center gap-1">
                             <span
+                              role="button"
+                              tabIndex={0}
                               onClick={() => onJumpToMove(pair.blackIdx)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  onJumpToMove(pair.blackIdx);
+                                }
+                              }}
                               className={`cursor-pointer rounded transition-colors
                                 ${
                                   blackActive
@@ -441,6 +455,7 @@ const MoveHistorySidebar = ({
                         >
                           <td colSpan={3} className="px-2 py-1.5">
                             <div className="flex gap-1 items-end">
+                              {}
                               <textarea
                                 autoFocus
                                 value={annotationDraft}

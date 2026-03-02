@@ -8,7 +8,6 @@ import {
   ChevronDown,
   FolderOpen,
   Crown,
-  CircleUser,
   LayoutGrid,
   Dumbbell,
   Puzzle,
@@ -287,9 +286,6 @@ const ControlBar = ({
   onOpponentChange,
   difficulty,
   onDifficultyChange,
-  playerColor,
-  onPlayerColorChange,
-  isGameInProgress,
   onSetPosition,
   // Train
   onOpenPuzzles,

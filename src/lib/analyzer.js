@@ -2,7 +2,7 @@
  * Post-game full analysis engine.
  *
  * analyzeFullGame(moveHistory, depth, onProgress)
- *   → { moveSummary, evalHistory, white, black, criticalMoveIdx, blunders }
+ * → { moveSummary, evalHistory, white, black, criticalMoveIdx, blunders }
  */
 
 import { Chess } from "chess.js";
@@ -89,7 +89,7 @@ const countQualities = (moves) => {
 
 /**
  * Chess.com–inspired accuracy formula:
- *   accuracy(cpLost) = 103.1668 × e^(−0.04354 × cpLost) − 3.1669
+ * accuracy(cpLost) = 103.1668 × e^(−0.04354 × cpLost) − 3.1669
  * Clamped to [0, 100].
  */
 const moveAccuracy = (cpLost) =>
@@ -112,10 +112,8 @@ const STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 /**
  * Analyze every position in a completed game.
- * @param {Array<{san,fen,from,to}>} moveHistory
- * @param {number} [depth]   Stockfish depth per position
- * @param {Function|null} [onProgress]  (done, total) → void
- * @returns {Promise<GameReport|null>}
+ * @param {Array<{san,fen,from,to}>} moveHistory list of moves with SAN, resulting FEN, and from/to squares
+ * @param {number} [depth] Stockfish depth per position
  */
 export const analyzeFullGame = async (
   moveHistory,

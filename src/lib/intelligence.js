@@ -2,10 +2,10 @@
  * Intelligence layer for Live Mode.
  *
  * Provides:
- *  • classifyPlayerMove  – rate a player's move vs Stockfish best, with ELO-aware suggestion
- *  • detectOpponentThreats – detect check / fork / hanging-piece after opponent's move
- *  • buildMyMoveCard  – structured data for the "my move" analysis card
- *  • buildThreatCard  – structured data for the "opponent threat" card
+ * • classifyPlayerMove  – rate a player's move vs Stockfish best, with ELO-aware suggestion
+ * • detectOpponentThreats – detect check / fork / hanging-piece after opponent's move
+ * • buildMyMoveCard  – structured data for the "my move" analysis card
+ * • buildThreatCard  – structured data for the "opponent threat" card
  */
 
 import { Chess } from "chess.js";
@@ -327,8 +327,7 @@ const scoreFromPerspective = (
  * @param {object}  preResult     Stockfish analyze() result for preFen
  * @param {object}  postResult    Stockfish analyze() result for postFen
  * @param {number}  userElo       Player's self-reported ELO
- * @param {number}  msgSeed       Seed for picking varied messages
- * @returns {{ type: 'my-move-analysis', ... }}
+ * @param {number}  messageSeed       Seed for picking varied messages
  */
 export const buildMyMoveCard = (
   preFen,
@@ -657,9 +656,8 @@ const detectPinsAndSkewers = (game, opponentColor) => {
  * @param {string}   opponentColor   'w' | 'b'
  * @param {string}   lastMoveTo      UCI "to" square of the opponent's last move
  * @param {string}   opponentMoveSan SAN of the opponent's last move
- * @param {number}   msgSeed         Seed for varied messages
+ * @param {number}   messageSeed     Seed for picking varied threat messages
  * @param {string[]} moveHistory     Full SAN move history including the opponent's last move
- * @returns {{ type: 'threat-card', ... } | null}
  */
 export const buildThreatCard = (
   game,

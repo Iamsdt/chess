@@ -1,12 +1,10 @@
 import { useCallback } from "react";
 
-import {
-  sendChatMessage,
-  evaluateMove,
-} from "@/lib/ai";
+import { sendChatMessage, evaluateMove } from "@/lib/ai";
 
 // ── Keys from localStorage ────────────────────────────────────────────────────
-export const getApiKey = () => localStorage.getItem("chess-coach-api-key") || "";
+export const getApiKey = () =>
+  localStorage.getItem("chess-coach-api-key") || "";
 export const getModel = () =>
   localStorage.getItem("chess-coach-model") || "gpt-4o-mini";
 export const getElo = () =>
