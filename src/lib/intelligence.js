@@ -9,6 +9,7 @@
  */
 
 import { Chess } from "chess.js";
+
 import { detectOpening } from "./openings";
 
 // ─── Move-quality thresholds (centipawns lost vs best) ──────────────────────
@@ -57,17 +58,23 @@ const QUALITY_LEVELS = [
   },
 ];
 
-function classifyMove(cpLost) {
+/**
+ *
+ */
+const classifyMove = (cpLost) => {
   // cpLost = best_score_before - score_after_player_move  (from player's perspective, cp)
   // Positive = player lost cp compared to best move
   for (const q of QUALITY_LEVELS) {
     if (cpLost <= q.max) return q;
   }
   return QUALITY_LEVELS[QUALITY_LEVELS.length - 1];
-}
+};
 
 // ─── ELO label helpers ───────────────────────────────────────────────────────
-function eloLabel(elo) {
+/**
+ *
+ */
+const eloLabel = (elo) => {
   if (elo <= 600) return "a beginner";
   if (elo <= 900) return "a developing player";
   if (elo <= 1100) return "a club-level beginner";
@@ -77,9 +84,12 @@ function eloLabel(elo) {
   if (elo <= 2000) return "an expert";
   if (elo <= 2200) return "a candidate master";
   return "a master";
-}
+};
 
-function targetEloLabel(elo) {
+/**
+ *
+ */
+const targetEloLabel = (elo) => {
   // Suggest the next tier up (~200-300 above)
   const target = elo + 250;
   if (target <= 900) return "a developing player (≈900)";
@@ -89,7 +99,7 @@ function targetEloLabel(elo) {
   if (target <= 1800) return "an advanced club player (≈1800)";
   if (target <= 2000) return "an expert (≈2000)";
   return "a master-level player";
-}
+};
 
 // ─── Varied messages — 20+ per category ─────────────────────────────────────
 
@@ -161,7 +171,10 @@ const BLUNDER_MSGS = [
   "That's a blunder that changes the evaluation dramatically.",
 ];
 
-function pickMsg(label, idx) {
+/**
+ *
+ */
+const pickMessage = (label, index) => {
   const map = {
     Brilliant: BRILLIANT_MSGS,
     Excellent: EXCELLENT_MSGS,
@@ -170,9 +183,9 @@ function pickMsg(label, idx) {
     Mistake: MISTAKE_MSGS,
     Blunder: BLUNDER_MSGS,
   };
-  const arr = map[label] || GOOD_MSGS;
-  return arr[idx % arr.length];
-}
+  const array = map[label] || GOOD_MSGS;
+  return array[index % array.length];
+};
 
 // ─── Threat message templates ─────────────────────────────────────────────────
 
@@ -229,14 +242,20 @@ const THREAT_MSGS = {
   ],
 };
 
-function pickThreatMsg(type, idx) {
-  const arr = THREAT_MSGS[type] || THREAT_MSGS.general;
-  return arr[idx % arr.length];
-}
+/**
+ *
+ */
+const pickThreatMessage = (type, index) => {
+  const array = THREAT_MSGS[type] || THREAT_MSGS.general;
+  return array[index % array.length];
+};
 
 // ─── Convert UCI best move to SAN ────────────────────────────────────────────
 
-function uciBestMoveToSan(fen, uciMove) {
+/**
+ *
+ */
+const uciBestMoveToSan = (fen, uciMove) => {
   if (!uciMove) return null;
   try {
     const g = new Chess(fen);
@@ -249,9 +268,12 @@ function uciBestMoveToSan(fen, uciMove) {
   } catch {
     return null;
   }
-}
+};
 
-function pvToSan(fen, pvUci) {
+/**
+ *
+ */
+const pvToSan = (fen, pvUci) => {
   try {
     const g = new Chess(fen);
     const sans = [];
@@ -268,13 +290,22 @@ function pvToSan(fen, pvUci) {
   } catch {
     return [];
   }
-}
+};
 
 // ─── Normalize score to player's perspective (centipawns) ────────────────────
 // scoreCp from Stockfish is always from side-to-move perspective.
 // We flip it so it reflects the player color's perspective.
 
-function scoreFromPerspective(scoreCp, isMate, mateIn, fenTurn, playerColor) {
+/**
+ *
+ */
+const scoreFromPerspective = (
+  scoreCp,
+  isMate,
+  mateIn,
+  fenTurn,
+  playerColor,
+) => {
   if (isMate) return null; // skip mate for cp delta
   if (scoreCp === null) return null;
   // fenTurn is the side to move in this FEN.
@@ -283,7 +314,7 @@ function scoreFromPerspective(scoreCp, isMate, mateIn, fenTurn, playerColor) {
   const fromWhite = fenTurn === "w" ? scoreCp : -scoreCp;
   // Then flip to player's perspective
   return playerColor === "w" ? fromWhite : -fromWhite;
-}
+};
 
 // ──────────────────────────────────────────────────────────────────────────────
 // PUBLIC API
@@ -291,7 +322,6 @@ function scoreFromPerspective(scoreCp, isMate, mateIn, fenTurn, playerColor) {
 
 /**
  * Build a structured "my move" analysis card after a player's move.
- *
  * @param {string}  preFen        FEN before the player moved
  * @param {string}  moveSan       SAN of the move played (e.g. "e4")
  * @param {object}  preResult     Stockfish analyze() result for preFen
@@ -300,14 +330,14 @@ function scoreFromPerspective(scoreCp, isMate, mateIn, fenTurn, playerColor) {
  * @param {number}  msgSeed       Seed for picking varied messages
  * @returns {{ type: 'my-move-analysis', ... }}
  */
-export function buildMyMoveCard(
+export const buildMyMoveCard = (
   preFen,
   moveSan,
   preResult,
   postResult,
   userElo = 1000,
-  msgSeed = 0,
-) {
+  messageSeed = 0,
+) => {
   const preTurn = new Chess(preFen).turn(); // color that just moved
   const playerColor = preTurn; // the player color who made the move
 
@@ -350,7 +380,7 @@ export function buildMyMoveCard(
   const quality =
     cpLost !== null ? classifyMove(Math.max(0, cpLost)) : QUALITY_LEVELS[2]; // default Good
 
-  const msg = pickMsg(quality.label, msgSeed);
+  const message = pickMessage(quality.label, messageSeed);
 
   // Format eval
   const evalAfterRaw = postResult?.isMate
@@ -400,14 +430,14 @@ export function buildMyMoveCard(
     quality: quality.label,
     qualityEmoji: quality.emoji,
     qualityColor: quality.color,
-    message: msg,
+    message: message,
     evalAfter,
     evalAfterRaw,
     cpLost: cpLost !== null ? Math.round(Math.max(0, cpLost)) : null,
     suggestion,
     userEloLabel: eloLabel(userElo),
   };
-}
+};
 
 // ─── Threat detection helpers ─────────────────────────────────────────────────
 
@@ -415,19 +445,19 @@ export function buildMyMoveCard(
  * Get squares attacked by a given piece at a given square.
  * Uses chess.js moves() in a temporary game.
  */
-function getAttackedSquares(game, square) {
+const getAttackedSquares = (game, square) => {
   const piece = game.get(square);
   if (!piece) return [];
   // Get all moves for this piece (including captures of own pieces hack)
-  const tempGame = new Chess(game.fen());
-  const moves = tempGame.moves({ square, verbose: true });
+  const temporaryGame = new Chess(game.fen());
+  const moves = temporaryGame.moves({ square, verbose: true });
   return moves.map((m) => m.to);
-}
+};
 
 /**
  * Check if a square is attacked by the given color.
  */
-function isSquareAttackedBy(game, square, attackerColor) {
+const isSquareAttackedBy = (game, square, attackerColor) => {
   // chess.js doesn't directly expose isAttacked; we check all pieces of attackerColor
   const board = game.board();
   for (let r = 0; r < 8; r++) {
@@ -442,12 +472,12 @@ function isSquareAttackedBy(game, square, attackerColor) {
     }
   }
   return false;
-}
+};
 
 /**
  * Find hanging pieces for the given color (pieces attacked and not adequately defended).
  */
-function findHangingPieces(game, victimColor) {
+const findHangingPieces = (game, victimColor) => {
   const attacker = victimColor === "w" ? "b" : "w";
   const board = game.board();
   const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 100 };
@@ -476,13 +506,13 @@ function findHangingPieces(game, victimColor) {
 
   // Sort by value (highest first)
   return hanging.sort((a, b) => b.value - a.value);
-}
+};
 
 /**
  * Detect if opponent's last move created a fork (one piece attacks 2+ enemy pieces).
  * Returns the forking piece info if found.
  */
-function detectFork(game, opponentColor, lastMoveTo) {
+const detectFork = (game, opponentColor, lastMoveTo) => {
   if (!lastMoveTo) return null;
   const victimColor = opponentColor === "w" ? "b" : "w";
   const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 100 };
@@ -510,7 +540,7 @@ function detectFork(game, opponentColor, lastMoveTo) {
     };
   }
   return null;
-}
+};
 
 /**
  * Piece names for display
@@ -552,7 +582,7 @@ const PIN_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 100 };
  *
  * Returns { pins: PinInfo[], skewers: SkewInfo[] }
  */
-function detectPinsAndSkewers(game, opponentColor) {
+const detectPinsAndSkewers = (game, opponentColor) => {
   const playerColor = opponentColor === "w" ? "b" : "w";
   const board = game.board();
   const pins = [];
@@ -563,11 +593,12 @@ function detectPinsAndSkewers(game, opponentColor) {
   for (let r = 0; r < 8; r++) {
     for (let c = 0; c < 8; c++) {
       const sq = board[r][c];
-      if (!sq || sq.color !== opponentColor || !SLIDER_TYPES.has(sq.type))
+      if (!sq || sq.color !== opponentColor || !SLIDER_TYPES.has(sq.type)) {
         continue;
+      }
 
-      const dirs = SLIDER_DIRS[sq.type];
-      for (const [dr, dc] of dirs) {
+      const directories = SLIDER_DIRS[sq.type];
+      for (const [dr, dc] of directories) {
         let pr = r + dr,
           pc = c + dc;
         let firstPiece = null,
@@ -618,11 +649,10 @@ function detectPinsAndSkewers(game, opponentColor) {
     }
   }
   return { pins, skewers };
-}
+};
 
 /**
  * Analyze threats after the opponent's move and build a threat card.
- *
  * @param {Chess}    game            chess.js game instance (position after opponent's move)
  * @param {string}   opponentColor   'w' | 'b'
  * @param {string}   lastMoveTo      UCI "to" square of the opponent's last move
@@ -631,14 +661,14 @@ function detectPinsAndSkewers(game, opponentColor) {
  * @param {string[]} moveHistory     Full SAN move history including the opponent's last move
  * @returns {{ type: 'threat-card', ... } | null}
  */
-export function buildThreatCard(
+export const buildThreatCard = (
   game,
   opponentColor,
   lastMoveTo,
   opponentMoveSan,
-  msgSeed = 0,
+  messageSeed = 0,
   moveHistory = [],
-) {
+) => {
   const playerColor = opponentColor === "w" ? "b" : "w";
   const threats = [];
 
@@ -661,7 +691,7 @@ export function buildThreatCard(
       id: "check",
       name: "Check",
       icon: "⚡",
-      description: pickThreatMsg("check", msgSeed),
+      description: pickThreatMessage("check", messageSeed),
       severity: "critical",
     };
     return {
@@ -685,7 +715,7 @@ export function buildThreatCard(
       id: "fork",
       name: `${PIECE_NAMES[fork.forkingPiece]} Fork`,
       icon: "⚔️",
-      description: `${pickThreatMsg("fork", msgSeed)} The ${PIECE_NAMES[fork.forkingPiece].toLowerCase()} on ${fork.forkingSquare} attacks your ${targetNames}.`,
+      description: `${pickThreatMessage("fork", messageSeed)} The ${PIECE_NAMES[fork.forkingPiece].toLowerCase()} on ${fork.forkingSquare} attacks your ${targetNames}.`,
       severity: "high",
     });
   }
@@ -698,7 +728,7 @@ export function buildThreatCard(
       id: "hanging",
       name: `Hanging ${PIECE_NAMES[main.piece]}`,
       icon: "🎯",
-      description: `${pickThreatMsg("hanging", (msgSeed + 1) % 6)} Your ${PIECE_NAMES[main.piece].toLowerCase()} on ${main.square} is undefended and under attack.`,
+      description: `${pickThreatMessage("hanging", (messageSeed + 1) % 6)} Your ${PIECE_NAMES[main.piece].toLowerCase()} on ${main.square} is undefended and under attack.`,
       severity: hanging[0].value >= 5 ? "high" : "medium",
     });
   }
@@ -712,7 +742,7 @@ export function buildThreatCard(
       id: "pin",
       name: `${PIECE_NAMES[p.attackerPiece]} Pin`,
       icon: "📌",
-      description: `${pickThreatMsg("pin", msgSeed)} Your ${PIECE_NAMES[p.pinnedPiece].toLowerCase()} on ${p.pinnedSquare} is pinned${isAbsolute ? " to your king" : ` against your ${PIECE_NAMES[p.pinnedAgainst].toLowerCase()}`} by the ${PIECE_NAMES[p.attackerPiece].toLowerCase()} on ${p.attackerSquare}.`,
+      description: `${pickThreatMessage("pin", messageSeed)} Your ${PIECE_NAMES[p.pinnedPiece].toLowerCase()} on ${p.pinnedSquare} is pinned${isAbsolute ? " to your king" : ` against your ${PIECE_NAMES[p.pinnedAgainst].toLowerCase()}`} by the ${PIECE_NAMES[p.attackerPiece].toLowerCase()} on ${p.attackerSquare}.`,
       severity: isAbsolute ? "high" : "medium",
       highlightSquares: [p.pinnedSquare, p.attackerSquare],
     });
@@ -725,7 +755,7 @@ export function buildThreatCard(
       id: "skewer",
       name: `${PIECE_NAMES[s.attackerPiece]} Skewer`,
       icon: "⚡",
-      description: `${pickThreatMsg("skewer", msgSeed)} Your ${PIECE_NAMES[s.skeweredPiece].toLowerCase()} on ${s.skeweredSquare} is being skewered — if it moves, your ${PIECE_NAMES[s.collateralPiece].toLowerCase()} on ${s.collateralSquare} could be taken.`,
+      description: `${pickThreatMessage("skewer", messageSeed)} Your ${PIECE_NAMES[s.skeweredPiece].toLowerCase()} on ${s.skeweredSquare} is being skewered — if it moves, your ${PIECE_NAMES[s.collateralPiece].toLowerCase()} on ${s.collateralSquare} could be taken.`,
       severity: "high",
       highlightSquares: [s.skeweredSquare, s.attackerSquare],
     });
@@ -774,4 +804,4 @@ export function buildThreatCard(
     hasLearnButton: !!effectivePattern,
     hasAiButton: true,
   };
-}
+};

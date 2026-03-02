@@ -49,14 +49,20 @@ const PST = {
   ],
 };
 
-function getPSTValue(piece, row, col) {
+/**
+ *
+ */
+const getPSTValue = (piece, row, col) => {
   const table = PST[piece.type];
   if (!table) return 0;
-  const idx = piece.color === "w" ? row * 8 + col : (7 - row) * 8 + col;
-  return (table[idx] || 0) / 10;
-}
+  const index = piece.color === "w" ? row * 8 + col : (7 - row) * 8 + col;
+  return (table[index] || 0) / 10;
+};
 
-function evaluateBoard(game) {
+/**
+ *
+ */
+const evaluateBoard = (game) => {
   if (game.isCheckmate()) return game.turn() === "w" ? -50000 : 50000;
   if (game.isDraw() || game.isStalemate()) return 0;
 
@@ -72,9 +78,12 @@ function evaluateBoard(game) {
     }
   }
   return score;
-}
+};
 
-function minimax(game, depth, alpha, beta, isMaximizing) {
+/**
+ *
+ */
+const minimax = (game, depth, alpha, beta, isMaximizing) => {
   if (depth === 0 || game.isGameOver()) {
     return evaluateBoard(game);
   }
@@ -104,7 +113,7 @@ function minimax(game, depth, alpha, beta, isMaximizing) {
     }
     return best;
   }
-}
+};
 
 /**
  * Returns the best SAN move string for the current position.
@@ -112,7 +121,7 @@ function minimax(game, depth, alpha, beta, isMaximizing) {
  * @param {'easy'|'medium'|'hard'} difficulty
  * @returns {string|null} SAN move string or null if no moves
  */
-export function getBestMove(fen, difficulty = "medium") {
+export const getBestMove = (fen, difficulty = "medium") => {
   const game = new Chess(fen);
   const moves = game.moves();
   if (!moves.length) return null;
@@ -143,4 +152,4 @@ export function getBestMove(fen, difficulty = "medium") {
   }
 
   return bestMove;
-}
+};

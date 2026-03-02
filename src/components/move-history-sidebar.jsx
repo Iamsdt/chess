@@ -1,4 +1,3 @@
-import { useRef, useEffect, useMemo, useState, Fragment } from "react";
 import {
   ArrowDownUp,
   ChevronLeft,
@@ -13,9 +12,11 @@ import {
   Timer,
   MessageSquare,
 } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
-import { formatTime } from "@/hooks/useChessClock";
+import { useRef, useEffect, useMemo, useState, Fragment } from "react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { formatTime } from "@/hooks/use-chess-clock";
 
 const qualityVariantMap = {
   excellent: "excellent",
@@ -25,7 +26,10 @@ const qualityVariantMap = {
   blunder: "blunder",
 };
 
-function EvalBar({ score }) {
+/**
+ *
+ */
+const EvalBar = ({ score }) => {
   const clamped = score === null ? 0 : Math.max(-5, Math.min(5, score));
   const whitePercent = Math.round(50 + (clamped / 5) * 40);
   const label =
@@ -58,11 +62,14 @@ function EvalBar({ score }) {
       </div>
     </div>
   );
-}
+};
 
 const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9 };
 
-function getCapturedPieces(game) {
+/**
+ *
+ */
+const getCapturedPieces = (game) => {
   const start = {
     w: { p: 8, n: 2, b: 2, r: 2, q: 1 },
     b: { p: 8, n: 2, b: 2, r: 2, q: 1 },
@@ -85,9 +92,12 @@ function getCapturedPieces(game) {
     }
   }
   return { capturedPts };
-}
+};
 
-function MoveHistorySidebar({
+/**
+ *
+ */
+const MoveHistorySidebar = ({
   moveHistory = [], // { san, fen, from, to }[]
   evalScore = null,
   onFlipBoard,
@@ -113,56 +123,62 @@ function MoveHistorySidebar({
   // Annotations
   annotations = {},
   onAnnotationChange = null,
-}) {
+}) => {
   const fen = game.fen();
   const { capturedPts } = useMemo(() => getCapturedPieces(game), [game, fen]);
 
   // Build pairs from { san }[] entries
   const pairs = [];
-  for (let i = 0; i < moveHistory.length; i += 2) {
+  for (let index = 0; index < moveHistory.length; index += 2) {
     pairs.push({
-      number: Math.floor(i / 2) + 1,
-      white: moveHistory[i]?.san ?? moveHistory[i],
-      whiteIdx: i,
-      black: moveHistory[i + 1]
-        ? (moveHistory[i + 1]?.san ?? moveHistory[i + 1])
+      number: Math.floor(index / 2) + 1,
+      white: moveHistory[index]?.san ?? moveHistory[index],
+      whiteIdx: index,
+      black: moveHistory[index + 1]
+        ? (moveHistory[index + 1]?.san ?? moveHistory[index + 1])
         : null,
-      blackIdx: i + 1,
+      blackIdx: index + 1,
     });
   }
 
   const isReviewMode = viewIndex !== null;
-  const endRef = useRef(null);
-  const activeRowRef = useRef(null);
-  const [editingAnnotationIdx, setEditingAnnotationIdx] = useState(null);
+  const endReference = useRef(null);
+  const activeRowReference = useRef(null);
+  const [editingAnnotationIndex, setEditingAnnotationIndex] = useState(null);
   const [annotationDraft, setAnnotationDraft] = useState("");
 
   // Auto-scroll to bottom when new moves arrive (live mode)
   useEffect(() => {
     if (!isReviewMode) {
-      endRef.current?.scrollIntoView({ behavior: "smooth" });
+      endReference.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [moveHistory, isReviewMode]);
 
   // Scroll active (reviewed) move into view
   useEffect(() => {
-    if (isReviewMode && activeRowRef.current) {
-      activeRowRef.current.scrollIntoView({
+    if (isReviewMode && activeRowReference.current) {
+      activeRowReference.current.scrollIntoView({
         behavior: "smooth",
         block: "nearest",
       });
     }
   }, [viewIndex, isReviewMode]);
 
-  function isMoveActive(idx) {
+  /**
+   *
+   */
+  const isMoveActive = (index) => {
     if (viewIndex === null) return false;
-    return viewIndex === idx;
-  }
+    return viewIndex === index;
+  };
 
-  function isLastLiveMove(idx) {
+  /**
+   *
+   */
+  const isLastLiveMove = (index) => {
     if (viewIndex !== null) return false;
-    return idx === moveHistory.length - 1;
-  }
+    return index === moveHistory.length - 1;
+  };
 
   return (
     <div className="flex flex-col h-full border-r border-border bg-card">
@@ -297,31 +313,38 @@ function MoveHistorySidebar({
                 const blackActive = isMoveActive(pair.blackIdx);
                 const whiteLastLive = isLastLiveMove(pair.whiteIdx);
                 const blackLastLive = isLastLiveMove(pair.blackIdx);
-                const rowRef = whiteActive || blackActive ? activeRowRef : null;
+                const rowReference =
+                  whiteActive || blackActive ? activeRowReference : null;
                 const whiteNote = annotations[pair.whiteIdx];
                 const blackNote = annotations[pair.blackIdx];
 
-                function openAnnotation(idx, currentNote) {
+                /**
+                 *
+                 */
+                const openAnnotation = (index, currentNote) => {
                   if (!onAnnotationChange) return;
-                  setEditingAnnotationIdx(idx);
+                  setEditingAnnotationIndex(index);
                   setAnnotationDraft(currentNote || "");
-                }
+                };
 
-                function saveAnnotation() {
-                  if (onAnnotationChange && editingAnnotationIdx !== null) {
+                /**
+                 *
+                 */
+                const saveAnnotation = () => {
+                  if (onAnnotationChange && editingAnnotationIndex !== null) {
                     onAnnotationChange(
-                      editingAnnotationIdx,
+                      editingAnnotationIndex,
                       annotationDraft.trim(),
                     );
                   }
-                  setEditingAnnotationIdx(null);
+                  setEditingAnnotationIndex(null);
                   setAnnotationDraft("");
-                }
+                };
 
                 return (
                   <Fragment key={pair.number}>
                     <tr
-                      ref={rowRef}
+                      ref={rowReference}
                       className="border-b border-border/30 transition-colors group"
                     >
                       <td className="px-2 py-1 text-muted-foreground">
@@ -409,9 +432,9 @@ function MoveHistorySidebar({
                       </td>
                     </tr>
                     {/* Inline annotation editor row */}
-                    {editingAnnotationIdx !== null &&
-                      (editingAnnotationIdx === pair.whiteIdx ||
-                        editingAnnotationIdx === pair.blackIdx) && (
+                    {editingAnnotationIndex !== null &&
+                      (editingAnnotationIndex === pair.whiteIdx ||
+                        editingAnnotationIndex === pair.blackIdx) && (
                         <tr
                           key={`note-${pair.number}`}
                           className="bg-primary/5"
@@ -430,7 +453,7 @@ function MoveHistorySidebar({
                                     saveAnnotation();
                                   }
                                   if (e.key === "Escape") {
-                                    setEditingAnnotationIdx(null);
+                                    setEditingAnnotationIndex(null);
                                   }
                                 }}
                                 placeholder="Add a note… (Enter to save, Esc to cancel)"
@@ -453,7 +476,7 @@ function MoveHistorySidebar({
             </tbody>
           </table>
         )}
-        <div ref={endRef} />
+        <div ref={endReference} />
       </div>
 
       {/* Post-game analysis status */}
@@ -545,6 +568,6 @@ function MoveHistorySidebar({
       <EvalBar score={evalScore} />
     </div>
   );
-}
+};
 
 export default MoveHistorySidebar;

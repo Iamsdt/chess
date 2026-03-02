@@ -435,22 +435,21 @@ export const PUZZLES = [
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 /** Pick random puzzles filtered by difficulty. */
-export function getPuzzlesByDifficulty(difficulty) {
-  return PUZZLES.filter((p) => p.difficulty === difficulty);
-}
+export const getPuzzlesByDifficulty = (difficulty) =>
+  PUZZLES.filter((p) => p.difficulty === difficulty);
 
 /** Fisher-Yates shuffle */
-export function shufflePuzzles(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
+export const shufflePuzzles = (array) => {
+  const a = [...array];
+  for (let index = a.length - 1; index > 0; index--) {
+    const index_ = Math.floor(Math.random() * (index + 1));
+    [a[index], a[index_]] = [a[index_], a[index]];
   }
   return a;
-}
+};
 
 /** Get the set for a session: optional difficulty filter, shuffled */
-export function getPuzzleSession(difficulty = null) {
+export const getPuzzleSession = (difficulty = null) => {
   const pool = difficulty ? getPuzzlesByDifficulty(difficulty) : PUZZLES;
   return shufflePuzzles(pool);
-}
+};

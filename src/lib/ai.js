@@ -9,12 +9,12 @@ Always be encouraging and educational. Format your responses clearly.`;
 /**
  * Send a chat message to OpenAI and return the assistant's response text.
  */
-export async function sendChatMessage({
+export const sendChatMessage = async ({
   messages,
   fen,
   apiKey,
   model = "gpt-4o-mini",
-}) {
+}) => {
   if (!apiKey) {
     throw new Error("Please set your API key in Settings first.");
   }
@@ -39,43 +39,43 @@ export async function sendChatMessage({
   });
 
   if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.error?.message || `API error: ${response.status}`);
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error?.message || `API error: ${response.status}`);
   }
 
   const data = await response.json();
   return data.choices?.[0]?.message?.content || "No response received.";
-}
+};
 
 /**
  * Request a position explanation from the AI.
  */
-export async function explainPosition({ fen, moveHistory, apiKey, model }) {
-  const moveStr =
+export const explainPosition = async ({ fen, moveHistory, apiKey, model }) => {
+  const moveString =
     moveHistory.length > 0 ? moveHistory.join(" ") : "No moves yet";
   return sendChatMessage({
     messages: [
       {
         role: "user",
-        content: `Explain the current position. Moves so far: ${moveStr}. What are the key ideas for both sides?`,
+        content: `Explain the current position. Moves so far: ${moveString}. What are the key ideas for both sides?`,
       },
     ],
     fen,
     apiKey,
     model,
   });
-}
+};
 
 /**
  * Request a hint from the AI.
  */
-export async function getHint({
+export const getHint = async ({
   fen,
   moveHistory,
   apiKey,
   model,
   hintLevel = 1,
-}) {
+}) => {
   const levels = {
     1: "Give me a general hint about what I should focus on in this position. Don't reveal the exact move.",
     2: "Give me a specific directional hint. Which piece should I consider moving and roughly where?",
@@ -93,19 +93,19 @@ export async function getHint({
     apiKey,
     model,
   });
-}
+};
 
 /**
  * Evaluate the quality of the last move.
  */
-export async function evaluateMove({
+export const evaluateMove = async ({
   fen,
   lastMove,
   moveHistory,
   apiKey,
   model,
-}) {
-  return sendChatMessage({
+}) =>
+  sendChatMessage({
     messages: [
       {
         role: "user",
@@ -116,4 +116,3 @@ export async function evaluateMove({
     apiKey,
     model,
   });
-}

@@ -1,6 +1,7 @@
-import { useState } from "react";
 import { Chess } from "chess.js";
 import { X, ChevronRight, Target } from "lucide-react";
+import { useState } from "react";
+
 import { ENDGAMES, ENDGAME_CATEGORIES } from "@/data/endgames";
 
 // ── Difficulty color mapping ──────────────────────────────────────────────
@@ -34,12 +35,15 @@ export default function EndgameMode({ onClose, onLoadScenario }) {
       ? ENDGAMES
       : ENDGAMES.filter((e) => e.category === category);
 
-  function handlePick(scenario) {
+  /**
+   *
+   */
+  const handlePick = (scenario) => {
     const g = new Chess(scenario.fen);
     const playerColor = g.turn() === "w" ? "white" : "black";
     onLoadScenario({ fen: scenario.fen, title: scenario.title, playerColor });
     onClose();
-  }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4">

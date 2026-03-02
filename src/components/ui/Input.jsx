@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utilities";
 
 function Input({ className, type = "text", ...props }) {
   return (

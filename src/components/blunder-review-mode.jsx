@@ -1,7 +1,4 @@
-import { useState, useMemo } from "react";
 import { Chess } from "chess.js";
-import { Chessboard } from "react-chessboard";
-import { Button } from "@/components/ui/Button";
 import {
   X,
   ChevronLeft,
@@ -9,9 +6,16 @@ import {
   SkipForward,
   Target,
 } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Chessboard } from "react-chessboard";
+
+import { Button } from "@/components/ui/button";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
-function getMoveSquares(fen, san) {
+/**
+ *
+ */
+const getMoveSquares = (fen, san) => {
   try {
     const g = new Chess(fen);
     const mv = g.move(san);
@@ -20,35 +24,30 @@ function getMoveSquares(fen, san) {
   } catch {
     return null;
   }
-}
+};
 
 // ── BlunderReviewMode ─────────────────────────────────────────────────────────
 // Full-screen overlay: shows each blunder/mistake position, asks the player
 // to find the correct move. Reveals the engine's best move after each attempt.
-export default function BlunderReviewMode({ blunders = [], onClose }) {
-  const [idx, setIdx] = useState(0);
+/**
+ *
+ */
+const BlunderReviewMode = ({ blunders = [], onClose }) => {
+  const [index, setIndex] = useState(0);
   const [answered, setAnswered] = useState(false);
   const [playerMoveSan, setPlayerMoveSan] = useState(null);
   const [isCorrect, setIsCorrect] = useState(false);
 
-  const blunder = blunders[idx] ?? null;
-  if (!blunder) return null;
+  const blunder = blunders[index] ?? null;
 
-  const isLastItem = idx === blunders.length - 1;
-  const totalErrors = blunders.length;
-  const orientation = blunder.side === "w" ? "white" : "black";
-  const whoPlayed = blunder.side === "w" ? "White" : "Black";
-
-  // ── Compute arrows & highlights ────────────────────────────────────────────
-  // Before answered: red arrow showing the blunder that was played
-  // After answered: green arrow showing the best move
+  // ── All hooks must be called unconditionally before any early return ───────
   const blunderSquares = useMemo(
-    () => getMoveSquares(blunder.preFen, blunder.san),
+    () => (blunder ? getMoveSquares(blunder.preFen, blunder.san) : null),
     [blunder],
   );
   const bestSquares = useMemo(
     () =>
-      blunder.bestSan ? getMoveSquares(blunder.preFen, blunder.bestSan) : null,
+      blunder?.bestSan ? getMoveSquares(blunder.preFen, blunder.bestSan) : null,
     [blunder],
   );
 
@@ -87,8 +86,19 @@ export default function BlunderReviewMode({ blunders = [], onClose }) {
     return styles;
   }, [answered, blunderSquares, bestSquares]);
 
+  // ── Early return after all hooks ──────────────────────────────────────────
+  if (!blunder) return null;
+
+  const isLastItem = index === blunders.length - 1;
+  const totalErrors = blunders.length;
+  const orientation = blunder.side === "w" ? "white" : "black";
+  const whoPlayed = blunder.side === "w" ? "White" : "Black";
+
   // ── Board interaction ───────────────────────────────────────────────────────
-  function handleDrop({ sourceSquare, targetSquare }) {
+  /**
+   *
+   */
+  const handleDrop = ({ sourceSquare, targetSquare }) => {
     if (answered) return false;
     try {
       const g = new Chess(blunder.preFen);
@@ -106,39 +116,51 @@ export default function BlunderReviewMode({ blunders = [], onClose }) {
     } catch {
       return false;
     }
-  }
+  };
 
-  function handleSkip() {
+  /**
+   *
+   */
+  const handleSkip = () => {
     setAnswered(true);
     setPlayerMoveSan(null);
     setIsCorrect(false);
-  }
+  };
 
-  function handleNext() {
+  /**
+   *
+   */
+  const handleNext = () => {
     if (isLastItem) {
       onClose();
       return;
     }
-    setIdx((i) => i + 1);
+    setIndex((index_) => index_ + 1);
     setAnswered(false);
     setPlayerMoveSan(null);
     setIsCorrect(false);
-  }
+  };
 
-  function handlePrev() {
-    if (idx === 0) return;
-    setIdx((i) => i - 1);
+  /**
+   *
+   */
+  const handlePrevious = () => {
+    if (index === 0) return;
+    setIndex((index_) => index_ - 1);
     setAnswered(false);
     setPlayerMoveSan(null);
     setIsCorrect(false);
-  }
+  };
 
-  function jumpTo(i) {
-    setIdx(i);
+  /**
+   *
+   */
+  const jumpTo = (index_) => {
+    setIndex(index_);
     setAnswered(false);
     setPlayerMoveSan(null);
     setIsCorrect(false);
-  }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-3 sm:p-5">
@@ -201,7 +223,7 @@ export default function BlunderReviewMode({ blunders = [], onClose }) {
                 </p>
               </div>
               <p className="text-xs text-muted-foreground">
-                Error {idx + 1} of {totalErrors}
+                Error {index + 1} of {totalErrors}
               </p>
             </div>
             <button
@@ -303,13 +325,13 @@ export default function BlunderReviewMode({ blunders = [], onClose }) {
           {/* Progress dots */}
           {totalErrors > 1 && (
             <div className="flex flex-wrap gap-1.5 justify-center py-1">
-              {blunders.map((b, i) => (
+              {blunders.map((b, index_) => (
                 <button
-                  key={i}
-                  onClick={() => jumpTo(i)}
+                  key={index_}
+                  onClick={() => jumpTo(index_)}
                   title={`${b.side === "w" ? "White" : "Black"} move ${b.moveNum}: ${b.san} (${b.quality})`}
                   className={`w-2.5 h-2.5 rounded-full transition-all ${
-                    i === idx
+                    index_ === index
                       ? "ring-2 ring-primary ring-offset-1 ring-offset-card bg-primary scale-110"
                       : b.quality === "Blunder"
                         ? "bg-red-500/50 hover:bg-red-500/80"
@@ -325,8 +347,8 @@ export default function BlunderReviewMode({ blunders = [], onClose }) {
             <Button
               variant="ghost"
               size="sm"
-              onClick={handlePrev}
-              disabled={idx === 0}
+              onClick={handlePrevious}
+              disabled={index === 0}
               className="text-muted-foreground gap-1"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -348,4 +370,6 @@ export default function BlunderReviewMode({ blunders = [], onClose }) {
       </div>
     </div>
   );
-}
+};
+
+export default BlunderReviewMode;

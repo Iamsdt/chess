@@ -1,6 +1,3 @@
-import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import {
   Send,
   Bot,
@@ -21,6 +18,10 @@ import {
   TrendingDown,
   Minus,
 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 // ── Quality colour map ────────────────────────────────────────────────────
 const QUALITY_STYLES = {
@@ -85,23 +86,32 @@ const SEVERITY_STYLES = {
 };
 
 // ── Eval score colour helper ──────────────────────────────────────────────
-function evalColor(wScore) {
+/**
+ *
+ */
+const evalColor = (wScore) => {
   if (wScore === null) return "text-muted-foreground";
   if (wScore > 1.5) return "text-emerald-400";
   if (wScore > 0.3) return "text-green-400";
   if (wScore < -1.5) return "text-red-400";
   if (wScore < -0.3) return "text-orange-400";
   return "text-muted-foreground";
-}
-function evalIcon(wScore) {
+};
+/**
+ *
+ */
+const evalIcon = (wScore) => {
   if (wScore === null) return Minus;
   if (wScore > 0.3) return TrendingUp;
   if (wScore < -0.3) return TrendingDown;
   return Minus;
-}
+};
 
 // ── Move chip — renders a single SAN token as a styled pill ──────────────
-function MoveChip({ move, idx }) {
+/**
+ *
+ */
+const MoveChip = ({ move, idx }) => {
   // Detect special SAN features for mini colouring
   const isCapture = move.includes("x");
   const isCheck = move.includes("+");
@@ -111,13 +121,14 @@ function MoveChip({ move, idx }) {
 
   let cls = "bg-white/[0.06] text-foreground/80 border-white/10";
   if (isMate) cls = "bg-red-500/20 text-red-300 border-red-500/30";
-  else if (isCheck)
+  else if (isCheck) {
     cls = "bg-yellow-500/15 text-yellow-300 border-yellow-500/25";
-  else if (isCapture)
+  } else if (isCapture) {
     cls = "bg-orange-500/15 text-orange-300 border-orange-500/25";
-  else if (isCastle) cls = "bg-blue-500/15 text-blue-300 border-blue-500/25";
-  else if (isPromotion)
+  } else if (isCastle) cls = "bg-blue-500/15 text-blue-300 border-blue-500/25";
+  else if (isPromotion) {
     cls = "bg-purple-500/15 text-purple-300 border-purple-500/25";
+  }
 
   return (
     <span
@@ -131,22 +142,28 @@ function MoveChip({ move, idx }) {
       {move}
     </span>
   );
-}
+};
 
 // ── Move line — sequence of SAN chips ────────────────────────────────────
-function MoveLine({ moves, startMoveNum = 1 }) {
+/**
+ *
+ */
+const MoveLine = ({ moves, startMoveNum: startMoveNumber = 1 }) => {
   if (!moves || moves.length === 0) return null;
   return (
     <div className="flex flex-wrap gap-1 items-center">
-      {moves.map((m, i) => (
-        <MoveChip key={i} move={m} idx={startMoveNum + i} />
+      {moves.map((m, index) => (
+        <MoveChip key={index} move={m} idx={startMoveNumber + index} />
       ))}
     </div>
   );
-}
+};
 
 // ── My-Move Analysis Card ─────────────────────────────────────────────────
-function MyMoveCard({ card }) {
+/**
+ *
+ */
+const MyMoveCard = ({ card }) => {
   const qs = QUALITY_STYLES[card.quality] || QUALITY_STYLES.Good;
   const hasSuggestion = card.suggestion && card.suggestion.bestMove;
   const EvalIcon = evalIcon(card.evalAfterRaw ?? null);
@@ -212,10 +229,13 @@ function MyMoveCard({ card }) {
       )}
     </div>
   );
-}
+};
 
 // ── Best Move Card ────────────────────────────────────────────────────────
-function BestMoveCard({ card }) {
+/**
+ *
+ */
+const BestMoveCard = ({ card }) => {
   const EvalIcon = evalIcon(card.wScore);
   const eColor = evalColor(card.wScore);
 
@@ -258,7 +278,7 @@ function BestMoveCard({ card }) {
       )}
     </div>
   );
-}
+};
 
 // ── Hint Card ─────────────────────────────────────────────────────────────
 const PIECE_ICONS = {
@@ -270,7 +290,10 @@ const PIECE_ICONS = {
   k: "♚",
 };
 
-function HintCard({ card }) {
+/**
+ *
+ */
+const HintCard = ({ card }) => {
   const EvalIcon = evalIcon(card.wScore);
   const eColor = evalColor(card.wScore);
 
@@ -319,10 +342,13 @@ function HintCard({ card }) {
       )}
     </div>
   );
-}
+};
 
 // ── Threat Card ───────────────────────────────────────────────────────────
-function ThreatCard({ card, onAskAI, onLearnWithAI }) {
+/**
+ *
+ */
+const ThreatCard = ({ card, onAskAI, onLearnWithAI }) => {
   const primary = card.primaryThreat;
   const ss = SEVERITY_STYLES[primary.severity] || SEVERITY_STYLES.medium;
   const isOpeningOnly = primary.id === "opening";
@@ -378,8 +404,8 @@ function ThreatCard({ card, onAskAI, onLearnWithAI }) {
       {/* Additional threats */}
       {card.allThreats.length > 1 && (
         <div className="pt-1 space-y-1">
-          {card.allThreats.slice(1).map((t, i) => (
-            <div key={i} className="flex items-start gap-1.5">
+          {card.allThreats.slice(1).map((t, index) => (
+            <div key={index} className="flex items-start gap-1.5">
               <span className="text-xs">{t.icon}</span>
               <p className="text-[11px] text-muted-foreground">
                 {t.name}: {t.description}
@@ -427,7 +453,7 @@ function ThreatCard({ card, onAskAI, onLearnWithAI }) {
       )}
     </div>
   );
-}
+};
 
 // ── Glossary Dialog ───────────────────────────────────────────────────────
 const GLOSSARY_SECTIONS = [
@@ -578,7 +604,10 @@ const GLOSSARY_SECTIONS = [
   },
 ];
 
-function GlossaryDialog({ open, onClose }) {
+/**
+ *
+ */
+const GlossaryDialog = ({ open, onClose }) => {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -627,10 +656,13 @@ function GlossaryDialog({ open, onClose }) {
       </div>
     </div>
   );
-}
+};
 
 // ── Message bubble ────────────────────────────────────────────────────────
-function MessageBubble({ msg, onAskAI, onLearnWithAI }) {
+/**
+ *
+ */
+const MessageBubble = ({ msg, onAskAI, onLearnWithAI }) => {
   // Special structured cards
   if (msg.type === "my-move-analysis" && typeof msg.content === "object") {
     return (
@@ -725,10 +757,13 @@ function MessageBubble({ msg, onAskAI, onLearnWithAI }) {
       )}
     </div>
   );
-}
+};
 
 // ── Main panel ────────────────────────────────────────────────────────────
-function ChatPanel({
+/**
+ *
+ */
+const ChatPanel = ({
   messages,
   onSendMessage,
   isLoading,
@@ -740,19 +775,22 @@ function ChatPanel({
   onEngineHint,
   onAskAI,
   onLearnWithAI,
-}) {
+}) => {
   const [input, setInput] = useState("");
-  const messagesEndRef = useRef(null);
+  const messagesEndReference = useRef(null);
   const [glossaryOpen, setGlossaryOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState(
     coachMode === "ai" ? "ai" : "engine",
   );
 
-  function handleTabClick(tab) {
+  /**
+   *
+   */
+  const handleTabClick = (tab) => {
     setActiveTab(tab);
     onCoachModeChange?.(tab);
-  }
+  };
 
   // Keep tab in sync if coachMode is changed externally
   useEffect(() => {
@@ -760,25 +798,31 @@ function ChatPanel({
   }, [coachMode]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndReference.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, activeTab]);
 
-  function handleSend() {
+  /**
+   *
+   */
+  const handleSend = () => {
     const text = input.trim();
     if (!text) return;
     onSendMessage(text);
     setInput("");
-  }
+  };
 
-  function handleKeyDown(e) {
+  /**
+   *
+   */
+  const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
-  }
+  };
 
   const visibleMessages = messages.filter((m) => {
-    if (activeTab === "engine")
+    if (activeTab === "engine") {
       return (
         m.type === "engine" ||
         m.type === "engine-query" ||
@@ -787,7 +831,8 @@ function ChatPanel({
         m.type === "best-move-card" ||
         m.type === "hint-card"
       );
-    if (activeTab === "ai")
+    }
+    if (activeTab === "ai") {
       return (
         m.type !== "engine" &&
         m.type !== "engine-query" &&
@@ -796,6 +841,7 @@ function ChatPanel({
         m.type !== "best-move-card" &&
         m.type !== "hint-card"
       );
+    }
     return false;
   });
 
@@ -877,10 +923,10 @@ function ChatPanel({
           </div>
         )}
 
-        {visibleMessages.map((msg, i) => (
+        {visibleMessages.map((message, index) => (
           <MessageBubble
-            key={i}
-            msg={msg}
+            key={index}
+            msg={message}
             onAskAI={onAskAI}
             onLearnWithAI={onLearnWithAI}
           />
@@ -905,7 +951,7 @@ function ChatPanel({
           </div>
         )}
 
-        <div ref={messagesEndRef} />
+        <div ref={messagesEndReference} />
       </div>
 
       {/* Bottom action area */}
@@ -967,6 +1013,6 @@ function ChatPanel({
       )}
     </div>
   );
-}
+};
 
 export default ChatPanel;

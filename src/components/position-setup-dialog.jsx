@@ -1,13 +1,14 @@
+import { Chess } from "chess.js";
 import { useState } from "react";
+
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/Dialog";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Chess } from "chess.js";
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 const STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -22,6 +23,9 @@ const PRESET_POSITIONS = [
   { label: "King & Pawn vs King", fen: "4k3/4P3/4K3/8/8/8/8/8 w - - 0 1" },
 ];
 
+/**
+ *
+ */
 export default function PositionSetupDialog({
   open,
   onOpenChange,
@@ -32,19 +36,28 @@ export default function PositionSetupDialog({
   const [pgnInput, setPgnInput] = useState("");
   const [error, setError] = useState("");
 
-  function resetState() {
+  /**
+   *
+   */
+  const resetState = () => {
     setFenInput("");
     setPgnInput("");
     setError("");
     setTab("fen");
-  }
+  };
 
-  function handleClose() {
+  /**
+   *
+   */
+  const handleClose = () => {
     resetState();
     onOpenChange(false);
-  }
+  };
 
-  function handleLoadFen() {
+  /**
+   *
+   */
+  const handleLoadFen = () => {
     const fen = fenInput.trim() || STARTING_FEN;
     try {
       const g = new Chess(fen);
@@ -53,9 +66,12 @@ export default function PositionSetupDialog({
     } catch {
       setError("Invalid FEN string. Please check the format and try again.");
     }
-  }
+  };
 
-  function handleLoadPgn() {
+  /**
+   *
+   */
+  const handleLoadPgn = () => {
     const pgn = pgnInput.trim();
     if (!pgn) {
       setError("Please enter a PGN string.");
@@ -69,9 +85,12 @@ export default function PositionSetupDialog({
     } catch {
       setError("Invalid PGN. Please check the format and try again.");
     }
-  }
+  };
 
-  function handlePreset(fen) {
+  /**
+   *
+   */
+  const handlePreset = (fen) => {
     try {
       const g = new Chess(fen);
       onLoadPosition({ type: "fen", fen: g.fen() });
@@ -79,7 +98,7 @@ export default function PositionSetupDialog({
     } catch {
       setError("Failed to load preset position.");
     }
-  }
+  };
 
   return (
     <Dialog
@@ -163,7 +182,7 @@ export default function PositionSetupDialog({
                 setPgnInput(e.target.value);
                 setError("");
               }}
-              placeholder={"1. e4 e5 2. Nf3 Nc6 ..."}
+              placeholder="1. e4 e5 2. Nf3 Nc6 ..."
               rows={6}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono
                          text-foreground placeholder:text-muted-foreground resize-none

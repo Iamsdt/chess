@@ -21,21 +21,27 @@
 
 const KEY = "chess-opening-stats";
 
-function load() {
+/**
+ *
+ */
+const load = () => {
   try {
     return JSON.parse(localStorage.getItem(KEY) || "{}");
   } catch {
     return {};
   }
-}
+};
 
-function save(data) {
+/**
+ *
+ */
+const save = (data) => {
   try {
     localStorage.setItem(KEY, JSON.stringify(data));
   } catch {
     /* storage full */
   }
-}
+};
 
 /**
  * Record one opening result.
@@ -45,7 +51,7 @@ function save(data) {
  * @param {"w"|"b"|"d"} params.gameResult  - "w"=white wins, "b"=black wins, "d"=draw
  * @param {"w"|"b"} params.playerColor     - which side the human played
  */
-export function recordOpeningResult({ eco, name, gameResult, playerColor }) {
+export const recordOpeningResult = ({ eco, name, gameResult, playerColor }) => {
   if (!eco || !name) return;
   const data = load();
   const key = eco || name;
@@ -66,12 +72,12 @@ export function recordOpeningResult({ eco, name, gameResult, playerColor }) {
   }
 
   save(data);
-}
+};
 
 /**
  * Returns array of opening stat entries, sorted by total games played descending.
  */
-export function getOpeningStats() {
+export const getOpeningStats = () => {
   const data = load();
   return Object.values(data)
     .map((e) => ({
@@ -83,22 +89,21 @@ export function getOpeningStats() {
           : 0,
     }))
     .sort((a, b) => b.total - a.total);
-}
+};
 
 /** Remove all opening stats. */
-export function clearOpeningStats() {
+export const clearOpeningStats = () => {
   localStorage.removeItem(KEY);
-}
+};
 
 /**
  * Detect which opening was played by matching the game's SAN history
  * against the openings database. Returns the best (longest) match.
- *
  * @param {string[]} sanMoves - Array of SAN move strings
  * @param {import("./openings").OpeningEntry[]} openings - Opening database
  * @returns {{ eco, name } | null}
  */
-export function detectOpening(sanMoves, openings) {
+export const detectOpening = (sanMoves, openings) => {
   if (!sanMoves || sanMoves.length === 0) return null;
 
   let bestMatch = null;
@@ -110,8 +115,8 @@ export function detectOpening(sanMoves, openings) {
 
     // Check if all opening moves match the beginning of the game
     let matches = true;
-    for (let i = 0; i < opMoves.length; i++) {
-      if (sanMoves[i] !== opMoves[i]) {
+    for (let index = 0; index < opMoves.length; index++) {
+      if (sanMoves[index] !== opMoves[index]) {
         matches = false;
         break;
       }
@@ -124,4 +129,4 @@ export function detectOpening(sanMoves, openings) {
   }
 
   return bestMatch;
-}
+};

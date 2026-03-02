@@ -5,110 +5,114 @@ const DB_VERSION = 1;
 const STORE_NAME = "games";
 const AUTOSAVE_ID = "autosave";
 
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onerror = () => reject(req.error);
-    req.onsuccess = () => resolve(req.result);
-    req.onupgradeneeded = (e) => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        const store = db.createObjectStore(STORE_NAME, { keyPath: "id" });
+/**
+ *
+ */
+const openDB = () =>
+  new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+    request.onupgradeneeded = (e) => {
+      const database = e.target.result;
+      if (!database.objectStoreNames.contains(STORE_NAME)) {
+        const store = database.createObjectStore(STORE_NAME, { keyPath: "id" });
         store.createIndex("timestamp", "timestamp", { unique: false });
       }
     };
   });
-}
 
-function dbPut(record) {
-  return openDB().then(
-    (db) =>
+/**
+ *
+ */
+const databasePut = (record) =>
+  openDB().then(
+    (database) =>
       new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, "readwrite");
-        const req = tx.objectStore(STORE_NAME).put(record);
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
+        const tx = database.transaction(STORE_NAME, "readwrite");
+        const request = tx.objectStore(STORE_NAME).put(record);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
       }),
   );
-}
 
-function dbGet(id) {
-  return openDB().then(
-    (db) =>
+/**
+ *
+ */
+const databaseGet = (id) =>
+  openDB().then(
+    (database) =>
       new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, "readonly");
-        const req = tx.objectStore(STORE_NAME).get(id);
-        req.onsuccess = () => resolve(req.result ?? null);
-        req.onerror = () => reject(req.error);
+        const tx = database.transaction(STORE_NAME, "readonly");
+        const request = tx.objectStore(STORE_NAME).get(id);
+        request.onsuccess = () => resolve(request.result ?? null);
+        request.onerror = () => reject(request.error);
       }),
   );
-}
 
-function dbGetAll() {
-  return openDB().then(
-    (db) =>
+/**
+ *
+ */
+const databaseGetAll = () =>
+  openDB().then(
+    (database) =>
       new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, "readonly");
-        const req = tx.objectStore(STORE_NAME).getAll();
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
+        const tx = database.transaction(STORE_NAME, "readonly");
+        const request = tx.objectStore(STORE_NAME).getAll();
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
       }),
   );
-}
 
-function dbDelete(id) {
-  return openDB().then(
-    (db) =>
+/**
+ *
+ */
+const databaseDelete = (id) =>
+  openDB().then(
+    (database) =>
       new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, "readwrite");
-        const req = tx.objectStore(STORE_NAME).delete(id);
-        req.onsuccess = () => resolve();
-        req.onerror = () => reject(req.error);
+        const tx = database.transaction(STORE_NAME, "readwrite");
+        const request = tx.objectStore(STORE_NAME).delete(id);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
       }),
   );
-}
 
 // ── Public API ─────────────────────────────────────────────────────────────
 
 /** Silently upsert the rolling auto-save record. */
-export function autoSave(gameData) {
-  return dbPut({
+export const autoSave = (gameData) =>
+  databasePut({
     ...gameData,
     id: AUTOSAVE_ID,
     timestamp: Date.now(),
     isAutosave: true,
   });
-}
 
 /** Load the auto-save record (or null if none). */
-export function loadAutoSave() {
-  return dbGet(AUTOSAVE_ID);
-}
+export const loadAutoSave = () => databaseGet(AUTOSAVE_ID);
 
 /**
  * Save the current game with a user-visible name.
  * Returns the generated id.
  */
-export function saveGame(gameData) {
+export const saveGame = (gameData) => {
   const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  return dbPut({
+  return databasePut({
     ...gameData,
     id,
     timestamp: Date.now(),
     isAutosave: false,
   }).then(() => id);
-}
+};
 
 /** List all manually saved games, newest first. */
-export function listGames() {
-  return dbGetAll().then((all) =>
+export const listGames = () =>
+  databaseGetAll().then((all) =>
     all
       .filter((g) => g.id !== AUTOSAVE_ID)
       .sort((a, b) => b.timestamp - a.timestamp),
   );
-}
 
 /** Delete a saved game by id. */
-export function deleteGame(id) {
-  return dbDelete(id);
-}
+export const deleteGame = (id) => databaseDelete(id);

@@ -1,0 +1,296 @@
+import { useRef, useCallback } from "react";
+import { Chess } from "chess.js";
+import { analyzeFullGame } from "@/lib/analyzer";
+import {
+    buildAnalysisMessage,
+    buildBestMoveCard,
+    buildHintCard,
+    buildLiveAnalysisMessage,
+} from "@/lib/chess-helpers";
+import { buildMyMoveCard, buildThreatCard } from "@/lib/intelligence";
+import { getStockfishEngine } from "@/lib/stockfish";
+
+/**
+ * Handles all Stockfish/engine analysis interactions:
+ * - eval bar updates
+ * - live analysis after moves
+ * - manual analyze / best-move / hint requests
+ * - post-game full analysis
+ */
+const useEngineCoach = ({
+    gameRef,
+    setMessages,
+    setEvalScore,
+    setIsLoading,
+    setBestMoveArrows,
+    setIsAnalyzing,
+    setAnalysisProgress,
+    setGameReport,
+    setGameReportOpen,
+}) => {
+    const messageSeedRef = useRef(0);
+    const isAnalyzingRef = useRef(false);
+
+    // ── Apply White-perspective eval score ──────────────────────────────────
+    const applyEvalScore = useCallback(
+        (result, fen) => {
+            if (!result.isMate && result.scoreCp !== null) {
+
+        },
+        [setEvalScore],
+    );
+
+    // ── Lightweight eval bar update after every move ──────────────────────
+    const updateEvalBar = useCallback(
+        (fen) => {
+            const sf = getStockfishEngine();
+            sf.analyze(fen, 10, 1)
+                .then((result) => applyEvalScore(result, fen))
+                .catch(() => {
+                    /* silent */
+                });
+        },
+        [applyEvalScore],
+    );
+
+    // ── Intelligence: analyze player's move vs Stockfish best ────────────
+    const engineLiveAnalyzePlayerMove = useCallback(
+        async (preFen, moveSan, postFen) => {
+            const sf = getStockfishEngine();
+            const userElo = Number.parseInt(
+                localStorage.getItem("chess-coach-elo") || "1000",
+                10,
+            );
+            const seed = messageSeedRef.current++;
+            try {
+                const preResult = await sf.analyze(preFen, 14, 1);
+                const postResult = await sf.analyze(postFen, 10, 1);
+                applyEvalScore(postResult, postFen);
+                const card = buildMyMoveCard(
+                    preFen,
+                    moveSan,
+                    preResult,
+                    postResult,
+                    userElo,
+                    seed,
+                );
+                setMessages((previous) => [
+                    ...previous,
+                    { role: "assistant", content: card, type: "my-move-analysis" },
+                ]);
+            } catch {
+                updateEvalBar(postFen);
+            }
+        },
+        [applyEvalScore, updateEvalBar, setMessages],
+    );
+
+    // ── Intelligence: detect threats after opponent's move ────────────────
+    const runThreatDetection = useCallback(
+        (game, opponentColor, lastMoveTo, moveSan, moveHistorySans) => {
+            const seed = messageSeedRef.current++;
+            try {
+                const card = buildThreatCard(
+                    game,
+                    opponentColor,
+                    lastMoveTo,
+                    moveSan,
+                    seed,
+                    moveHistorySans,
+                );
+                if (card) {
+                    setMessages((previous) => [
+                        ...previous,
+                        { role: "assistant", content: card, type: "threat-card" },
+                    ]);
+                }
+            } catch {
+                /* silent */
+            }
+        },
+        [setMessages],
+    );
+
+    // ── Manual: Analyze position ─────────────────────────────────────────
+    const handleEngineAnalyze = useCallback(async () => {
+        setMessages((previous) => [
+            ...previous,
+            { role: "user", content: "🔍 Analyze position", type: "engine-query" },
+        ]);
+        setIsLoading(true);
+        try {
+            const sf = getStockfishEngine();
+            const fen = gameRef.current.fen();
+            const result = await sf.analyze(fen, 18, 3);
+            applyEvalScore(result, fen);
+            const content = buildAnalysisMessage(result, fen);
+            setMessages((previous) => [
+                ...previous,
+                { role: "assistant", content, type: "engine" },
+            ]);
+        } catch (error) {
+            setMessages((previous) => [
+                ...previous,
+                {
+                    role: "assistant",
+                    content: `Engine error: ${error.message}`,
+                    type: "engine",
+                },
+            ]);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [gameRef, applyEvalScore, setMessages, setIsLoading]);
+
+    // ── Manual: Best Move ────────────────────────────────────────────────
+    const handleEngineBestMove = useCallback(async () => {
+        setMessages((previous) => [
+            ...previous,
+            { role: "user", content: "💡 Best Move", type: "engine-query" },
+        ]);
+        setIsLoading(true);
+        try {
+            const sf = getStockfishEngine();
+            const fen = gameRef.current.fen();
+            const result = await sf.analyze(fen, 15, 1);
+            applyEvalScore(result, fen);
+            const seed = messageSeedRef.current++;
+            const card = buildBestMoveCard(result, fen, seed);
+            if (card) {
+                setMessages((previous) => [
+                    ...previous,
+                    { role: "assistant", content: card, type: "best-move-card" },
+                ]);
+                // Draw arrows for best move (green = primary, blue = response)
+                const arrows = [];
+                if (result.pv?.[0]?.length >= 4) {
+                    arrows.push({
+                        startSquare: result.pv[0].slice(0, 2),
+                        endSquare: result.pv[0].slice(2, 4),
+                        color: "#22c55e",
+                    });
+                }
+                if (result.pv?.[1]?.length >= 4) {
+                    arrows.push({
+                        startSquare: result.pv[1].slice(0, 2),
+                        endSquare: result.pv[1].slice(2, 4),
+                        color: "#3b82f6",
+                    });
+                }
+                setBestMoveArrows(arrows);
+            } else {
+                setMessages((previous) => [
+                    ...previous,
+                    {
+                        role: "assistant",
+                        content: "No legal moves in this position.",
+                        type: "engine",
+                    },
+                ]);
+            }
+        } catch (error) {
+            setMessages((previous) => [
+                ...previous,
+                {
+                    role: "assistant",
+                    content: `Engine error: ${error.message}`,
+                    type: "engine",
+                },
+            ]);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [gameRef, applyEvalScore, setBestMoveArrows, setMessages, setIsLoading]);
+
+    // ── Manual: Hint ─────────────────────────────────────────────────────
+    const handleEngineHint = useCallback(async () => {
+        setMessages((previous) => [
+            ...previous,
+            { role: "user", content: "🎯 Hint", type: "engine-query" },
+        ]);
+        setIsLoading(true);
+        try {
+            const sf = getStockfishEngine();
+            const fen = gameRef.current.fen();
+            const result = await sf.analyze(fen, 12, 1);
+            const seed = messageSeedRef.current++;
+            const card = buildHintCard(result, fen, seed);
+            setMessages((previous) => [
+                ...previous,
+                { role: "assistant", content: card, type: "hint-card" },
+            ]);
+        } catch (error) {
+            setMessages((previous) => [
+                ...previous,
+                {
+                    role: "assistant",
+                    content: `Engine error: ${error.message}`,
+                    type: "engine",
+                },
+            ]);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [gameRef, setMessages, setIsLoading]);
+
+    // ── Post-game: Full analysis ───────────────────────────────────────────
+    const triggerPostGameAnalysis = useCallback(
+        async (history) => {
+            if (isAnalyzingRef.current || (history?.length ?? 0) < 4) return;
+            isAnalyzingRef.current = true;
+            setIsAnalyzing(true);
+            setAnalysisProgress(0);
+            setGameReport(null);
+            try {
+                const report = await analyzeFullGame(history, 10, (done, total) =>
+                    setAnalysisProgress(Math.round((done / total) * 100)),
+                );
+                if (report) {
+                    setGameReport(report);
+                    setGameReportOpen(true);
+                }
+            } catch (error) {
+                console.error("Post-game analysis failed:", error);
+            } finally {
+                setIsAnalyzing(false);
+                isAnalyzingRef.current = false;
+            }
+        },
+        [setIsAnalyzing, setAnalysisProgress, setGameReport, setGameReportOpen],
+    );
+
+    // ── Live: engine analysis after move (used in live mode) ─────────────
+    const engineLiveAnalyze = useCallback(
+        (fen, lastMoveSan) => {
+            const sf = getStockfishEngine();
+            sf.analyze(fen, 12, 1)
+                .then((result) => {
+                    applyEvalScore(result, fen);
+                    const content = buildLiveAnalysisMessage(result, fen, lastMoveSan);
+                    setMessages((previous) => [
+                        ...previous,
+                        { role: "assistant", content, type: "engine" },
+                    ]);
+                })
+                .catch(() => {
+                    /* silent */
+                });
+        },
+        [applyEvalScore, setMessages],
+    );
+
+    return {
+        applyEvalScore,
+        updateEvalBar,
+        engineLiveAnalyze,
+        engineLiveAnalyzePlayerMove,
+        runThreatDetection,
+        handleEngineAnalyze,
+        handleEngineBestMove,
+        handleEngineHint,
+        triggerPostGameAnalysis,
+        isAnalyzingRef,
+    };
+};
+
+export default useEngineCoach;

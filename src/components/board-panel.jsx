@@ -1,5 +1,3 @@
-import { useMemo, useRef, useState, useEffect, useCallback } from "react";
-import { Chessboard } from "react-chessboard";
 import {
   AlertTriangle,
   Trophy,
@@ -8,7 +6,10 @@ import {
   Crown,
   CircleUser,
 } from "lucide-react";
-import { Dropdown } from "./ControlBar";
+import { useMemo, useRef, useState, useEffect, useCallback } from "react";
+import { Chessboard } from "react-chessboard";
+
+import { Dropdown } from "./control-bar";
 
 const PLAYER_COLOR_OPTIONS = [
   { value: "white", label: "White", icon: Crown },
@@ -19,50 +20,56 @@ const PLAYER_COLOR_OPTIONS = [
 const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9 };
 
 // ── sounds (Web Audio) ──
-function playSound(type) {
+/**
+ *
+ */
+const playSound = (type) => {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    const context = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = context.createOscillator();
+    const gain = context.createGain();
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(context.destination);
     gain.gain.value = 0.08;
 
     if (type === "move") {
       osc.frequency.value = 400;
       osc.type = "sine";
-      gain.gain.setTargetAtTime(0, ctx.currentTime + 0.06, 0.02);
+      gain.gain.setTargetAtTime(0, context.currentTime + 0.06, 0.02);
       osc.start();
-      osc.stop(ctx.currentTime + 0.1);
+      osc.stop(context.currentTime + 0.1);
     } else if (type === "capture") {
       osc.frequency.value = 300;
       osc.type = "triangle";
       gain.gain.value = 0.12;
-      gain.gain.setTargetAtTime(0, ctx.currentTime + 0.08, 0.03);
+      gain.gain.setTargetAtTime(0, context.currentTime + 0.08, 0.03);
       osc.start();
-      osc.stop(ctx.currentTime + 0.15);
+      osc.stop(context.currentTime + 0.15);
     } else if (type === "check") {
       osc.frequency.value = 600;
       osc.type = "square";
       gain.gain.value = 0.06;
-      gain.gain.setTargetAtTime(0, ctx.currentTime + 0.15, 0.04);
+      gain.gain.setTargetAtTime(0, context.currentTime + 0.15, 0.04);
       osc.start();
-      osc.stop(ctx.currentTime + 0.2);
+      osc.stop(context.currentTime + 0.2);
     } else if (type === "end") {
       osc.frequency.value = 250;
       osc.type = "sawtooth";
       gain.gain.value = 0.1;
-      gain.gain.setTargetAtTime(0, ctx.currentTime + 0.4, 0.1);
+      gain.gain.setTargetAtTime(0, context.currentTime + 0.4, 0.1);
       osc.start();
-      osc.stop(ctx.currentTime + 0.5);
+      osc.stop(context.currentTime + 0.5);
     }
   } catch {
     // audio not available
   }
-}
+};
 
 // ── compute captured pieces from move history of a chess.js game ──
-function getCapturedPieces(game) {
+/**
+ *
+ */
+const getCapturedPieces = (game) => {
   const start = {
     w: { p: 8, n: 2, b: 2, r: 2, q: 1 },
     b: { p: 8, n: 2, b: 2, r: 2, q: 1 },
@@ -84,7 +91,7 @@ function getCapturedPieces(game) {
   for (const color of ["w", "b"]) {
     for (const piece of ["q", "r", "b", "n", "p"]) {
       const diff = start[color][piece] - current[color][piece];
-      for (let i = 0; i < diff; i++) {
+      for (let index = 0; index < diff; index++) {
         captured[color].push(color + piece);
       }
       capturedPts[color] += (PIECE_VALUES[piece] || 0) * Math.max(0, diff);
@@ -100,9 +107,31 @@ function getCapturedPieces(game) {
     0,
   );
   return { captured, capturedPts, advantage: whiteTotal - blackTotal };
-}
+};
 
-function BoardPanel({
+// ── Captured piece row — defined outside BoardPanel to avoid React warnings ──
+const CapturedRow = ({ totalPts, adv }) => (
+  <div className="flex items-center gap-1.5 min-h-[22px]">
+    {totalPts > 0 && (
+      <span className="text-xs font-medium text-foreground tabular-nums">
+        {totalPts} pts
+      </span>
+    )}
+    {adv > 0 && (
+      <span
+        className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-semibold
+          bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"
+      >
+        +{adv}
+      </span>
+    )}
+  </div>
+);
+
+/**
+ *
+ */
+const BoardPanel = ({
   game,
   onMove,
   lastMoveSquares,
@@ -115,8 +144,8 @@ function BoardPanel({
   isReviewMode = false,
   premove = null,
   onCancelPremove = null,
-}) {
-  const containerRef = useRef(null);
+}) => {
+  const containerReference = useRef(null);
   const [boardWidth, setBoardWidth] = useState(400);
   const [selectedSquare, setSelectedSquare] = useState(null);
   const [rightClickedSquares, setRightClickedSquares] = useState({});
@@ -126,13 +155,17 @@ function BoardPanel({
 
   // ── Resize board ──
   useEffect(() => {
-    function updateSize() {
-      if (containerRef.current) {
-        const { width, height } = containerRef.current.getBoundingClientRect();
+    /**
+     *
+     */
+    const updateSize = () => {
+      if (containerReference.current) {
+        const { width, height } =
+          containerReference.current.getBoundingClientRect();
         const maxSize = Math.min(width - 48, height - 120);
         setBoardWidth(Math.max(280, Math.floor(maxSize)));
       }
-    }
+    };
     updateSize();
     window.addEventListener("resize", updateSize);
     return () => window.removeEventListener("resize", updateSize);
@@ -156,10 +189,12 @@ function BoardPanel({
 
   // ── Game status message ──
   const gameStatus = useMemo(() => {
-    if (isCheckmate)
+    if (isCheckmate) {
       return { text: "Checkmate!", icon: Trophy, type: "checkmate" };
-    if (isStalemate)
+    }
+    if (isStalemate) {
       return { text: "Stalemate", icon: Handshake, type: "draw" };
+    }
     if (isDraw) return { text: "Draw", icon: Handshake, type: "draw" };
     if (inCheck) return { text: "Check!", icon: AlertTriangle, type: "check" };
     return null;
@@ -168,7 +203,8 @@ function BoardPanel({
   // ── Captured pieces ──
   const { capturedPts, advantage } = useMemo(
     () => getCapturedPieces(game),
-    [fen],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [game, fen], // fen ensures re-computation on every move (game is mutable)
   );
 
   // ── Find king square when in check ──
@@ -186,7 +222,8 @@ function BoardPanel({
       }
     }
     return null;
-  }, [fen, inCheck, turn]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fen, inCheck, turn]); // fen is sufficient — game is mutable object
 
   // ── Compute legal moves for a square ──
   const getMoveOptions = useCallback(
@@ -220,7 +257,10 @@ function BoardPanel({
   );
 
   // ── Handle square click (click-to-move) ──
-  function onSquareClick({ square }) {
+  /**
+   *
+   */
+  const onSquareClick = ({ square }) => {
     if (isReviewMode) return;
     setRightClickedSquares({});
 
@@ -275,16 +315,22 @@ function BoardPanel({
       setSelectedSquare(null);
       setOptionSquares({});
     }
-  }
+  };
 
   // ── Handle piece drag begin ──
-  function onPieceDrag({ sourceSquare }) {
+  /**
+   *
+   */
+  const onPieceDrag = ({ sourceSquare }) => {
     if (isReviewMode) return;
     getMoveOptions(sourceSquare);
-  }
+  };
 
   // ── Handle drop ──
-  function onDrop(sourceSquare, targetSquare, piece) {
+  /**
+   *
+   */
+  const onDrop = (sourceSquare, targetSquare, piece) => {
     if (isReviewMode) return false;
     setSelectedSquare(null);
     setOptionSquares({});
@@ -292,13 +338,16 @@ function BoardPanel({
 
     const result = onMove(sourceSquare, targetSquare, piece);
     return result !== null;
-  }
+  };
 
   // ── Right-click to highlight squares ──
-  function onSquareRightClick({ square }) {
+  /**
+   *
+   */
+  const onSquareRightClick = ({ square }) => {
     const color = "rgba(0, 0, 255, 0.4)";
-    setRightClickedSquares((prev) => {
-      const newSquares = { ...prev };
+    setRightClickedSquares((previous) => {
+      const newSquares = { ...previous };
       if (newSquares[square]?.backgroundColor === color) {
         delete newSquares[square];
       } else {
@@ -306,7 +355,7 @@ function BoardPanel({
       }
       return newSquares;
     });
-  }
+  };
 
   // ── Combine all square styles ──
   const squareStyles = useMemo(() => {
@@ -366,30 +415,9 @@ function BoardPanel({
     premove,
   ]);
 
-  // ── Captured piece row ──
-  function CapturedRow({ totalPts, adv }) {
-    return (
-      <div className="flex items-center gap-1.5 min-h-[22px]">
-        {totalPts > 0 && (
-          <span className="text-xs font-medium text-foreground tabular-nums">
-            {totalPts} pts
-          </span>
-        )}
-        {adv > 0 && (
-          <span
-            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-semibold
-            bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"
-          >
-            +{adv}
-          </span>
-        )}
-      </div>
-    );
-  }
-
   return (
     <div
-      ref={containerRef}
+      ref={containerReference}
       className="flex flex-col items-center justify-center gap-2 w-full h-full"
     >
       {/* Game status banner */}
@@ -555,7 +583,7 @@ function BoardPanel({
       </div>
     </div>
   );
-}
+};
 
 // Export the playSound so App can trigger it on moves
 export { playSound };

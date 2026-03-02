@@ -1,12 +1,17 @@
-import { useState, useEffect } from "react";
 import { X, Trash2, TrendingUp, BarChart2 } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { useState, useEffect } from "react";
+
+import { Button } from "@/components/ui/button";
 import { getOpeningStats, clearOpeningStats } from "@/lib/openingStats";
 
-function WinBar({ wins, draws, losses }) {
+/**
+ *
+ */
+const WinBar = ({ wins, draws, losses }) => {
   const total = wins + draws + losses;
-  if (total === 0)
+  if (total === 0) {
     return <div className="h-2 rounded-full bg-border/40 w-full" />;
+  }
   const wPct = (wins / total) * 100;
   const dPct = (draws / total) * 100;
   const lPct = (losses / total) * 100;
@@ -18,8 +23,11 @@ function WinBar({ wins, draws, losses }) {
       <div style={{ width: `${lPct}%` }} className="bg-red-500/80" />
     </div>
   );
-}
+};
 
+/**
+ *
+ */
 export default function OpeningStatsPanel({ open, onClose }) {
   const [stats, setStats] = useState([]);
 
@@ -36,14 +44,17 @@ export default function OpeningStatsPanel({ open, onClose }) {
   const overallWinPct =
     totalGames > 0 ? Math.round((totalWins / totalGames) * 100) : 0;
 
-  function handleClear() {
+  /**
+   *
+   */
+  const handleClear = () => {
     if (
       window.confirm("Clear all opening statistics? This cannot be undone.")
     ) {
       clearOpeningStats();
       setStats([]);
     }
-  }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">

@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/Button";
-import { Switch } from "@/components/ui/Switch";
 import {
   Zap,
   Settings,
@@ -19,24 +17,35 @@ import {
   BarChart2,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { TIME_CONTROLS } from "@/hooks/useChessClock";
+
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { TIME_CONTROLS } from "@/hooks/use-chess-clock";
 
 // ── Simple dropdown component ─────────────────────────────────────────────
-export function Dropdown({
+/**
+ *
+ */
+export const Dropdown = ({
   label,
   icon: Icon,
   options,
   value,
   onChange,
   disabled = false,
-}) {
+}) => {
   const [open, setOpen] = useState(false);
-  const ref = useRef(null);
+  const reference = useRef(null);
 
   useEffect(() => {
-    function handle(e) {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    }
+    /**
+     *
+     */
+    const handle = (e) => {
+      if (reference.current && !reference.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
     document.addEventListener("mousedown", handle);
     return () => document.removeEventListener("mousedown", handle);
   }, []);
@@ -44,7 +53,7 @@ export function Dropdown({
   const selected = options.find((o) => o.value === value);
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={reference} className="relative">
       <button
         onClick={() => !disabled && setOpen((o) => !o)}
         disabled={disabled}
@@ -95,10 +104,13 @@ export function Dropdown({
       )}
     </div>
   );
-}
+};
 
 // ── Train dropdown ────────────────────────────────────────────────────────
-function TrainDropdown({
+/**
+ *
+ */
+const TrainDropdown = ({
   onOpenPuzzles,
   onOpenOpeningDrill,
   onOpenEndgame,
@@ -107,24 +119,27 @@ function TrainDropdown({
   clockTimeControl,
   onToggleClock,
   onSetTimeControl,
-}) {
+}) => {
   const [open, setOpen] = useState(false);
   const [showClock, setShowClock] = useState(false);
-  const ref = useRef(null);
+  const reference = useRef(null);
 
   useEffect(() => {
-    function handle(e) {
-      if (ref.current && !ref.current.contains(e.target)) {
+    /**
+     *
+     */
+    const handle = (e) => {
+      if (reference.current && !reference.current.contains(e.target)) {
         setOpen(false);
         setShowClock(false);
       }
-    }
+    };
     document.addEventListener("mousedown", handle);
     return () => document.removeEventListener("mousedown", handle);
   }, []);
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={reference} className="relative">
       <button
         onClick={() => {
           setOpen((o) => !o);
@@ -244,7 +259,7 @@ function TrainDropdown({
       )}
     </div>
   );
-}
+};
 
 const OPPONENT_OPTIONS = [
   { value: "engine", label: "Chess Engine", icon: Cpu, desc: "strongest" },
@@ -259,7 +274,10 @@ const DIFFICULTY_OPTIONS = [
 ];
 
 // ── ControlBar ─────────────────────────────────────────────────────────────
-function ControlBar({
+/**
+ *
+ */
+const ControlBar = ({
   isLiveMode,
   onToggleLiveMode,
   onNewGame,
@@ -282,38 +300,37 @@ function ControlBar({
   clockTimeControl,
   onToggleClock,
   onSetTimeControl,
-}) {
-  return (
-    <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card gap-2 flex-wrap">
-      {/* Left — branding */}
-      <div className="flex items-center gap-2 shrink-0">
-        <span className="text-base font-bold tracking-tight text-primary">
-          ♟ Chess King
-        </span>
-      </div>
+}) => (
+  <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card gap-2 flex-wrap">
+    {/* Left — branding */}
+    <div className="flex items-center gap-2 shrink-0">
+      <span className="text-base font-bold tracking-tight text-primary">
+        ♟ Chess King
+      </span>
+    </div>
 
-      {/* Center — controls */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {/* Opponent selector */}
+    {/* Center — controls */}
+    <div className="flex items-center gap-2 flex-wrap">
+      {/* Opponent selector */}
+      <Dropdown
+        label="Opponent"
+        icon={opponent === "manual" ? User : opponent === "ai" ? Bot : Cpu}
+        options={OPPONENT_OPTIONS}
+        value={opponent}
+        onChange={onOpponentChange}
+      />
+
+      {/* Difficulty — visible when opponent is AI or Chess Engine */}
+      {opponent !== "manual" && (
         <Dropdown
-          label="Opponent"
-          icon={opponent === "manual" ? User : opponent === "ai" ? Bot : Cpu}
-          options={OPPONENT_OPTIONS}
-          value={opponent}
-          onChange={onOpponentChange}
+          label="Difficulty"
+          options={DIFFICULTY_OPTIONS}
+          value={difficulty}
+          onChange={onDifficultyChange}
         />
+      )}
 
-        {/* Difficulty — visible when opponent is AI or Chess Engine */}
-        {opponent !== "manual" && (
-          <Dropdown
-            label="Difficulty"
-            options={DIFFICULTY_OPTIONS}
-            value={difficulty}
-            onChange={onDifficultyChange}
-          />
-        )}
-
-        {/* Play as — pick side; disabled once game has started 
+      {/* Play as — pick side; disabled once game has started 
         {opponent !== "manual" && (
           <Dropdown
             label="Play as"
@@ -325,56 +342,55 @@ function ControlBar({
           />
         )} */}
 
-        <div className="w-px h-4 bg-border mx-1" />
+      <div className="w-px h-4 bg-border mx-1" />
 
-        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-secondary">
-          <Zap
-            className={`h-3.5 w-3.5 ${
-              isLiveMode ? "text-primary" : "text-muted-foreground"
-            }`}
-          />
-          <span className="text-xs text-muted-foreground">Learning</span>
-          <Switch checked={isLiveMode} onCheckedChange={onToggleLiveMode} />
-        </div>
-
-        <Button variant="ghost" size="sm" onClick={onNewGame}>
-          <RotateCcw className="h-4 w-4" />
-          New Game
-        </Button>
-
-        <Button variant="ghost" size="sm" onClick={onOpenSavedGames}>
-          <FolderOpen className="h-4 w-4" />
-          Save / Load
-        </Button>
-
-        <Button variant="ghost" size="sm" onClick={onSetPosition}>
-          <LayoutGrid className="h-4 w-4" />
-          Set Position
-        </Button>
-
-        <TrainDropdown
-          onOpenPuzzles={onOpenPuzzles}
-          onOpenOpeningDrill={onOpenOpeningDrill}
-          onOpenEndgame={onOpenEndgame}
-          onOpenOpeningStats={onOpenOpeningStats}
-          clockEnabled={clockEnabled}
-          clockTimeControl={clockTimeControl}
-          onToggleClock={onToggleClock}
-          onSetTimeControl={onSetTimeControl}
+      <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-secondary">
+        <Zap
+          className={`h-3.5 w-3.5 ${
+            isLiveMode ? "text-primary" : "text-muted-foreground"
+          }`}
         />
+        <span className="text-xs text-muted-foreground">Learning</span>
+        <Switch checked={isLiveMode} onCheckedChange={onToggleLiveMode} />
       </div>
 
-      {/* Right — settings */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={onOpenSettings}
-        className="shrink-0"
-      >
-        <Settings className="h-4 w-4" />
+      <Button variant="ghost" size="sm" onClick={onNewGame}>
+        <RotateCcw className="h-4 w-4" />
+        New Game
       </Button>
+
+      <Button variant="ghost" size="sm" onClick={onOpenSavedGames}>
+        <FolderOpen className="h-4 w-4" />
+        Save / Load
+      </Button>
+
+      <Button variant="ghost" size="sm" onClick={onSetPosition}>
+        <LayoutGrid className="h-4 w-4" />
+        Set Position
+      </Button>
+
+      <TrainDropdown
+        onOpenPuzzles={onOpenPuzzles}
+        onOpenOpeningDrill={onOpenOpeningDrill}
+        onOpenEndgame={onOpenEndgame}
+        onOpenOpeningStats={onOpenOpeningStats}
+        clockEnabled={clockEnabled}
+        clockTimeControl={clockTimeControl}
+        onToggleClock={onToggleClock}
+        onSetTimeControl={onSetTimeControl}
+      />
     </div>
-  );
-}
+
+    {/* Right — settings */}
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={onOpenSettings}
+      className="shrink-0"
+    >
+      <Settings className="h-4 w-4" />
+    </Button>
+  </div>
+);
 
 export default ControlBar;

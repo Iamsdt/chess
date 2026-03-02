@@ -1,15 +1,9 @@
-import { useState, useCallback, useEffect, useRef } from "react";
 import { Chess } from "chess.js";
+import { X, RefreshCw, BookOpen } from "lucide-react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Chessboard } from "react-chessboard";
-import { Button } from "@/components/ui/Button";
-import {
-  X,
-  ChevronLeft,
-  ChevronRight,
-  RefreshCw,
-  BookOpen,
-  Check,
-} from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import { OPENINGS } from "@/lib/openings";
 
 // ── Category colors and emoji ────────────────────────────────────────────────
@@ -21,11 +15,15 @@ const CATEGORY_STYLE = {
 };
 
 // ── Parse SAN move list from opening string ───────────────────────────────────
-function parseMoves(movesStr) {
-  return movesStr.trim().split(/\s+/);
-}
+/**
+ *
+ */
+const parseMoves = (movesString) => movesString.trim().split(/\s+/);
 
 // ── OpeningDrillMode ─────────────────────────────────────────────────────────
+/**
+ *
+ */
 export default function OpeningDrillMode({ onClose }) {
   const [phase, setPhase] = useState("select"); // "select" | "drill"
   const [selectedOpening, setSelectedOpening] = useState(null);
@@ -36,7 +34,7 @@ export default function OpeningDrillMode({ onClose }) {
   const [chess, setChess] = useState(null);
   const [fen, setFen] = useState("");
   const [moveList, setMoveList] = useState([]); // parsed SAN moves for the opening
-  const [drillIdx, setDrillIdx] = useState(0); // current step in the move list
+  const [drillIndex, setDrillIndex] = useState(0); // current step in the move list
   const [status, setStatus] = useState("idle"); // "idle"|"wrong"|"opponent"|"complete"
   const [wrongAttempt, setWrongAttempt] = useState(false);
   const [lastMoveSquares, setLastMoveSquares] = useState({});
@@ -44,7 +42,7 @@ export default function OpeningDrillMode({ onClose }) {
   const [masteredCount, setMasteredCount] = useState(0);
   const [totalMoves, setTotalMoves] = useState(0);
 
-  const opponentTimeoutRef = useRef(null);
+  const opponentTimeoutReference = useRef(null);
 
   // ── Filter openings ───────────────────────────────────────────────────────
   const filtered = OPENINGS.filter(
@@ -56,13 +54,13 @@ export default function OpeningDrillMode({ onClose }) {
 
   // ── Start drill for a given opening + side ────────────────────────────────
   const startDrill = useCallback((opening, side) => {
-    clearTimeout(opponentTimeoutRef.current);
+    clearTimeout(opponentTimeoutReference.current);
     const moves = parseMoves(opening.moves);
     const g = new Chess();
     setChess(g);
     setFen(g.fen());
     setMoveList(moves);
-    setDrillIdx(0);
+    setDrillIndex(0);
     setStatus("idle");
     setWrongAttempt(false);
     setLastMoveSquares({});
@@ -83,48 +81,51 @@ export default function OpeningDrillMode({ onClose }) {
   }, []);
 
   // ── Auto-play opponent's next move ────────────────────────────────────────
-  function playOpponentMove(game, moves, idx, side) {
-    if (idx >= moves.length) return;
+  /**
+   *
+   */
+  const playOpponentMove = (game, moves, index, side) => {
+    if (index >= moves.length) return;
     const isPlayerTurn =
-      (side === "w" && idx % 2 === 0) || (side === "b" && idx % 2 === 1);
+      (side === "w" && index % 2 === 0) || (side === "b" && index % 2 === 1);
     if (isPlayerTurn) return; // it's the human's turn, stop
 
-    opponentTimeoutRef.current = setTimeout(() => {
+    opponentTimeoutReference.current = setTimeout(() => {
       try {
-        const mv = game.move(moves[idx]);
+        const mv = game.move(moves[index]);
         if (!mv) return;
         setFen(game.fen());
         setLastMoveSquares({ [mv.from]: true, [mv.to]: true });
         setCorrectArrow([]);
-        const nextIdx = idx + 1;
-        setDrillIdx(nextIdx);
+        const nextIndex = index + 1;
+        setDrillIndex(nextIndex);
 
-        if (nextIdx >= moves.length) {
+        if (nextIndex >= moves.length) {
           setStatus("complete");
           setMasteredCount((n) => n + 1);
           return;
         }
         setStatus("idle");
         // If next move is also opponent's (e.g., both sides of a line), recurse
-        playOpponentMove(game, moves, nextIdx, side);
+        playOpponentMove(game, moves, nextIndex, side);
       } catch {
         /* */
       }
     }, 700);
-  }
+  };
 
   // ── Handle player piece drop ──────────────────────────────────────────────
   const handleDrop = useCallback(
     (from, to) => {
       if (!chess || !moveList || status === "complete") return false;
 
-      const expectedSan = moveList[drillIdx];
+      const expectedSan = moveList[drillIndex];
       if (!expectedSan) return false;
 
       // Check if it's the player's turn
       const isPlayerTurn =
-        (playerSide === "w" && drillIdx % 2 === 0) ||
-        (playerSide === "b" && drillIdx % 2 === 1);
+        (playerSide === "w" && drillIndex % 2 === 0) ||
+        (playerSide === "b" && drillIndex % 2 === 1);
       if (!isPlayerTurn) return false;
 
       // Try the move
@@ -143,16 +144,16 @@ export default function OpeningDrillMode({ onClose }) {
         setLastMoveSquares({ [from]: true, [to]: true });
         setCorrectArrow([]);
         setWrongAttempt(false);
-        const nextIdx = drillIdx + 1;
-        setDrillIdx(nextIdx);
+        const nextIndex = drillIndex + 1;
+        setDrillIndex(nextIndex);
         setMasteredCount((n) => n + 1);
 
-        if (nextIdx >= moveList.length) {
+        if (nextIndex >= moveList.length) {
           setStatus("complete");
           return true;
         }
         setStatus("opponent");
-        playOpponentMove(chess, moveList, nextIdx, playerSide);
+        playOpponentMove(chess, moveList, nextIndex, playerSide);
         return true;
       }
 
@@ -163,8 +164,8 @@ export default function OpeningDrillMode({ onClose }) {
 
       // Show correct move as arrow
       try {
-        const tempG = new Chess(chess.fen());
-        const correctMove = tempG.move(expectedSan);
+        const temporaryG = new Chess(chess.fen());
+        const correctMove = temporaryG.move(expectedSan);
         if (correctMove) {
           setCorrectArrow([
             {
@@ -187,7 +188,7 @@ export default function OpeningDrillMode({ onClose }) {
 
       return false;
     },
-    [chess, moveList, drillIdx, playerSide, status],
+    [chess, moveList, drillIndex, playerSide, status],
   );
 
   // ── Reset drill ──────────────────────────────────────────────────────────
@@ -196,11 +197,11 @@ export default function OpeningDrillMode({ onClose }) {
   }, [selectedOpening, playerSide, startDrill]);
 
   // Cleanup on unmount
-  useEffect(() => () => clearTimeout(opponentTimeoutRef.current), []);
+  useEffect(() => () => clearTimeout(opponentTimeoutReference.current), []);
 
   const orientation = playerSide === "w" ? "white" : "black";
   const progressPct =
-    totalMoves > 0 ? ((drillIdx / totalMoves) * 100).toFixed(0) : 0;
+    totalMoves > 0 ? ((drillIndex / totalMoves) * 100).toFixed(0) : 0;
 
   const lastMoveStyle = Object.fromEntries(
     Object.keys(lastMoveSquares).map((sq) => [
@@ -318,14 +319,14 @@ export default function OpeningDrillMode({ onClose }) {
   }
 
   // ── Phase: Drill ──────────────────────────────────────────────────────────
-  const currentExpected = moveList[drillIdx];
+  const currentExpected = moveList[drillIndex];
   const isPlayerTurn =
     status !== "complete" &&
     status !== "opponent" &&
-    ((playerSide === "w" && drillIdx % 2 === 0) ||
-      (playerSide === "b" && drillIdx % 2 === 1));
+    ((playerSide === "w" && drillIndex % 2 === 0) ||
+      (playerSide === "b" && drillIndex % 2 === 1));
 
-  const statusMsg =
+  const statusMessage =
     {
       idle: isPlayerTurn
         ? `Your turn — play ${playerSide === "w" ? "White's" : "Black's"} next move: ${currentExpected ?? "?"}`
@@ -418,7 +419,7 @@ export default function OpeningDrillMode({ onClose }) {
           <div className="space-y-1">
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>
-                Move {Math.min(drillIdx + 1, totalMoves)} / {totalMoves}
+                Move {Math.min(drillIndex + 1, totalMoves)} / {totalMoves}
               </span>
               <span>{progressPct}% mastered</span>
             </div>
@@ -436,16 +437,16 @@ export default function OpeningDrillMode({ onClose }) {
               Opening Line
             </p>
             <div className="flex flex-wrap gap-1">
-              {moveList.map((move, i) => {
-                const isWhiteMove = i % 2 === 0;
-                const isPlayed = i < drillIdx;
-                const isCurrent = i === drillIdx;
+              {moveList.map((move, index) => {
+                const isWhiteMove = index % 2 === 0;
+                const isPlayed = index < drillIndex;
+                const isCurrent = index === drillIndex;
                 const isPlayerMove =
                   (playerSide === "w" && isWhiteMove) ||
                   (playerSide === "b" && !isWhiteMove);
                 return (
                   <span
-                    key={i}
+                    key={index}
                     className={`text-xs px-1.5 py-0.5 rounded font-mono ${
                       isPlayed
                         ? "text-muted-foreground bg-secondary/40"
@@ -457,7 +458,7 @@ export default function OpeningDrillMode({ onClose }) {
                     }`}
                     title={isPlayerMove ? "Your move" : "Opponent's move"}
                   >
-                    {isWhiteMove && `${Math.floor(i / 2) + 1}.`}
+                    {isWhiteMove && `${Math.floor(index / 2) + 1}.`}
                     {move}
                   </span>
                 );
@@ -477,7 +478,7 @@ export default function OpeningDrillMode({ onClose }) {
                     : "border-border bg-secondary/20 text-muted-foreground"
             }`}
           >
-            {statusMsg}
+            {statusMessage}
           </div>
 
           {/* Actions */}

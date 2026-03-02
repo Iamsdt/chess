@@ -6,6 +6,7 @@
  */
 
 import { Chess } from "chess.js";
+
 import { getStockfishEngine } from "./stockfish.js";
 
 // ─── Quality levels (mirror intelligence.js thresholds) ──────────────────────
@@ -18,17 +19,20 @@ export const QUALITY_LEVELS = [
   { max: Infinity, label: "Blunder", emoji: "💥", color: "red", score: 10 },
 ];
 
-export function classifyMove(cpLost) {
+/**
+ *
+ */
+export const classifyMove = (cpLost) => {
   for (const q of QUALITY_LEVELS) {
     if (cpLost <= q.max) return q;
   }
   return QUALITY_LEVELS[QUALITY_LEVELS.length - 1];
-}
+};
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 /** Score from White's perspective in raw centipawns (or ±30000 for mate). */
-function normalizeToWhite(scoreCp, isMate, mateIn, fenTurn) {
+const normalizeToWhite = (scoreCp, isMate, mateIn, fenTurn) => {
   if (isMate) {
     // mateIn > 0 means the side-to-move is giving mate
     const givingMate = mateIn > 0;
@@ -37,9 +41,12 @@ function normalizeToWhite(scoreCp, isMate, mateIn, fenTurn) {
   }
   if (scoreCp === null) return null;
   return fenTurn === "w" ? scoreCp : -scoreCp;
-}
+};
 
-function uciBestToSan(fen, uci) {
+/**
+ *
+ */
+const uciBestToSan = (fen, uci) => {
   if (!uci || uci.length < 4) return null;
   try {
     const g = new Chess(fen);
@@ -52,14 +59,20 @@ function uciBestToSan(fen, uci) {
   } catch {
     return null;
   }
-}
+};
 
-function clampEval(v) {
+/**
+ *
+ */
+const clampEval = (v) => {
   if (v === null || v === undefined || isNaN(v)) return 0;
   return Math.max(-10, Math.min(10, v));
-}
+};
 
-function countQualities(moves) {
+/**
+ *
+ */
+const countQualities = (moves) => {
   const counts = {
     Brilliant: 0,
     Excellent: 0,
@@ -72,27 +85,26 @@ function countQualities(moves) {
     if (counts[m.quality] !== undefined) counts[m.quality]++;
   }
   return counts;
-}
+};
 
 /**
  * Chess.com–inspired accuracy formula:
  *   accuracy(cpLost) = 103.1668 × e^(−0.04354 × cpLost) − 3.1669
  * Clamped to [0, 100].
  */
-function moveAccuracy(cpLost) {
-  return Math.max(
-    0,
-    Math.min(100, 103.1668 * Math.exp(-0.04354 * cpLost) - 3.1669),
-  );
-}
+const moveAccuracy = (cpLost) =>
+  Math.max(0, Math.min(100, 103.1668 * Math.exp(-0.04354 * cpLost) - 3.1669));
 
-function calcAccuracy(moves) {
+/**
+ *
+ */
+const calcAccuracy = (moves) => {
   const valid = moves.filter((m) => m.cpLost !== null);
   if (!valid.length) return 100;
   const avg =
     valid.reduce((s, m) => s + moveAccuracy(m.cpLost), 0) / valid.length;
   return Math.round(Math.max(0, Math.min(100, avg)));
-}
+};
 
 // ─── Main export ─────────────────────────────────────────────────────────────
 
@@ -100,17 +112,16 @@ const STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 /**
  * Analyze every position in a completed game.
- *
  * @param {Array<{san,fen,from,to}>} moveHistory
- * @param {number} [depth=10]   Stockfish depth per position
+ * @param {number} [depth]   Stockfish depth per position
  * @param {Function|null} [onProgress]  (done, total) → void
  * @returns {Promise<GameReport|null>}
  */
-export async function analyzeFullGame(
+export const analyzeFullGame = async (
   moveHistory,
   depth = 10,
   onProgress = null,
-) {
+) => {
   if (!moveHistory || moveHistory.length < 2) return null;
 
   const sf = getStockfishEngine();
@@ -121,14 +132,14 @@ export async function analyzeFullGame(
 
   // Analyze each FEN sequentially (engine is single-threaded)
   const engineResults = [];
-  for (let i = 0; i < fens.length; i++) {
+  for (let index = 0; index < fens.length; index++) {
     try {
-      const r = await sf.analyze(fens[i], depth, 1);
+      const r = await sf.analyze(fens[index], depth, 1);
       engineResults.push(r);
     } catch {
       engineResults.push(null);
     }
-    if (onProgress) onProgress(i + 1, total);
+    if (onProgress) onProgress(index + 1, total);
   }
 
   // Build per-move summaries
@@ -149,15 +160,15 @@ export async function analyzeFullGame(
     : 0;
   evalHistory.push({ moveIndex: 0, label: "Start", score: startScore });
 
-  for (let i = 0; i < moveHistory.length; i++) {
-    const { san, fen, from, to } = moveHistory[i];
-    const side = i % 2 === 0 ? "w" : "b";
-    const preFen = fens[i];
+  for (let index = 0; index < moveHistory.length; index++) {
+    const { san, fen, from, to } = moveHistory[index];
+    const side = index % 2 === 0 ? "w" : "b";
+    const preFen = fens[index];
     const preTurn = side; // the player who just moved was side-to-move at preFen
     const postTurn = side === "w" ? "b" : "w";
 
-    const preRes = engineResults[i];
-    const postRes = engineResults[i + 1];
+    const preRes = engineResults[index];
+    const postRes = engineResults[index + 1];
 
     // Score from White's perspective (in centipawns)
     const scoreBeforeWhiteCp = preRes
@@ -192,8 +203,8 @@ export async function analyzeFullGame(
         : evalHistory[evalHistory.length - 1].score; // carry forward
 
     evalHistory.push({
-      moveIndex: i + 1,
-      label: `${Math.floor(i / 2) + 1}${side === "w" ? "." : "..."} ${san}`,
+      moveIndex: index + 1,
+      label: `${Math.floor(index / 2) + 1}${side === "w" ? "." : "..."} ${san}`,
       score: evalScore,
       side,
     });
@@ -205,7 +216,7 @@ export async function analyzeFullGame(
       from,
       to,
       side,
-      moveNum: Math.floor(i / 2) + 1, // 1-based full move number
+      moveNum: Math.floor(index / 2) + 1, // 1-based full move number
       quality: quality.label,
       qualityEmoji: quality.emoji,
       qualityColor: quality.color,
@@ -225,12 +236,12 @@ export async function analyzeFullGame(
   const blackCounts = countQualities(blackMoves);
 
   // Critical moment: move with largest cpLost above 100cp threshold
-  let criticalMoveIdx = -1;
+  let criticalMoveIndex = -1;
   let maxCp = 100;
-  for (let i = 0; i < moveSummary.length; i++) {
-    if ((moveSummary[i].cpLost ?? 0) > maxCp) {
-      maxCp = moveSummary[i].cpLost;
-      criticalMoveIdx = i;
+  for (let index = 0; index < moveSummary.length; index++) {
+    if ((moveSummary[index].cpLost ?? 0) > maxCp) {
+      maxCp = moveSummary[index].cpLost;
+      criticalMoveIndex = index;
     }
   }
 
@@ -242,7 +253,7 @@ export async function analyzeFullGame(
     evalHistory,
     white: { accuracy: whiteAccuracy, counts: whiteCounts },
     black: { accuracy: blackAccuracy, counts: blackCounts },
-    criticalMoveIdx,
+    criticalMoveIdx: criticalMoveIndex,
     blunders,
   };
-}
+};

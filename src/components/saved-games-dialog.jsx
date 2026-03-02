@@ -1,11 +1,15 @@
-import { useState, useEffect, useCallback } from "react";
 import { X, Save, FolderOpen, Trash2, Clock, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import useGameStore from "@/store/useGameStore";
-import { loadAutoSave } from "@/lib/db";
+import { useState, useEffect, useCallback } from "react";
 
-function timeAgo(ts) {
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { loadAutoSave } from "@/lib/db";
+import useGameStore from "@/store/use-game-store";
+
+/**
+ *
+ */
+const timeAgo = (ts) => {
   const diff = Date.now() - ts;
   const m = Math.floor(diff / 60000);
   const h = Math.floor(diff / 3600000);
@@ -14,72 +18,78 @@ function timeAgo(ts) {
   if (m < 60) return `${m}m ago`;
   if (h < 24) return `${h}h ago`;
   return `${d}d ago`;
-}
+};
 
-function formatDate(ts) {
-  return new Date(ts).toLocaleString(undefined, {
+/**
+ *
+ */
+const formatDate = (ts) =>
+  new Date(ts).toLocaleString(undefined, {
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
   });
-}
 
 // ── Single saved-game row ─────────────────────────────────────────────────
-function GameRow({ game, onLoad, onDelete, isAutoSave = false }) {
-  return (
-    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-secondary/40 hover:bg-secondary/70 border border-border/50 transition-colors group">
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-sm font-medium text-foreground truncate">
-            {game.name}
+/**
+ *
+ */
+const GameRow = ({ game, onLoad, onDelete, isAutoSave = false }) => (
+  <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-secondary/40 hover:bg-secondary/70 border border-border/50 transition-colors group">
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-sm font-medium text-foreground truncate">
+          {game.name}
+        </span>
+        {isAutoSave && (
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-semibold shrink-0">
+            AUTO
           </span>
-          {isAutoSave && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-semibold shrink-0">
-              AUTO
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
-          <Clock className="h-3 w-3 shrink-0" />
-          <span>{formatDate(game.timestamp)}</span>
-          <span>·</span>
-          <span>{game.moveHistory?.length ?? 0} moves</span>
-          {game.opponent && (
-            <>
-              <span>·</span>
-              <span className="capitalize">{game.opponent}</span>
-            </>
-          )}
-        </div>
+        )}
       </div>
-
-      <div className="flex items-center gap-1 shrink-0">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onLoad(game)}
-          className="h-7 px-2 text-xs gap-1 text-primary hover:text-primary"
-        >
-          <ChevronRight className="h-3.5 w-3.5" />
-          Load
-        </Button>
-        {!isAutoSave && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onDelete(game.id)}
-            className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
+      <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+        <Clock className="h-3 w-3 shrink-0" />
+        <span>{formatDate(game.timestamp)}</span>
+        <span>·</span>
+        <span>{game.moveHistory?.length ?? 0} moves</span>
+        {game.opponent && (
+          <>
+            <span>·</span>
+            <span className="capitalize">{game.opponent}</span>
+          </>
         )}
       </div>
     </div>
-  );
-}
+
+    <div className="flex items-center gap-1 shrink-0">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => onLoad(game)}
+        className="h-7 px-2 text-xs gap-1 text-primary hover:text-primary"
+      >
+        <ChevronRight className="h-3.5 w-3.5" />
+        Load
+      </Button>
+      {!isAutoSave && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onDelete(game.id)}
+          className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </Button>
+      )}
+    </div>
+  </div>
+);
 
 // ── SavedGamesDialog ──────────────────────────────────────────────────────
+/**
+ *
+ */
 export default function SavedGamesDialog({
   open,
   onClose,

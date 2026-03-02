@@ -260,13 +260,17 @@ export const ENDGAMES = [
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-export function getEndgamesByCategory(category) {
-  return ENDGAMES.filter((e) => e.category === category);
-}
+/**
+ *
+ */
+export const getEndgamesByCategory = (category) =>
+  ENDGAMES.filter((e) => e.category === category);
 
-export function getEndgamesByDifficulty(difficulty) {
-  return ENDGAMES.filter((e) => e.difficulty === difficulty);
-}
+/**
+ *
+ */
+export const getEndgamesByDifficulty = (difficulty) =>
+  ENDGAMES.filter((e) => e.difficulty === difficulty);
 
 export const ENDGAME_CATEGORIES = [
   { value: "all", label: "All Categories" },

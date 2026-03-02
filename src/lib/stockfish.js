@@ -50,9 +50,9 @@ export class StockfishEngine {
           this._dispatch(line);
         };
 
-        this._worker.onerror = (err) => {
-          console.error("Stockfish worker error:", err);
-          reject(err);
+        this._worker.onerror = (error) => {
+          console.error("Stockfish worker error:", error);
+          reject(error);
         };
 
         this._worker.postMessage("uci");
@@ -60,8 +60,8 @@ export class StockfishEngine {
         setTimeout(() => {
           if (!this._ready) reject(new Error("Stockfish init timed out"));
         }, 10000);
-      } catch (err) {
-        reject(err);
+      } catch (error) {
+        reject(error);
       }
     });
 
@@ -82,16 +82,16 @@ export class StockfishEngine {
     } else if (p.type === "analyze") {
       // Accumulate info lines (we want the last/deepest entry per multipv index)
       if (line.startsWith("info") && line.includes(" pv ")) {
-        const pvIdxM = line.match(/multipv (\d+)/);
-        const pvIdx = pvIdxM ? pvIdxM[1] : "1";
+        const pvIndexM = line.match(/multipv (\d+)/);
+        const pvIndex = pvIndexM ? pvIndexM[1] : "1";
         const depthM = line.match(/depth (\d+)/);
         const cpM = line.match(/score cp (-?\d+)/);
         const mateM = line.match(/score mate (-?\d+)/);
         const pvM = line.match(/ pv (.+)$/);
 
         if (depthM && (cpM || mateM) && pvM) {
-          p.infoLines[pvIdx] = {
-            pvIdx: parseInt(pvIdx),
+          p.infoLines[pvIndex] = {
+            pvIdx: parseInt(pvIndex),
             depth: parseInt(depthM[1]),
             scoreCp: cpM ? parseInt(cpM[1]) : null,
             isMate: !!mateM,
@@ -156,8 +156,8 @@ export class StockfishEngine {
   // ── Analyze position (coach mode) ────────────────────────────────────────
   /**
    * @param {string} fen
-   * @param {number} [depth=18]
-   * @param {number} [multiPV=3]   number of top lines to return
+   * @param {number} [depth]
+   * @param {number} [multiPV]   number of top lines to return
    * @returns {Promise<{ lines, bestMove, scoreCp, isMate, mateIn, pv }>}
    */
   async analyze(fen, depth = 18, multiPV = 3) {
@@ -201,14 +201,20 @@ export class StockfishEngine {
 // ── Singleton helpers ─────────────────────────────────────────────────────────
 let _instance = null;
 
-export function getStockfishEngine() {
+/**
+ *
+ */
+export const getStockfishEngine = () => {
   if (!_instance) _instance = new StockfishEngine();
   return _instance;
-}
+};
 
-export function destroyStockfishEngine() {
+/**
+ *
+ */
+export const destroyStockfishEngine = () => {
   if (_instance) {
     _instance.destroy();
     _instance = null;
   }
-}
+};

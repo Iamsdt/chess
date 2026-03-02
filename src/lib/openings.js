@@ -405,28 +405,27 @@ export const OPENINGS = [
 /**
  * Detect if the current game's move history matches a known opening.
  * Returns the longest (most specific) matching opening, or null.
- *
  * @param {string[]} moveHistory - Array of SAN moves played so far
  * @returns {{ eco, name, category, idea, moves } | null}
  */
-export function detectOpening(moveHistory) {
+export const detectOpening = (moveHistory) => {
   if (!moveHistory || moveHistory.length === 0) return null;
 
-  const gameStr = moveHistory.join(" ");
+  const gameString = moveHistory.join(" ");
   let best = null;
-  let bestLen = 0;
+  let bestLength = 0;
 
   for (const opening of OPENINGS) {
     const oMoves = opening.moves;
     // Match: game history starts with this opening's exact moves
-    if (gameStr === oMoves || gameStr.startsWith(oMoves + " ")) {
-      const len = oMoves.split(" ").length;
-      if (len > bestLen) {
-        bestLen = len;
+    if (gameString === oMoves || gameString.startsWith(`${oMoves} `)) {
+      const { length } = oMoves.split(" ");
+      if (length > bestLength) {
+        bestLength = length;
         best = opening;
       }
     }
   }
 
   return best;
-}
+};

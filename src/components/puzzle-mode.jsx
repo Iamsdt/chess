@@ -1,18 +1,15 @@
-import { useState, useCallback, useEffect, useRef } from "react";
 import { Chess } from "chess.js";
-import { Chessboard } from "react-chessboard";
-import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
 import {
   X,
   ChevronLeft,
   ChevronRight,
   Lightbulb,
-  RefreshCw,
-  Trophy,
   SkipForward,
-  Check,
 } from "lucide-react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { Chessboard } from "react-chessboard";
+
+import { Button } from "@/components/ui/button";
 import { getPuzzleSession } from "@/data/puzzles";
 
 // Difficulty badge color
@@ -34,9 +31,12 @@ const themeEmoji = {
 };
 
 // ── PuzzleMode ────────────────────────────────────────────────────────────────
+/**
+ *
+ */
 export default function PuzzleMode({ onClose, initialDifficulty = null }) {
   const [puzzles] = useState(() => getPuzzleSession(initialDifficulty));
-  const [puzzleIdx, setPuzzleIdx] = useState(0);
+  const [puzzleIndex, setPuzzleIndex] = useState(0);
   const [sessionStats, setSessionStats] = useState({ solved: 0, failed: 0 });
 
   // Per-puzzle state
@@ -48,14 +48,14 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
   const [hintUsed, setHintUsed] = useState(false);
   const [arrows, setArrows] = useState([]);
   const [lastMoveSquares, setLastMoveSquares] = useState({});
-  const engineTimeoutRef = useRef(null);
+  const engineTimeoutReference = useRef(null);
 
-  const puzzle = puzzles[puzzleIdx] ?? null;
+  const puzzle = puzzles[puzzleIndex] ?? null;
 
   // ── Initialise / reset on puzzle change ──────────────────────────────────
   useEffect(() => {
     if (!puzzle) return;
-    clearTimeout(engineTimeoutRef.current);
+    clearTimeout(engineTimeoutReference.current);
     const g = new Chess(puzzle.fen);
     setChess(g);
     setFen(puzzle.fen);
@@ -73,7 +73,7 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
       const sol = puzzle?.solution;
       if (!sol || step >= sol.length) return;
       const uci = sol[step];
-      engineTimeoutRef.current = setTimeout(() => {
+      engineTimeoutReference.current = setTimeout(() => {
         try {
           const mv = game.move({
             from: uci.slice(0, 2),
@@ -160,7 +160,7 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
     if (!puzzle || !chess) return;
     setSessionStats((s) => ({ ...s, failed: s.failed + 1 }));
     // Play out remaining solution moves
-    let g = chess;
+    const g = chess;
     const newArrows = [];
     const remaining = puzzle.solution.slice(solutionStep);
     remaining.forEach((uci) => {
@@ -182,14 +182,14 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
 
   // ── Navigate puzzles ──────────────────────────────────────────────────────
   const goNext = useCallback(() => {
-    clearTimeout(engineTimeoutRef.current);
-    if (puzzleIdx < puzzles.length - 1) setPuzzleIdx((i) => i + 1);
-  }, [puzzleIdx, puzzles.length]);
+    clearTimeout(engineTimeoutReference.current);
+    if (puzzleIndex < puzzles.length - 1) setPuzzleIndex((index) => index + 1);
+  }, [puzzleIndex, puzzles.length]);
 
-  const goPrev = useCallback(() => {
-    clearTimeout(engineTimeoutRef.current);
-    if (puzzleIdx > 0) setPuzzleIdx((i) => i - 1);
-  }, [puzzleIdx]);
+  const goPrevious = useCallback(() => {
+    clearTimeout(engineTimeoutReference.current);
+    if (puzzleIndex > 0) setPuzzleIndex((index) => index - 1);
+  }, [puzzleIndex]);
 
   if (!puzzle) return null;
 
@@ -201,7 +201,7 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
   // Total puzzles solved in the session
   const totalDone = sessionStats.solved + sessionStats.failed;
 
-  const statusMsg =
+  const statusMessage =
     {
       idle: "Find the best move — drag a piece!",
       "correct-step": "✓ Good move! Keep going…",
@@ -254,7 +254,7 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
                 🧩 Puzzle Mode
               </p>
               <p className="text-xs text-muted-foreground">
-                Puzzle {puzzleIdx + 1} / {puzzles.length}
+                Puzzle {puzzleIndex + 1} / {puzzles.length}
               </p>
             </div>
             <button
@@ -333,7 +333,7 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
                       : "border-border bg-secondary/20 text-muted-foreground"
             }`}
           >
-            {statusMsg}
+            {statusMessage}
             {status === "wrong" && wrongMoves > 0 && (
               <span className="block text-xs mt-0.5 opacity-70">
                 Incorrect attempt #{wrongMoves}
@@ -370,11 +370,11 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
             {(status === "solved" || status === "revealed") && (
               <Button
                 onClick={goNext}
-                disabled={puzzleIdx >= puzzles.length - 1}
+                disabled={puzzleIndex >= puzzles.length - 1}
                 className="w-full"
               >
                 <ChevronRight className="w-4 h-4 mr-1" />
-                {puzzleIdx >= puzzles.length - 1
+                {puzzleIndex >= puzzles.length - 1
                   ? "All puzzles done! 🎉"
                   : "Next Puzzle"}
               </Button>
@@ -386,8 +386,8 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
             <Button
               variant="ghost"
               size="sm"
-              onClick={goPrev}
-              disabled={puzzleIdx === 0}
+              onClick={goPrevious}
+              disabled={puzzleIndex === 0}
               className="text-muted-foreground"
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
@@ -397,18 +397,18 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
             {/* Dot indicators */}
             <div className="flex gap-1 flex-wrap justify-center max-w-[160px]">
               {puzzles
-                .slice(Math.max(0, puzzleIdx - 4), puzzleIdx + 5)
-                .map((p, i) => {
-                  const absIdx = Math.max(0, puzzleIdx - 4) + i;
+                .slice(Math.max(0, puzzleIndex - 4), puzzleIndex + 5)
+                .map((p, index) => {
+                  const absIndex = Math.max(0, puzzleIndex - 4) + index;
                   return (
                     <button
                       key={p.id}
                       onClick={() => {
-                        clearTimeout(engineTimeoutRef.current);
-                        setPuzzleIdx(absIdx);
+                        clearTimeout(engineTimeoutReference.current);
+                        setPuzzleIndex(absIndex);
                       }}
                       className={`w-2 h-2 rounded-full transition-colors ${
-                        absIdx === puzzleIdx
+                        absIndex === puzzleIndex
                           ? "bg-primary"
                           : p.difficulty === "hard"
                             ? "bg-red-500/50"
@@ -416,7 +416,7 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
                               ? "bg-yellow-500/50"
                               : "bg-green-500/50"
                       }`}
-                      title={`Puzzle ${absIdx + 1}: ${p.title}`}
+                      title={`Puzzle ${absIndex + 1}: ${p.title}`}
                     />
                   );
                 })}
@@ -426,7 +426,7 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
               variant="ghost"
               size="sm"
               onClick={goNext}
-              disabled={puzzleIdx >= puzzles.length - 1}
+              disabled={puzzleIndex >= puzzles.length - 1}
               className="text-muted-foreground"
             >
               Skip

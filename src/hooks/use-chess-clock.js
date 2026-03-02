@@ -26,51 +26,55 @@ export const TIME_CONTROLS = [
 ];
 
 /** Format ms → "M:SS" or "H:MM:SS" */
-export function formatTime(ms) {
+export const formatTime = (ms) => {
   const totalSec = Math.max(0, Math.ceil(ms / 1000));
   const h = Math.floor(totalSec / 3600);
   const m = Math.floor((totalSec % 3600) / 60);
   const s = totalSec % 60;
-  if (h > 0)
+  if (h > 0) {
     return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
   return `${m}:${String(s).padStart(2, "0")}`;
-}
+};
 
-export function useChessClock({
+/**
+ *
+ */
+export const useChessClock = ({
   enabled = false,
   timeControlMs = 300_000,
   incrementMs = 0,
   currentTurn = "w", // "w" | "b"
   isGameOver = false,
   isReviewMode = false,
-}) {
+}) => {
   const [timeWhite, setTimeWhite] = useState(timeControlMs);
   const [timeBlack, setTimeBlack] = useState(timeControlMs);
   const [flagged, setFlagged] = useState(null); // "w" | "b" | null
   const [paused, setPaused] = useState(false);
 
-  const intervalRef = useRef(null);
-  const flaggedRef = useRef(null);
-  const pausedRef = useRef(false);
+  const intervalReference = useRef(null);
+  const flaggedReference = useRef(null);
+  const pausedReference = useRef(false);
 
   // Keep refs in sync
-  flaggedRef.current = flagged;
-  pausedRef.current = paused;
+  flaggedReference.current = flagged;
+  pausedReference.current = paused;
 
   const shouldTick =
     enabled && !isGameOver && !isReviewMode && !flagged && !paused;
 
   useEffect(() => {
-    clearInterval(intervalRef.current);
+    clearInterval(intervalReference.current);
     if (!shouldTick) return;
 
-    intervalRef.current = setInterval(() => {
+    intervalReference.current = setInterval(() => {
       if (currentTurn === "w") {
         setTimeWhite((t) => {
           const next = t - 100;
           if (next <= 0) {
             setFlagged("w");
-            clearInterval(intervalRef.current);
+            clearInterval(intervalReference.current);
             return 0;
           }
           return next;
@@ -80,7 +84,7 @@ export function useChessClock({
           const next = t - 100;
           if (next <= 0) {
             setFlagged("b");
-            clearInterval(intervalRef.current);
+            clearInterval(intervalReference.current);
             return 0;
           }
           return next;
@@ -88,8 +92,7 @@ export function useChessClock({
       }
     }, 100);
 
-    return () => clearInterval(intervalRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => clearInterval(intervalReference.current);
   }, [shouldTick, currentTurn]);
 
   /** Call immediately after a move to add the increment for the side who just moved. */
@@ -105,7 +108,7 @@ export function useChessClock({
   /** Reset both clocks to a new time (or the original timeControlMs). */
   const reset = useCallback(
     (newTimeMs) => {
-      clearInterval(intervalRef.current);
+      clearInterval(intervalReference.current);
       const t = newTimeMs ?? timeControlMs;
       setTimeWhite(t);
       setTimeBlack(t);
@@ -128,4 +131,4 @@ export function useChessClock({
     pause,
     resume,
   };
-}
+};

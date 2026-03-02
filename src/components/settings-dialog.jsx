@@ -1,16 +1,20 @@
+import { Key } from "lucide-react";
 import { useState, useEffect } from "react";
+
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/Dialog";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Key } from "lucide-react";
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
-function SettingsDialog({ open, onOpenChange }) {
+/**
+ *
+ */
+const SettingsDialog = ({ open, onOpenChange }) => {
   const [apiKey, setApiKey] = useState("");
   const [model, setModel] = useState("gpt-4o-mini");
   const [elo, setElo] = useState("1000");
@@ -26,13 +30,16 @@ function SettingsDialog({ open, onOpenChange }) {
     setElo(savedElo);
   }, [open]);
 
-  function handleSave() {
+  /**
+   *
+   */
+  const handleSave = () => {
     localStorage.setItem("chess-coach-api-key", apiKey);
     localStorage.setItem("chess-coach-model", model);
     const parsedElo = Math.max(100, Math.min(3000, parseInt(elo, 10) || 1000));
     localStorage.setItem("chess-coach-elo", String(parsedElo));
     onOpenChange(false);
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -102,6 +109,6 @@ function SettingsDialog({ open, onOpenChange }) {
       </DialogContent>
     </Dialog>
   );
-}
+};
 
 export default SettingsDialog;

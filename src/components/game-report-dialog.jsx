@@ -1,11 +1,10 @@
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/Dialog";
-import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
+} from "@/components/ui/dialog";
 
 // ── Quality color mapping ─────────────────────────────────────────────────────
 const QUALITY_COLORS = {
@@ -27,17 +26,23 @@ const QUALITY_ORDER = [
 ];
 
 // ── Accuracy color ────────────────────────────────────────────────────────────
-function accuracyColor(pct) {
+/**
+ *
+ */
+const accuracyColor = (pct) => {
   if (pct >= 90) return "text-cyan-400";
   if (pct >= 75) return "text-emerald-400";
   if (pct >= 60) return "text-green-400";
   if (pct >= 45) return "text-yellow-400";
   if (pct >= 30) return "text-orange-400";
   return "text-red-400";
-}
+};
 
 // ── Eval Graph ────────────────────────────────────────────────────────────────
-function EvalGraph({ evalHistory, onJumpToMove }) {
+/**
+ *
+ */
+const EvalGraph = ({ evalHistory, onJumpToMove }) => {
   if (!evalHistory || evalHistory.length < 2) return null;
 
   const W = 600;
@@ -47,8 +52,8 @@ function EvalGraph({ evalHistory, onJumpToMove }) {
   const inner_w = W - PAD * 2;
 
   const n = evalHistory.length;
-  const pts = evalHistory.map((e, i) => {
-    const x = PAD + (i / (n - 1)) * inner_w;
+  const pts = evalHistory.map((e, index) => {
+    const x = PAD + (index / (n - 1)) * inner_w;
     const y = PAD + ((10 - e.score) / 20) * inner_h; // 10 = top, -10 = bottom
     return { x, y, ...e };
   });
@@ -131,15 +136,15 @@ function EvalGraph({ evalHistory, onJumpToMove }) {
           />
 
           {/* Clickable hover areas */}
-          {pts.map((p, i) => (
+          {pts.map((p, index) => (
             <circle
-              key={i}
+              key={index}
               cx={p.x}
               cy={p.y}
               r={6}
               fill="transparent"
               className="cursor-pointer"
-              onClick={() => onJumpToMove && onJumpToMove(i - 1)}
+              onClick={() => onJumpToMove && onJumpToMove(index - 1)}
             >
               <title>
                 {p.label}
@@ -160,10 +165,13 @@ function EvalGraph({ evalHistory, onJumpToMove }) {
       </p>
     </div>
   );
-}
+};
 
 // ── Accuracy Ring ─────────────────────────────────────────────────────────────
-function AccuracyRing({ accuracy, label }) {
+/**
+ *
+ */
+const AccuracyRing = ({ accuracy, label }) => {
   const r = 30;
   const circ = 2 * Math.PI * r;
   const dashOffset = circ * (1 - accuracy / 100);
@@ -216,10 +224,13 @@ function AccuracyRing({ accuracy, label }) {
       </span>
     </div>
   );
-}
+};
 
 // ── Quality breakdown bar ─────────────────────────────────────────────────────
-function QualityRow({ label, count, emoji, color, total }) {
+/**
+ *
+ */
+const QualityRow = ({ label, count, emoji, color, total }) => {
   if (!count) return null;
   const pct = total > 0 ? (count / total) * 100 : 0;
   return (
@@ -235,9 +246,12 @@ function QualityRow({ label, count, emoji, color, total }) {
       <span className="w-4 text-right font-mono text-foreground">{count}</span>
     </div>
   );
-}
+};
 
 // ── Main Dialog ───────────────────────────────────────────────────────────────
+/**
+ *
+ */
 export default function GameReportDialog({
   open,
   onOpenChange,
@@ -251,8 +265,12 @@ export default function GameReportDialog({
   const { white, black, evalHistory, criticalMoveIdx, moveSummary, blunders } =
     report;
 
-  const whiteTotalMoves = moveHistory.filter((_, i) => i % 2 === 0).length;
-  const blackTotalMoves = moveHistory.filter((_, i) => i % 2 !== 0).length;
+  const whiteTotalMoves = moveHistory.filter(
+    (_, index) => index % 2 === 0,
+  ).length;
+  const blackTotalMoves = moveHistory.filter(
+    (_, index) => index % 2 !== 0,
+  ).length;
   const criticalMove =
     criticalMoveIdx >= 0 ? moveSummary[criticalMoveIdx] : null;
 
@@ -330,8 +348,8 @@ export default function GameReportDialog({
         {/* Evaluation graph */}
         <EvalGraph
           evalHistory={evalHistory}
-          onJumpToMove={(idx) => {
-            onJumpToMove && onJumpToMove(idx);
+          onJumpToMove={(index) => {
+            onJumpToMove && onJumpToMove(index);
             onOpenChange(false);
           }}
         />
