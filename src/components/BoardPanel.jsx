@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   Trophy,
   Handshake,
+  Eye,
 } from "lucide-react";
 
 // ── piece value map for captured material calculation ──
@@ -86,6 +87,10 @@ function BoardPanel({
   lastMoveSquares,
   isAIThinking = false,
   boardOrientation = "white",
+  arrows = [],
+  isReviewMode = false,
+  premove = null,
+  onCancelPremove = null,
 }) {
   const containerRef = useRef(null);
   const [boardWidth, setBoardWidth] = useState(400);
@@ -157,6 +162,7 @@ function BoardPanel({
   // ── Compute legal moves for a square ──
   const getMoveOptions = useCallback(
     (square) => {
+      if (isReviewMode) return false;
       const moves = game.moves({ square, verbose: true });
       if (moves.length === 0) {
         setOptionSquares({});
@@ -180,11 +186,12 @@ function BoardPanel({
       setSelectedSquare(square);
       return true;
     },
-    [game]
+    [game, isReviewMode]
   );
 
   // ── Handle square click (click-to-move) ──
   function onSquareClick({ square }) {
+    if (isReviewMode) return;
     setRightClickedSquares({});
 
     // A piece is already selected — try to move or reselect
@@ -242,11 +249,13 @@ function BoardPanel({
 
   // ── Handle piece drag begin ──
   function onPieceDrag({ sourceSquare }) {
+    if (isReviewMode) return;
     getMoveOptions(sourceSquare);
   }
 
   // ── Handle drop ──
   function onDrop(sourceSquare, targetSquare, piece) {
+    if (isReviewMode) return false;
     setSelectedSquare(null);
     setOptionSquares({});
     setRightClickedSquares({});
@@ -311,8 +320,14 @@ function BoardPanel({
     // Right-click highlights
     Object.assign(styles, rightClickedSquares);
 
+    // Premove highlight — cyan/teal
+    if (premove) {
+      styles[premove.from] = { backgroundColor: "rgba(20, 184, 166, 0.45)" };
+      styles[premove.to]   = { backgroundColor: "rgba(20, 184, 166, 0.65)" };
+    }
+
     return styles;
-  }, [lastMoveSquares, checkSquare, optionSquares, rightClickedSquares, invalidSquare]);
+  }, [lastMoveSquares, checkSquare, optionSquares, rightClickedSquares, invalidSquare, premove]);
 
   // ── Captured piece row ──
   function CapturedRow({ totalPts, adv }) {
@@ -386,25 +401,51 @@ function BoardPanel({
             </div>
           </div>
         )}
+        {/* Review mode overlay badge */}
+        {isReviewMode && (
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+            <div className="bg-amber-500/90 text-black text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-md">
+              <Eye className="h-3 w-3" />
+              Review Mode
+            </div>
+          </div>
+        )}
+        {/* Premove indicator */}
+        {premove && !isReviewMode && (
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20">
+            <button
+              onClick={onCancelPremove}
+              className="bg-teal-500/90 text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-md hover:bg-teal-600/90 transition-colors"
+              title="Click to cancel premove"
+            >
+              <span className="animate-pulse">⚡</span>
+              Premove queued — click to cancel
+            </button>
+          </div>
+        )}
         <Chessboard
           options={{
             id: "main-board",
             position: fen,
             onPieceDrop: ({ sourceSquare, targetSquare, piece }) =>
               onDrop(sourceSquare, targetSquare, piece),
-            onSquareClick: isAIThinking ? () => {} : onSquareClick,
-            onPieceClick: isAIThinking ? () => {} : ({ square }) => onSquareClick({ square }),
+            onSquareClick: (isAIThinking || isReviewMode) ? () => {} : onSquareClick,
+            onPieceClick: (isAIThinking || isReviewMode) ? () => {} : ({ square }) => onSquareClick({ square }),
             onSquareRightClick,
             onPieceDrag,
             boardOrientation,
             animationDurationInMs: 200,
-            allowDragging: !isGameOver && !isAIThinking,
-            canDragPiece: () => !isGameOver && !isAIThinking,
+            allowDragging: !isGameOver && !isAIThinking && !isReviewMode,
+            canDragPiece: () => !isGameOver && !isAIThinking && !isReviewMode,
             boardStyle: { borderRadius: "0px" },
             darkSquareStyle: { backgroundColor: "#779952" },
             lightSquareStyle: { backgroundColor: "#edeed1" },
             squareStyles,
             dropSquareStyle: { boxShadow: "inset 0 0 1px 6px rgba(0,0,0,.1)" },
+            showNotation: true,
+            arrows,
+            clearArrowsOnPositionChange: false,
+            clearArrowsOnClick: false,
           }}
         />
       </div>

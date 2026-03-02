@@ -447,6 +447,86 @@ const PIECE_NAMES = { p: "Pawn", n: "Knight", b: "Bishop", r: "Rook", q: "Queen"
 
 // ──────────────────────────────────────────────────────────────────────────────
 
+// ─── Pin / Skewer detection ───────────────────────────────────────────────────
+
+const ROOK_DIRS = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+const BISHOP_DIRS = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
+const QUEEN_DIRS = [...ROOK_DIRS, ...BISHOP_DIRS];
+const SLIDER_DIRS = { r: ROOK_DIRS, b: BISHOP_DIRS, q: QUEEN_DIRS };
+const SLIDER_TYPES = new Set(["r", "b", "q"]);
+const PIN_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 100 };
+
+/**
+ * Scan all opponent sliding pieces along rays looking for:
+ *   • Absolute / relative pins: slider → player's piece (lower value) → player's piece (higher value incl. king)
+ *   • Skewers:                  slider → player's high-value piece → player's piece (any)
+ *
+ * Returns { pins: PinInfo[], skewers: SkewInfo[] }
+ */
+function detectPinsAndSkewers(game, opponentColor) {
+    const playerColor = opponentColor === "w" ? "b" : "w";
+    const board = game.board();
+    const pins = [];
+    const skewers = [];
+
+    const sqName = (r, c) => `${String.fromCharCode(97 + c)}${8 - r}`;
+
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const sq = board[r][c];
+            if (!sq || sq.color !== opponentColor || !SLIDER_TYPES.has(sq.type)) continue;
+
+            const dirs = SLIDER_DIRS[sq.type];
+            for (const [dr, dc] of dirs) {
+                let pr = r + dr, pc = c + dc;
+                let firstPiece = null, firstSq = null;
+
+                while (pr >= 0 && pr < 8 && pc >= 0 && pc < 8) {
+                    const target = board[pr][pc];
+                    if (target) {
+                        if (target.color === playerColor) {
+                            if (!firstPiece) {
+                                firstPiece = target;
+                                firstSq = sqName(pr, pc);
+                            } else {
+                                // second player piece found
+                                const fv = PIN_VALUES[firstPiece.type] ?? 0;
+                                const sv = PIN_VALUES[target.type] ?? 0;
+                                if (fv < sv) {
+                                    // pin: first is less valuable — can't move without exposing second
+                                    pins.push({
+                                        attackerSquare: sqName(r, c),
+                                        attackerPiece: sq.type,
+                                        pinnedSquare: firstSq,
+                                        pinnedPiece: firstPiece.type,
+                                        pinnedAgainst: target.type,
+                                        pinnedAgainstSquare: sqName(pr, pc),
+                                    });
+                                } else if (fv >= sv && fv >= 5) {
+                                    // skewer: first is higher-value (major piece), forced to move
+                                    skewers.push({
+                                        attackerSquare: sqName(r, c),
+                                        attackerPiece: sq.type,
+                                        skeweredSquare: firstSq,
+                                        skeweredPiece: firstPiece.type,
+                                        collateralSquare: sqName(pr, pc),
+                                        collateralPiece: target.type,
+                                    });
+                                }
+                                break;
+                            }
+                        } else {
+                            break; // own piece blocks the ray
+                        }
+                    }
+                    pr += dr; pc += dc;
+                }
+            }
+        }
+    }
+    return { pins, skewers };
+}
+
 /**
  * Analyze threats after the opponent's move and build a threat card.
  *
@@ -467,12 +547,12 @@ export function buildThreatCard(game, opponentColor, lastMoveTo, opponentMoveSan
     const opening = detectOpening(moveHistory);
     const knownPattern = opening
         ? {
-              type: "opening",
-              name: opening.name,
-              eco: opening.eco,
-              category: opening.category,
-              idea: opening.idea,
-          }
+            type: "opening",
+            name: opening.name,
+            eco: opening.eco,
+            category: opening.category,
+            idea: opening.idea,
+        }
         : null;
 
     // 1. Check
@@ -523,23 +603,67 @@ export function buildThreatCard(game, opponentColor, lastMoveTo, opponentMoveSan
         });
     }
 
+    // 4. Pins
+    const { pins, skewers } = detectPinsAndSkewers(game, opponentColor);
+    if (pins.length > 0) {
+        const p = pins[0];
+        const isAbsolute = p.pinnedAgainst === "k";
+        threats.push({
+            id: "pin",
+            name: `${PIECE_NAMES[p.attackerPiece]} Pin`,
+            icon: "📌",
+            description: `${pickThreatMsg("pin", msgSeed)} Your ${PIECE_NAMES[p.pinnedPiece].toLowerCase()} on ${p.pinnedSquare} is pinned${isAbsolute ? " to your king" : ` against your ${PIECE_NAMES[p.pinnedAgainst].toLowerCase()}`} by the ${PIECE_NAMES[p.attackerPiece].toLowerCase()} on ${p.attackerSquare}.`,
+            severity: isAbsolute ? "high" : "medium",
+            highlightSquares: [p.pinnedSquare, p.attackerSquare],
+        });
+    }
+
+    // 5. Skewers
+    if (skewers.length > 0) {
+        const s = skewers[0];
+        threats.push({
+            id: "skewer",
+            name: `${PIECE_NAMES[s.attackerPiece]} Skewer`,
+            icon: "⚡",
+            description: `${pickThreatMsg("skewer", msgSeed)} Your ${PIECE_NAMES[s.skeweredPiece].toLowerCase()} on ${s.skeweredSquare} is being skewered — if it moves, your ${PIECE_NAMES[s.collateralPiece].toLowerCase()} on ${s.collateralSquare} could be taken.`,
+            severity: "high",
+            highlightSquares: [s.skeweredSquare, s.attackerSquare],
+        });
+    }
+
     // No threats — nothing to show, regardless of opening context.
     if (threats.length === 0) return null;
 
     // ── Tag as a known pattern only when a threat actually exists ────────────
     // Opening context: the game is in a known opening line.
-    // Tactical context: a fork was just created (always worth learning about).
+    // Tactical context: fork / pin / skewer (always worth learning about).
     const effectivePattern =
         knownPattern ??
         (threats.some((t) => t.id === "fork")
             ? {
-                  type: "tactical",
-                  name: "Fork Tactic",
-                  eco: null,
-                  category: "tactical",
-                  idea: "A fork attacks two or more of your pieces at once, forcing a difficult choice about which piece to save. Learning to spot forks before they land is essential for every chess player.",
-              }
-            : null);
+                type: "tactical",
+                name: "Fork Tactic",
+                eco: null,
+                category: "tactical",
+                idea: "A fork attacks two or more of your pieces at once, forcing a difficult choice about which piece to save. Learning to spot forks before they land is essential for every chess player.",
+            }
+            : threats.some((t) => t.id === "pin")
+                ? {
+                    type: "tactical",
+                    name: "Pin Tactic",
+                    eco: null,
+                    category: "tactical",
+                    idea: "A pin immobilizes a piece because moving it would expose a more valuable piece behind it (often the king). Recognizing and breaking pins is a critical defensive skill.",
+                }
+                : threats.some((t) => t.id === "skewer")
+                    ? {
+                        type: "tactical",
+                        name: "Skewer Tactic",
+                        eco: null,
+                        category: "tactical",
+                        idea: "A skewer is like a reversed pin: a valuable piece is attacked and forced to move, exposing a less valuable piece behind it. Similar to a pin but targeting the more valuable piece first.",
+                    }
+                    : null);
 
     return {
         type: "threat-card",

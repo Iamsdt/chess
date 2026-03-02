@@ -43,7 +43,7 @@
 
 ---
 
-### 3. No Post-Game Full Analysis Report · `[BOTH]` · P0 · M
+### 3. No Post-Game Full Analysis Report · `[BOTH]` · P0 · M · ✅ DONE
 
 **Why a GM cares:**
 "When a game ends, my student needs a report card. How many blunders? Where was the critical mistake? What was the best/worst moment? Chess.com gives you this — it's table stakes for any coaching tool."
@@ -201,7 +201,7 @@
 
 ---
 
-### 11. Blunder Review Mode (Post-Game Error Flashcards) · `[PRACTICE]` · P1 · M
+### 11. Blunder Review Mode (Post-Game Error Flashcards) · `[PRACTICE]` · P1 · M · ✅ DONE
 
 **Why a GM cares:**
 "After a game, the student should revisit each mistake interactively — not just read a list. Show the position before the blunder, ask 'what would you play?', then reveal the correct move. Spaced repetition of your own mistakes is the fastest way to improve."
@@ -271,7 +271,7 @@
 
 ---
 
-### 15. PGN Export / Share · `[BOTH]` · P2 · S
+### 15. PGN Export / Share · `[BOTH]` · P2 · S · ✅ DONE
 
 **Why a GM cares:**
 "I want to send my student a game to study at home, or import it into Chessbase. Copy PGN to clipboard is a 10-minute feature that makes the app interoperable with every other chess tool."
@@ -293,7 +293,6 @@
 | # | Feature | Impact | Effort | File(s) |
 |---|---------|--------|--------|---------|
 | A | **Coordinates on board** (a-h, 1-8 labels) | Medium | 5 min | `BoardPanel.jsx` — set `showBoardNotation={true}` prop |
-| B | **Arrows for Best Move** (show pv[0] as arrow on board) | High | 30 min | `BoardPanel.jsx` + `App.jsx` — pass `customArrows` |
 | C | **Copy PGN button** in move history | Medium | 20 min | `MoveHistorySidebar.jsx` |
 | D | **Pin/Skewer detection** in threat cards | High | 2 hrs | `src/lib/intelligence.js` |
 | E | **"Resign" button** to end game cleanly | Low | 10 min | `ControlBar.jsx` or `BoardPanel.jsx` |
@@ -325,16 +324,16 @@ LOW EFFORT ─────────┼───────── HIGH EFFORT
 
 ## IMPLEMENTATION ORDER (Recommended)
 
-### Sprint 1 — Foundation (1 week)
-1. **Arrows for Best Move** (Quick Win B) — unblocks visual teaching
-2. **Move-by-move replay** (Feature 1) — unblocks all game review
-3. **FEN/PGN import** (Feature 4) — unblocks position teaching
-4. **Pin/Skewer detection** (Quick Win D) — better threat cards
+### Sprint 1 — Foundation ✅ COMPLETE
+1. **Arrows for Best Move** (Quick Win B) — ✅ Done
+2. **Move-by-move replay** (Feature 1) — ✅ Done
+3. **FEN/PGN import** (Feature 4) — ✅ Done
+4. **Pin/Skewer detection** (Quick Win D) — ✅ Done
 
-### Sprint 2 — Analysis (1 week)
-5. **Post-game full analysis report** (Feature 3) — accuracy, eval graph
-6. **Blunder review mode** (Feature 11) — practice loop
-7. **Copy PGN** (Quick Win C) — interoperability
+### Sprint 2 — Analysis ✅ COMPLETE
+5. **Post-game full analysis report** (Feature 3) — ✅ Done (accuracy rings, eval graph, quality breakdown, critical moment)
+6. **Blunder review mode** (Feature 11) — ✅ Done (interactive board, answer reveal, green arrow)
+7. **Copy PGN** (Quick Win C) — ✅ Done (was already complete from Sprint 1)
 
 ### Sprint 3 — Training (2 weeks)
 8. **Tactical puzzle mode** (Feature 5) — core training loop

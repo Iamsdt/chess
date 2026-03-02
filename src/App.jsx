@@ -6,8 +6,19 @@ import ChatPanel from "@/components/ChatPanel";
 import MoveHistorySidebar from "@/components/MoveHistorySidebar";
 import SettingsDialog from "@/components/SettingsDialog";
 import SavedGamesDialog from "@/components/SavedGamesDialog";
+import PositionSetupDialog from "@/components/PositionSetupDialog";
+import GameReportDialog from "@/components/GameReportDialog";
+import BlunderReviewMode from "@/components/BlunderReviewMode";
+import PuzzleMode from "@/components/PuzzleMode";
+import OpeningDrillMode from "@/components/OpeningDrillMode";
+import EndgameMode from "@/components/EndgameMode";
+import OpeningStatsPanel from "@/components/OpeningStatsPanel";
 import { autoSave, loadAutoSave } from "@/lib/db";
+import { analyzeFullGame } from "@/lib/analyzer";
 import useGameStore from "@/store/useGameStore";
+import { useChessClock, TIME_CONTROLS } from "@/hooks/useChessClock";
+import { recordOpeningResult, detectOpening } from "@/lib/openingStats";
+import { OPENINGS } from "@/lib/openings";
 import {
   sendChatMessage,
   explainPosition,
@@ -242,12 +253,57 @@ function App() {
   const [savedGamesOpen, setSavedGamesOpen] = useState(false);
   const autoSaveTimerRef = useRef(null);
 
+  // ---- Position setup dialog (FEN/PGN import) ----
+  const [positionSetupOpen, setPositionSetupOpen] = useState(false);
+
+  // ---- Best move arrows (shown on board) ----
+  const [bestMoveArrows, setBestMoveArrows] = useState([]);
+
+  // ---- Post-game full analysis ----
+  const [gameReport, setGameReport] = useState(null);
+  const [gameReportOpen, setGameReportOpen] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [blunderReviewOpen, setBlunderReviewOpen] = useState(false);
+  const isAnalyzingRef = useRef(false);
+
+  // ---- Training modes ----
+  const [puzzleOpen, setPuzzleOpen] = useState(false);
+  const [openingDrillOpen, setOpeningDrillOpen] = useState(false);
+  const [endgameOpen, setEndgameOpen] = useState(false);
+  const [openingStatsOpen, setOpeningStatsOpen] = useState(false);
+
+  // ---- Chess clock ----
+  const [clockEnabled, setClockEnabled] = useState(false);
+  const [clockTimeControl, setClockTimeControl] = useState(TIME_CONTROLS[2]); // Blitz 3+2
+
+  // ---- Annotations: { [moveIndex]: string } ----
+  const [annotations, setAnnotations] = useState({});
+
+  // ---- Premove: { from, to, promotion, piece } | null ----
+  const [premove, setPremove] = useState(null);
+  const premoveRef = useRef(null);
+  // Keep premoveRef in sync
+  useEffect(() => { premoveRef.current = premove; }, [premove]);
+
   // ---- Coach mode ----
   const [coachMode, setCoachMode] = useState("engine"); // "engine" | "ai"
   const coachModeRef = useRef(coachMode);
   useEffect(() => { coachModeRef.current = coachMode; }, [coachMode]);
   const isLiveModeRef = useRef(isLiveMode);
   useEffect(() => { isLiveModeRef.current = isLiveMode; }, [isLiveMode]);
+
+  // ---- Chess clock hook ----
+  const clock = useChessClock({
+    enabled: clockEnabled,
+    timeControlMs: clockTimeControl?.time ?? 180000,
+    incrementMs: clockTimeControl?.inc ?? 2000,
+    currentTurn: gameRef.current.turn(),
+    isGameOver: gameRef.current.isGameOver(),
+    isReviewMode: viewIndex !== null,
+  });
+  const clockRef = useRef(clock);
+  useEffect(() => { clockRef.current = clock; });
 
   // ── Auto-load last auto-save on first mount ─────────────────────────────
   useEffect(() => {
@@ -319,6 +375,14 @@ function App() {
       setMessages([]);
       setIsAIThinking(false);
       setEvalScore(null);
+      setGameReport(null);
+      setIsAnalyzing(false);
+      setAnalysisProgress(0);
+      setBlunderReviewOpen(false);
+      isAnalyzingRef.current = false;
+      setPremove(null);
+      premoveRef.current = null;
+      setAnnotations({});
       if (saved.boardOrientation) setBoardOrientation(saved.boardOrientation);
       if (saved.opponent) setOpponent(saved.opponent);
       if (saved.difficulty) setDifficulty(saved.difficulty);
@@ -414,9 +478,21 @@ function App() {
           setFen(game.fen());
           setMoveHistory(newHistory);
           setLastMoveSquares({ from: move.from, to: move.to });
+          clockRef.current.addIncrement(move.color);
 
           if (game.isCheckmate() || game.isStalemate() || game.isDraw()) {
             playSound("end");
+            // Record opening stats
+            const gameResult = game.isCheckmate()
+              ? (move.color)  // color that just moved (checkmated the king) is the winner
+              : "d";
+            const openingMatch = detectOpening(newHistory.map((m) => m.san), OPENINGS);
+            if (openingMatch) {
+              recordOpeningResult({ eco: openingMatch.eco, name: openingMatch.name, gameResult, playerColor: playerColorRef.current[0] });
+            }
+            // Snapshot history for analysis (wait for Stockfish to be freed)
+            const snapshot = newHistory;
+            setTimeout(() => triggerPostGameAnalysis(snapshot), 1200);
           } else if (game.inCheck()) {
             playSound("check");
           } else if (move.captured) {
@@ -442,6 +518,13 @@ function App() {
           console.error("Engine move error:", e);
         } finally {
           setIsAIThinking(false);
+          // Execute queued premove (if any and game is not over)
+          const pm = premoveRef.current;
+          if (pm && !gameRef.current.isGameOver()) {
+            setPremove(null);
+            premoveRef.current = null;
+            setTimeout(() => handleMoveRef.current?.(pm.from, pm.to, pm.piece), 60);
+          }
         }
       };
 
@@ -515,8 +598,20 @@ function App() {
       // Block moves while reviewing history
       if (viewIndexRef.current !== null) return null;
 
-      // Block move if it's not the player's turn (when not in manual mode)
+      // If it's not the player's turn in non-manual mode → queue as premove
       if (opponent !== "manual" && game.turn() !== playerColorRef.current[0]) {
+        const srcPiece = game.get(sourceSquare);
+        if (srcPiece && srcPiece.color === playerColorRef.current[0]) {
+          let promotion = undefined;
+          if (piece) {
+            const isPawn = piece[1] === "P" || piece[1] === "p";
+            const isLastRank = (piece[0] === "w" && targetSquare[1] === "8") || (piece[0] === "b" && targetSquare[1] === "1");
+            if (isPawn && isLastRank) promotion = "q";
+          }
+          const pm = { from: sourceSquare, to: targetSquare, promotion, piece };
+          setPremove(pm);
+          premoveRef.current = pm;
+        }
         return null;
       }
 
@@ -557,10 +652,26 @@ function App() {
       setMoveHistory((prev) => [...prev, { san: move.san, fen: game.fen(), from: move.from, to: move.to }]);
       setMoveQuality(null);
       setLastMoveSquares({ from: sourceSquare, to: targetSquare });
+      setBestMoveArrows([]);
+      clockRef.current.addIncrement(move.color);
+      // Clear any queued premove since we just moved
+      setPremove(null);
+      premoveRef.current = null;
+
+      // Build move history snapshot now (used for game-over analysis + live analysis below)
+      const newMoveHistory = [...moveHistory, { san: move.san, fen: game.fen(), from: move.from, to: move.to }];
 
       // Play sound
       if (game.isCheckmate() || game.isStalemate() || game.isDraw()) {
         playSound("end");
+        const snapshot = newMoveHistory;
+        // Record opening stats
+        const playerGameResult = game.isCheckmate() ? move.color : "d";
+        const openingMatchPlayer = detectOpening(snapshot.map((m) => m.san), OPENINGS);
+        if (openingMatchPlayer) {
+          recordOpeningResult({ eco: openingMatchPlayer.eco, name: openingMatchPlayer.name, gameResult: playerGameResult, playerColor: playerColorRef.current[0] });
+        }
+        setTimeout(() => triggerPostGameAnalysis(snapshot), 1200);
       } else if (game.inCheck()) {
         playSound("check");
       } else if (move.captured) {
@@ -571,7 +682,6 @@ function App() {
 
       // Live analysis / evaluation after human move
       const postFen = game.fen();
-      const newMoveHistory = [...moveHistory, { san: move.san, fen: game.fen(), from: move.from, to: move.to }];
 
       if (isLiveMode && coachMode === "engine") {
         // Analyze the player's move quality vs engine best.
@@ -598,6 +708,10 @@ function App() {
     },
     [isLiveMode, coachMode, moveHistory, opponent, triggerAIMove]
   );
+
+  // Stable ref so triggerAIMove can call handleMove without capturing stale closure
+  const handleMoveRef = useRef(null);
+  useEffect(() => { handleMoveRef.current = handleMove; }, [handleMove]);
 
   // ---- Helper: extract White-perspective score from engine result ----
   function applyEvalScore(result, fen) {
@@ -675,6 +789,31 @@ function App() {
     }
   }, []);
 
+  // ---- Post-game full analysis ----
+  const triggerPostGameAnalysis = useCallback(async (history) => {
+    if (isAnalyzingRef.current || (history?.length ?? 0) < 4) return;
+    isAnalyzingRef.current = true;
+    setIsAnalyzing(true);
+    setAnalysisProgress(0);
+    setGameReport(null);
+    try {
+      const report = await analyzeFullGame(
+        history,
+        10,
+        (done, total) => setAnalysisProgress(Math.round((done / total) * 100))
+      );
+      if (report) {
+        setGameReport(report);
+        setGameReportOpen(true);
+      }
+    } catch (e) {
+      console.error("Post-game analysis failed:", e);
+    } finally {
+      setIsAnalyzing(false);
+      isAnalyzingRef.current = false;
+    }
+  }, []);
+
   // ---- Engine coach: Best move ----
   const handleEngineBestMove = useCallback(async () => {
     setMessages((prev) => [...prev, { role: "user", content: "💡 Best Move", type: "engine-query" }]);
@@ -687,6 +826,17 @@ function App() {
       const card = buildBestMoveCard(result, gameRef.current.fen(), seed);
       if (card) {
         setMessages((prev) => [...prev, { role: "assistant", content: card, type: "best-move-card" }]);
+        // ── Draw arrows for best move (primary = green, response = blue) ──
+        const arrows = [];
+        if (result.pv && result.pv.length > 0) {
+          const mv1 = result.pv[0];
+          if (mv1?.length >= 4) arrows.push({ startSquare: mv1.slice(0,2), endSquare: mv1.slice(2,4), color: "#22c55e" });
+        }
+        if (result.pv && result.pv.length > 1) {
+          const mv2 = result.pv[1];
+          if (mv2?.length >= 4) arrows.push({ startSquare: mv2.slice(0,2), endSquare: mv2.slice(2,4), color: "#3b82f6" });
+        }
+        setBestMoveArrows(arrows);
       } else {
         setMessages((prev) => [...prev, { role: "assistant", content: "No legal moves in this position.", type: "engine" }]);
       }
@@ -903,11 +1053,97 @@ function App() {
     setLastMoveSquares(null);
     setIsAIThinking(false);
     setEvalScore(null);
+    setBestMoveArrows([]);
+    setGameReport(null);
+    setIsAnalyzing(false);
+    setAnalysisProgress(0);
+    setBlunderReviewOpen(false);
+    isAnalyzingRef.current = false;
+    clockRef.current.reset();
+    setPremove(null);
+    premoveRef.current = null;
+    setAnnotations({});
     // If player chose Black, engine plays first as White
     if (playerColorRef.current === "black" && opponent !== "manual") {
       setTimeout(() => triggerAIMove(gameRef.current.fen(), []), 150);
     }
   }, [opponent, triggerAIMove]);
+
+  // ---- Load a position from FEN or PGN ----
+  const handleLoadPosition = useCallback(({ type, fen, pgn, game: loadedGame }) => {
+    if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current);
+    destroyStockfishEngine();
+    try {
+      const g = loadedGame || new Chess();
+      if (!loadedGame) {
+        if (type === "fen") g.load(fen);
+        else if (type === "pgn") g.loadPgn(pgn);
+      }
+      gameRef.current = g;
+      setFen(g.fen());
+      const hist = g.history({ verbose: true });
+      const tempG = new Chess();
+      const newHistory = hist.map((m) => {
+        tempG.move(m);
+        return { san: m.san, fen: tempG.fen(), from: m.from, to: m.to };
+      });
+      setMoveHistory(newHistory);
+      setViewIndex(null);
+      setBestMoveArrows([]);
+      setMoveQuality(null);
+      setMessages([]);
+      setIsAIThinking(false);
+      setEvalScore(null);
+      setGameReport(null);
+      setIsAnalyzing(false);
+      setAnalysisProgress(0);
+      setBlunderReviewOpen(false);
+      isAnalyzingRef.current = false;
+      setPremove(null);
+      premoveRef.current = null;
+      setAnnotations({});
+      if (hist.length > 0) {
+        const last = hist[hist.length - 1];
+        setLastMoveSquares({ from: last.from, to: last.to });
+      } else {
+        setLastMoveSquares(null);
+      }
+      setPositionSetupOpen(false);
+      // If loaded game is already over (e.g. importing a complete PGN), trigger analysis automatically
+      if (g.isGameOver() && newHistory.length > 0) {
+        setTimeout(() => triggerPostGameAnalysis(newHistory), 1200);
+      }
+    } catch (e) {
+      console.error("Failed to load position:", e);
+    }
+  }, [triggerPostGameAnalysis]);
+
+  // ---- Copy current game as PGN ----
+  const handleCopyPgn = useCallback(() => {
+    navigator.clipboard.writeText(gameRef.current.pgn()).catch(console.error);
+  }, []);
+
+  const handleAnnotationChange = useCallback((idx, text) => {
+    setAnnotations((prev) => {
+      if (!text) {
+        const n = { ...prev };
+        delete n[idx];
+        return n;
+      }
+      return { ...prev, [idx]: text };
+    });
+  }, []);
+
+  // ---- Load an endgame scenario onto the main board ----
+  const handleLoadEndgameScenario = useCallback(
+    ({ fen: scenarioFen, playerColor: pc }) => {
+      setOpponent("engine");
+      setPlayerColor(pc);
+      setBoardOrientation(pc);
+      handleLoadPosition({ type: "fen", fen: scenarioFen });
+    },
+    [handleLoadPosition]
+  );
 
   // ---- Pre-warm Stockfish when engine mode is selected ----
   useEffect(() => {
@@ -1044,6 +1280,15 @@ function App() {
         playerColor={playerColor}
         onPlayerColorChange={handlePlayerColorChange}
         isGameInProgress={moveHistory.length > 0}
+        onSetPosition={() => setPositionSetupOpen(true)}
+        onOpenPuzzles={() => setPuzzleOpen(true)}
+        onOpenOpeningDrill={() => setOpeningDrillOpen(true)}
+        onOpenEndgame={() => setEndgameOpen(true)}
+        onOpenOpeningStats={() => setOpeningStatsOpen(true)}
+        clockEnabled={clockEnabled}
+        clockTimeControl={clockTimeControl}
+        onToggleClock={() => setClockEnabled((e) => !e)}
+        onSetTimeControl={setClockTimeControl}
       />
 
       {/* Main Content */}
@@ -1062,6 +1307,18 @@ function App() {
             onNavigateForward={handleNavigateForward}
             onFlipBoard={() => setBoardOrientation((o) => (o === "white" ? "black" : "white"))}
             onUndo={handleUndo}
+            onCopyPgn={handleCopyPgn}
+            isAnalyzing={isAnalyzing}
+            analysisProgress={analysisProgress}
+            gameReport={gameReport}
+            onViewReport={() => setGameReportOpen(true)}
+            clockEnabled={clockEnabled}
+            timeWhite={clock.timeWhite}
+            timeBlack={clock.timeBlack}
+            currentTurn={gameRef.current.turn()}
+            clockFlagged={clock.flagged}
+            annotations={annotations}
+            onAnnotationChange={handleAnnotationChange}
           />
         </div>
 
@@ -1074,6 +1331,9 @@ function App() {
             isAIThinking={isAIThinking}
             boardOrientation={boardOrientation}
             isReviewMode={viewIndex !== null}
+            arrows={bestMoveArrows}
+            premove={premove}
+            onCancelPremove={() => { setPremove(null); premoveRef.current = null; }}
           />
         </div>
 
@@ -1098,6 +1358,31 @@ function App() {
       {/* Settings Dialog */}
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
 
+      {/* Game Report Dialog */}
+      <GameReportDialog
+        open={gameReportOpen}
+        onOpenChange={setGameReportOpen}
+        report={gameReport}
+        moveHistory={moveHistory}
+        onJumpToMove={handleJumpToMove}
+        onReviewBlunders={() => setBlunderReviewOpen(true)}
+      />
+
+      {/* Blunder Review Mode */}
+      {blunderReviewOpen && gameReport?.blunders?.length > 0 && (
+        <BlunderReviewMode
+          blunders={gameReport.blunders}
+          onClose={() => setBlunderReviewOpen(false)}
+        />
+      )}
+
+      {/* Position Setup Dialog (FEN/PGN import) */}
+      <PositionSetupDialog
+        open={positionSetupOpen}
+        onOpenChange={setPositionSetupOpen}
+        onLoadPosition={handleLoadPosition}
+      />
+
       {/* Saved Games Dialog */}
       <SavedGamesDialog
         open={savedGamesOpen}
@@ -1105,6 +1390,17 @@ function App() {
         onLoadGame={handleLoadGame}
         currentGameSnapshot={getCurrentSnapshot()}
       />
+
+      {/* Training Modes */}
+      {puzzleOpen && <PuzzleMode onClose={() => setPuzzleOpen(false)} />}
+      {openingDrillOpen && <OpeningDrillMode onClose={() => setOpeningDrillOpen(false)} />}
+      {endgameOpen && (
+        <EndgameMode
+          onClose={() => setEndgameOpen(false)}
+          onLoadScenario={handleLoadEndgameScenario}
+        />
+      )}
+      <OpeningStatsPanel open={openingStatsOpen} onClose={() => setOpeningStatsOpen(false)} />
     </div>
   );
 }
