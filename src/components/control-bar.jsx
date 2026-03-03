@@ -7,13 +7,6 @@ import {
   Cpu,
   ChevronDown,
   FolderOpen,
-  Crown,
-  LayoutGrid,
-  Dumbbell,
-  Puzzle,
-  BookOpen,
-  Timer,
-  BarChart2,
   Moon,
   Sun,
 } from "lucide-react";
@@ -21,7 +14,6 @@ import { useState, useRef, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { TIME_CONTROLS } from "@/hooks/use-chess-clock";
 
 // ── Simple dropdown component ─────────────────────────────────────────────
 /**
@@ -107,161 +99,6 @@ export const Dropdown = ({
   );
 };
 
-// ── Train dropdown ────────────────────────────────────────────────────────
-/**
- *
- */
-const TrainDropdown = ({
-  onOpenPuzzles,
-  onOpenOpeningDrill,
-  onOpenEndgame,
-  onOpenOpeningStats,
-  clockEnabled,
-  clockTimeControl,
-  onToggleClock,
-  onSetTimeControl,
-}) => {
-  const [open, setOpen] = useState(false);
-  const [showClock, setShowClock] = useState(false);
-  const reference = useRef(null);
-
-  useEffect(() => {
-    /**
-     *
-     */
-    const handle = (e) => {
-      if (reference.current && !reference.current.contains(e.target)) {
-        setOpen(false);
-        setShowClock(false);
-      }
-    };
-    document.addEventListener("mousedown", handle);
-    return () => document.removeEventListener("mousedown", handle);
-  }, []);
-
-  return (
-    <div ref={reference} className="relative">
-      <button
-        onClick={() => {
-          setOpen((o) => !o);
-          setShowClock(false);
-        }}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-secondary border border-border text-xs font-medium hover:bg-secondary/80 cursor-pointer transition-colors"
-      >
-        <Dumbbell className="h-3.5 w-3.5 text-muted-foreground" />
-        <span className="text-foreground">Train</span>
-        <ChevronDown
-          className={`h-3 w-3 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
-        />
-      </button>
-
-      {open && (
-        <div className="absolute top-full left-0 mt-1 z-50 bg-card border border-border rounded-md shadow-xl w-52 py-1 overflow-hidden">
-          <button
-            onClick={() => {
-              onOpenPuzzles();
-              setOpen(false);
-            }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-secondary transition-colors text-left text-foreground"
-          >
-            <Puzzle className="h-3.5 w-3.5 text-primary" />
-            <span>Tactical Puzzles</span>
-          </button>
-
-          <button
-            onClick={() => {
-              onOpenOpeningDrill();
-              setOpen(false);
-            }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-secondary transition-colors text-left text-foreground"
-          >
-            <BookOpen className="h-3.5 w-3.5 text-primary" />
-            <span>Opening Drill</span>
-          </button>
-
-          <button
-            onClick={() => {
-              onOpenEndgame();
-              setOpen(false);
-            }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-secondary transition-colors text-left text-foreground"
-          >
-            <Crown className="h-3.5 w-3.5 text-primary" />
-            <span>Endgame Scenarios</span>
-          </button>
-
-          <button
-            onClick={() => {
-              onOpenOpeningStats();
-              setOpen(false);
-            }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-secondary transition-colors text-left text-foreground"
-          >
-            <BarChart2 className="h-3.5 w-3.5 text-primary" />
-            <span>Opening Statistics</span>
-          </button>
-
-          <div className="border-t border-border/50 my-1" />
-
-          {/* Clock toggle + time control sub-panel */}
-          <button
-            onClick={() => setShowClock((s) => !s)}
-            className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-secondary transition-colors text-left"
-          >
-            <Timer
-              className={`h-3.5 w-3.5 ${clockEnabled ? "text-primary" : "text-muted-foreground"}`}
-            />
-            <span
-              className={
-                clockEnabled ? "text-primary font-semibold" : "text-foreground"
-              }
-            >
-              Chess Clock{" "}
-              {clockEnabled ? `(${clockTimeControl?.label ?? "on"})` : "(off)"}
-            </span>
-            <ChevronDown
-              className={`h-3 w-3 ml-auto text-muted-foreground transition-transform ${showClock ? "rotate-180" : ""}`}
-            />
-          </button>
-
-          {showClock && (
-            <div className="px-3 py-2 bg-secondary/30 border-t border-border/30">
-              <div className="flex flex-wrap gap-1 mb-2">
-                {TIME_CONTROLS.map((tc) => (
-                  <button
-                    key={tc.label}
-                    onClick={() => {
-                      onSetTimeControl(tc);
-                      if (!clockEnabled) onToggleClock();
-                    }}
-                    className={`px-2 py-0.5 rounded text-[10px] font-mono border transition-colors ${
-                      clockTimeControl?.label === tc.label
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border/60 text-muted-foreground hover:bg-secondary"
-                    }`}
-                  >
-                    {tc.label}
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={onToggleClock}
-                className={`w-full py-1 rounded text-xs font-medium border transition-colors ${
-                  clockEnabled
-                    ? "border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20"
-                    : "border-primary/40 bg-primary/10 text-primary hover:bg-primary/20"
-                }`}
-              >
-                {clockEnabled ? "Disable Clock" : "Enable Clock"}
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
-
 const OPPONENT_OPTIONS = [
   { value: "engine", label: "Chess Engine", icon: Cpu, desc: "strongest" },
   { value: "ai", label: "AI", icon: Bot, desc: "minimax" },
@@ -288,18 +125,9 @@ const ControlBar = ({
   onOpponentChange,
   difficulty,
   onDifficultyChange,
-  onSetPosition,
   isDarkMode,
   onToggleDarkMode,
   // Train
-  onOpenPuzzles,
-  onOpenOpeningDrill,
-  onOpenEndgame,
-  onOpenOpeningStats,
-  clockEnabled,
-  clockTimeControl,
-  onToggleClock,
-  onSetTimeControl,
 }) => (
   <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card gap-2 flex-wrap">
     {/* Left — branding */}

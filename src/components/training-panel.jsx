@@ -1,3 +1,6 @@
+/* eslint-disable max-lines-per-function */
+/* eslint-disable no-unused-vars */
+/* eslint-disable complexity */
 import { Chess } from "chess.js";
 import {
   Puzzle,
@@ -18,7 +21,7 @@ import {
   Star,
   Trophy,
 } from "lucide-react";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ENDGAMES } from "@/data/endgames";
@@ -36,11 +39,13 @@ const THEME_GUIDE = {
     hint: "Find a piece that can attack two valuable enemy pieces simultaneously.",
   },
   pin: {
-    intro: "A pin restricts a piece — moving it would expose something more valuable.",
+    intro:
+      "A pin restricts a piece — moving it would expose something more valuable.",
     hint: "Look for a piece aligned with a more valuable piece behind it.",
   },
   skewer: {
-    intro: "A skewer forces a valuable piece to move, exposing the one behind it.",
+    intro:
+      "A skewer forces a valuable piece to move, exposing the one behind it.",
     hint: "Attack the more valuable piece — when it moves, capture what's behind.",
   },
   discovered: {
@@ -95,13 +100,13 @@ const Badge = ({ label, className }) => (
 // ── Step progress dots ─────────────────────────────────────────────────────
 const StepDots = ({ total, current }) => (
   <div className="flex items-center gap-1">
-    {Array.from({ length: total }).map((_, i) => (
+    {Array.from({ length: total }).map((_, index) => (
       <div
-        key={i}
+        key={index}
         className={`h-1.5 rounded-full transition-all ${
-          i < current
+          index < current
             ? "w-3 bg-primary"
-            : i === current
+            : index === current
               ? "w-3 bg-primary/60"
               : "w-1.5 bg-muted-foreground/30"
         }`}
@@ -113,32 +118,38 @@ const StepDots = ({ total, current }) => (
 // ═══════════════════════════════════════════════════════════════════════════
 // ── PUZZLE TRAINER ────────────────────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════════════════════
-function PuzzleTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
+/**
+ *
+ */
+const PuzzleTrainer = ({ onBoardUpdate, onRegisterMoveHandler, onBack }) => {
   const [phase, setPhase] = useState("list"); // "list" | "training"
   const [diffFilter, setDiffFilter] = useState("all");
   const [puzzles] = useState(() => getPuzzleSession(null));
   const [puzzleIndex, setPuzzleIndex] = useState(0);
 
-  const chessRef = useRef(null);
+  const chessReference = useRef(null);
   const [fen, setFen] = useState("");
   const [solutionStep, setSolutionStep] = useState(0);
   const [status, setStatus] = useState("idle"); // idle | correct-step | wrong | solved | revealed
   const [feedback, setFeedback] = useState(null); // { type, text }
   const [arrows, setArrows] = useState([]);
   const [wrongCount, setWrongCount] = useState(0);
-  const engineTimerRef = useRef(null);
+  const engineTimerReference = useRef(null);
 
   const puzzle = phase === "training" ? puzzles[puzzleIndex] : null;
-  const guide = puzzle ? (THEME_GUIDE[puzzle.theme] || {}) : {};
+  // memoized guide object to avoid changing reference on every render
+  const guide = useMemo(() => {
+    return puzzle ? THEME_GUIDE[puzzle.theme] || {} : {};
+  }, [puzzle]);
 
   // ── Init puzzle ──────────────────────────────────────────────────────────
   const initPuzzle = useCallback(
     (index) => {
-      clearTimeout(engineTimerRef.current);
+      clearTimeout(engineTimerReference.current);
       const p = puzzles[index];
       if (!p) return;
       const g = new Chess(p.fen);
-      chessRef.current = g;
+      chessReference.current = g;
       setSolutionStep(0);
       setStatus("idle");
       setFeedback({ type: "info", text: p.description || guide.intro });
@@ -161,7 +172,7 @@ function PuzzleTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
       const sol = puzzle?.solution;
       if (!sol || step >= sol.length) return;
       const uci = sol[step];
-      engineTimerRef.current = setTimeout(() => {
+      engineTimerReference.current = setTimeout(() => {
         try {
           const mv = game.move({
             from: uci.slice(0, 2),
@@ -180,14 +191,24 @@ function PuzzleTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
               type: "success",
               text: "🎉 Puzzle solved! Well done! You found the winning combination.",
             });
-            onBoardUpdate({ fen: newFen, orientation: game.turn() === "w" ? "white" : "black", arrows: [], isTrainingActive: true });
+            onBoardUpdate({
+              fen: newFen,
+              orientation: game.turn() === "w" ? "white" : "black",
+              arrows: [],
+              isTrainingActive: true,
+            });
           } else {
             setStatus("idle");
             setFeedback({
               type: "info",
               text: `Good! Now find the next best move. ${guide.hint || "Think carefully!"}`,
             });
-            onBoardUpdate({ fen: newFen, orientation: game.turn() === "w" ? "white" : "black", arrows: [], isTrainingActive: true });
+            onBoardUpdate({
+              fen: newFen,
+              orientation: game.turn() === "w" ? "white" : "black",
+              arrows: [],
+              isTrainingActive: true,
+            });
           }
         } catch {
           /* ignore */
@@ -200,8 +221,10 @@ function PuzzleTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
   // ── Training move handler ─────────────────────────────────────────────────
   const handleTrainingMove = useCallback(
     (from, to) => {
-      const game = chessRef.current;
-      if (!game || !puzzle || status === "solved" || status === "revealed") return false;
+      const game = chessReference.current;
+      if (!game || !puzzle || status === "solved" || status === "revealed") {
+        return false;
+      }
       const sol = puzzle.solution;
       const expectedUci = sol[solutionStep];
       if (!expectedUci) return false;
@@ -229,7 +252,12 @@ function PuzzleTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
               type: "success",
               text: "🎉 Puzzle solved! Excellent work! You found the winning combination.",
             });
-            onBoardUpdate({ fen: newFen, orientation: game.turn() === "w" ? "white" : "black", arrows: [], isTrainingActive: true });
+            onBoardUpdate({
+              fen: newFen,
+              orientation: game.turn() === "w" ? "white" : "black",
+              arrows: [],
+              isTrainingActive: true,
+            });
           } else {
             setStatus("correct-step");
             // Engine plays next move
@@ -255,7 +283,16 @@ function PuzzleTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
         return false;
       }
     },
-    [chessRef, puzzle, status, solutionStep, wrongCount, guide, playEngineStep, onBoardUpdate],
+    [
+      chessReference,
+      puzzle,
+      status,
+      solutionStep,
+      wrongCount,
+      guide,
+      playEngineStep,
+      onBoardUpdate,
+    ],
   );
 
   // Register/unregister handler
@@ -279,24 +316,39 @@ function PuzzleTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
     if (!sol) return;
     const uci = sol[solutionStep];
     if (!uci) return;
-    const hintArrow = [{ startSquare: uci.slice(0, 2), endSquare: uci.slice(2, 4), color: "#22c55e" }];
+    const hintArrow = [
+      {
+        startSquare: uci.slice(0, 2),
+        endSquare: uci.slice(2, 4),
+        color: "#22c55e",
+      },
+    ];
     setArrows(hintArrow);
     setFeedback({
       type: "hint",
       text: `💡 Hint: Move from ${uci.slice(0, 2).toUpperCase()} to ${uci.slice(2, 4).toUpperCase()}. ${guide.hint || ""}`,
     });
-    onBoardUpdate({ fen: chessRef.current.fen(), orientation: chessRef.current.turn() === "w" ? "white" : "black", arrows: hintArrow, isTrainingActive: true });
+    onBoardUpdate({
+      fen: chessReference.current.fen(),
+      orientation: chessReference.current.turn() === "w" ? "white" : "black",
+      arrows: hintArrow,
+      isTrainingActive: true,
+    });
   };
 
   // ── Reveal solution ───────────────────────────────────────────────────────
   const handleReveal = () => {
     const sol = puzzle?.solution;
-    const game = chessRef.current;
+    const game = chessReference.current;
     if (!sol || !game) return;
-    clearTimeout(engineTimerRef.current);
+    clearTimeout(engineTimerReference.current);
     const arrows = [];
-    for (let i = solutionStep; i < sol.length; i++) {
-      arrows.push({ startSquare: sol[i].slice(0, 2), endSquare: sol[i].slice(2, 4), color: i % 2 === 0 ? "#3b82f6" : "#ef4444" });
+    for (let index = solutionStep; index < sol.length; index++) {
+      arrows.push({
+        startSquare: sol[index].slice(0, 2),
+        endSquare: sol[index].slice(2, 4),
+        color: index % 2 === 0 ? "#3b82f6" : "#ef4444",
+      });
     }
     setArrows(arrows);
     setStatus("revealed");
@@ -304,12 +356,17 @@ function PuzzleTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
       type: "info",
       text: `Solution revealed. Study the moves and try the next puzzle to keep improving!`,
     });
-    onBoardUpdate({ fen: game.fen(), orientation: game.turn() === "w" ? "white" : "black", arrows, isTrainingActive: true });
+    onBoardUpdate({
+      fen: game.fen(),
+      orientation: game.turn() === "w" ? "white" : "black",
+      arrows,
+      isTrainingActive: true,
+    });
   };
 
   // ── Next puzzle ───────────────────────────────────────────────────────────
   const handleNextPuzzle = () => {
-    clearTimeout(engineTimerRef.current);
+    clearTimeout(engineTimerReference.current);
     const nextIndex = (puzzleIndex + 1) % puzzles.length;
     setPuzzleIndex(nextIndex);
   };
@@ -322,9 +379,14 @@ function PuzzleTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
 
   // ── Back to list ──────────────────────────────────────────────────────────
   const handleBackToList = () => {
-    clearTimeout(engineTimerRef.current);
+    clearTimeout(engineTimerReference.current);
     onRegisterMoveHandler(null);
-    onBoardUpdate({ fen: null, orientation: "white", arrows: [], isTrainingActive: false });
+    onBoardUpdate({
+      fen: null,
+      orientation: "white",
+      arrows: [],
+      isTrainingActive: false,
+    });
     setPhase("list");
   };
 
@@ -370,11 +432,11 @@ function PuzzleTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
         {/* List */}
         <div className="overflow-y-auto flex-1 px-2 py-2 space-y-1.5">
           {filtered.map((p, idx) => {
-            const realIdx = puzzles.indexOf(p);
+            const realIndex = puzzles.indexOf(p);
             return (
               <button
                 key={p.id}
-                onClick={() => handleSelect(realIdx)}
+                onClick={() => handleSelect(realIndex)}
                 className="w-full text-left p-2.5 rounded-lg border border-border/50 hover:border-primary/40 hover:bg-primary/5 transition-all group"
               >
                 <div className="flex items-start justify-between gap-2">
@@ -423,7 +485,10 @@ function PuzzleTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold truncate">{puzzle?.title}</p>
         </div>
-        <Badge label={puzzle?.difficulty} className={DIFF_STYLE[puzzle?.difficulty]} />
+        <Badge
+          label={puzzle?.difficulty}
+          className={DIFF_STYLE[puzzle?.difficulty]}
+        />
       </div>
 
       {/* Progress & theme */}
@@ -435,7 +500,10 @@ function PuzzleTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
               {puzzle?.theme} tactics
             </span>
           </div>
-          <StepDots total={playerSteps} current={Math.floor(solutionStep / 2)} />
+          <StepDots
+            total={playerSteps}
+            current={Math.floor(solutionStep / 2)}
+          />
         </div>
         <p className="text-[11px] text-muted-foreground">{guide.intro}</p>
       </div>
@@ -510,17 +578,18 @@ function PuzzleTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
               Solution
             </p>
             <div className="flex flex-wrap gap-1">
-              {puzzle.solution.map((uci, i) => (
+              {puzzle.solution.map((uci, index) => (
                 <span
-                  key={i}
+                  key={uci}
                   className={`text-[11px] font-mono px-1.5 py-0.5 rounded border ${
-                    i % 2 === 0
+                    index % 2 === 0
                       ? "bg-primary/10 border-primary/30 text-primary"
                       : "bg-red-500/10 border-red-500/30 text-red-400"
                   }`}
                 >
-                  {i % 2 === 0 ? "You: " : "Engine: "}
-                  {uci.slice(0, 2).toUpperCase()}→{uci.slice(2, 4).toUpperCase()}
+                  {index % 2 === 0 ? "You: " : "Engine: "}
+                  {uci.slice(0, 2).toUpperCase()}→
+                  {uci.slice(2, 4).toUpperCase()}
                 </span>
               ))}
             </div>
@@ -577,25 +646,28 @@ function PuzzleTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
       </div>
     </div>
   );
-}
+};
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ── OPENING TRAINER ───────────────────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════════════════════
-function OpeningTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
+/**
+ *
+ */
+const OpeningTrainer = ({ onBoardUpdate, onRegisterMoveHandler, onBack }) => {
   const [phase, setPhase] = useState("list"); // "list" | "side" | "training"
   const [catFilter, setCatFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedOpening, setSelectedOpening] = useState(null);
   const [playerSide, setPlayerSide] = useState("w");
 
-  const chessRef = useRef(null);
+  const chessReference = useRef(null);
   const [fen, setFen] = useState("");
   const [moveList, setMoveList] = useState([]);
   const [drillIndex, setDrillIndex] = useState(0);
   const [status, setStatus] = useState("idle"); // idle | wrong | complete
   const [feedback, setFeedback] = useState(null);
-  const opponentTimerRef = useRef(null);
+  const opponentTimerReference = useRef(null);
 
   // ── Parse moves from space-separated SAN string ───────────────────────────
   const parseMoves = (s) => s.trim().split(/\s+/);
@@ -608,7 +680,7 @@ function OpeningTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
         (side === "w" && index % 2 === 0) || (side === "b" && index % 2 === 1);
       if (isPlayerTurn) return;
 
-      opponentTimerRef.current = setTimeout(() => {
+      opponentTimerReference.current = setTimeout(() => {
         try {
           const mv = game.move(moves[index]);
           if (!mv) return;
@@ -623,7 +695,12 @@ function OpeningTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
               type: "success",
               text: `🎉 Opening complete! You mastered ${selectedOpening?.name}. Great job!`,
             });
-            onBoardUpdate({ fen: newFen, orientation: side === "w" ? "white" : "black", arrows: [], isTrainingActive: true });
+            onBoardUpdate({
+              fen: newFen,
+              orientation: side === "w" ? "white" : "black",
+              arrows: [],
+              isTrainingActive: true,
+            });
             return;
           }
 
@@ -632,25 +709,31 @@ function OpeningTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
             type: "info",
             text: `Good! Opponent plays ${mv.san}. Now it's your turn — play the correct response.`,
           });
-          onBoardUpdate({ fen: newFen, orientation: side === "w" ? "white" : "black", arrows: [], isTrainingActive: true });
+          onBoardUpdate({
+            fen: newFen,
+            orientation: side === "w" ? "white" : "black",
+            arrows: [],
+            isTrainingActive: true,
+          });
 
+          // eslint-disable-next-line react-hooks/immutability
           playOpponentMove(game, moves, nextIndex, side);
         } catch {
           /* */
         }
       }, 700);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [selectedOpening, onBoardUpdate],
   );
 
   // ── Start drill ────────────────────────────────────────────────────────────
   const startDrill = useCallback(
     (opening, side) => {
-      clearTimeout(opponentTimerRef.current);
+      clearTimeout(opponentTimerReference.current);
       const moves = parseMoves(opening.moves);
       const g = new Chess();
-      chessRef.current = g;
+      chessReference.current = g;
       setMoveList(moves);
       setDrillIndex(0);
       setStatus("idle");
@@ -679,7 +762,7 @@ function OpeningTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
   // ── Training move handler ──────────────────────────────────────────────────
   const handleTrainingMove = useCallback(
     (from, to) => {
-      const game = chessRef.current;
+      const game = chessReference.current;
       if (!game || status === "complete") return false;
 
       const expectedSan = moveList[drillIndex];
@@ -706,11 +789,21 @@ function OpeningTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
               type: "success",
               text: `🎉 Opening mastered! Excellent recall of ${selectedOpening?.name}.`,
             });
-            onBoardUpdate({ fen: newFen, orientation: playerSide === "w" ? "white" : "black", arrows: [], isTrainingActive: true });
+            onBoardUpdate({
+              fen: newFen,
+              orientation: playerSide === "w" ? "white" : "black",
+              arrows: [],
+              isTrainingActive: true,
+            });
             return true;
           }
 
-          onBoardUpdate({ fen: newFen, orientation: playerSide === "w" ? "white" : "black", arrows: [], isTrainingActive: true });
+          onBoardUpdate({
+            fen: newFen,
+            orientation: playerSide === "w" ? "white" : "black",
+            arrows: [],
+            isTrainingActive: true,
+          });
           playOpponentMove(game, moveList, nextIndex, playerSide);
           return true;
         } else {
@@ -728,18 +821,35 @@ function OpeningTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
               onBoardUpdate({
                 fen: game.fen(),
                 orientation: playerSide === "w" ? "white" : "black",
-                arrows: [{ startSquare: correctMv.from, endSquare: correctMv.to, color: "#22c55e" }],
+                arrows: [
+                  {
+                    startSquare: correctMv.from,
+                    endSquare: correctMv.to,
+                    color: "#22c55e",
+                  },
+                ],
                 isTrainingActive: true,
               });
             }
-          } catch { /* */ }
+          } catch {
+            /* */
+          }
           return false;
         }
       } catch {
         return false;
       }
     },
-    [chessRef, status, moveList, drillIndex, playerSide, selectedOpening, onBoardUpdate, playOpponentMove],
+    [
+      chessReference,
+      status,
+      moveList,
+      drillIndex,
+      playerSide,
+      selectedOpening,
+      onBoardUpdate,
+      playOpponentMove,
+    ],
   );
 
   // Register/unregister handler
@@ -753,9 +863,14 @@ function OpeningTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
   }, [phase, handleTrainingMove, onRegisterMoveHandler]);
 
   const handleBackToList = () => {
-    clearTimeout(opponentTimerRef.current);
+    clearTimeout(opponentTimerReference.current);
     onRegisterMoveHandler(null);
-    onBoardUpdate({ fen: null, orientation: "white", arrows: [], isTrainingActive: false });
+    onBoardUpdate({
+      fen: null,
+      orientation: "white",
+      arrows: [],
+      isTrainingActive: false,
+    });
     setPhase("list");
     setSelectedOpening(null);
   };
@@ -890,7 +1005,10 @@ function OpeningTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
                 </div>
                 <Badge
                   label={o.category}
-                  className={CAT_STYLE[o.category] || "text-muted-foreground bg-muted/30 border-border"}
+                  className={
+                    CAT_STYLE[o.category] ||
+                    "text-muted-foreground bg-muted/30 border-border"
+                  }
                 />
               </div>
             </button>
@@ -996,18 +1114,18 @@ function OpeningTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
               Moves played
             </p>
             <div className="flex flex-wrap gap-1">
-              {progressMoves.map((move, i) => (
+              {progressMoves.map((move, index) => (
                 <span
-                  key={i}
+                  key={index}
                   className={`text-[11px] font-mono px-1.5 py-0.5 rounded border ${
-                    (playerSide === "w" && i % 2 === 0) ||
-                    (playerSide === "b" && i % 2 === 1)
+                    (playerSide === "w" && index % 2 === 0) ||
+                    (playerSide === "b" && index % 2 === 1)
                       ? "bg-primary/10 border-primary/30 text-primary"
                       : "bg-muted/40 border-border text-muted-foreground"
                   }`}
                 >
-                  {Math.floor(i / 2) + 1}
-                  {i % 2 === 0 ? ". " : "... "}
+                  {Math.floor(index / 2) + 1}
+                  {index % 2 === 0 ? ". " : "... "}
                   {move}
                 </span>
               ))}
@@ -1024,7 +1142,7 @@ function OpeningTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
               </span>
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed">
-              You've completed the{" "}
+              You&apos;ve completed the{" "}
               <span className="text-primary font-medium">
                 {selectedOpening?.name}
               </span>{" "}
@@ -1058,12 +1176,15 @@ function OpeningTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
       </div>
     </div>
   );
-}
+};
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ── ENDGAME TRAINER ───────────────────────────────════════════════════════
 // ═══════════════════════════════════════════════════════════════════════════
-function EndgameTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
+/**
+ *
+ */
+const EndgameTrainer = ({ onBoardUpdate, onRegisterMoveHandler, onBack }) => {
   const [phase, setPhase] = useState("list"); // "list" | "training"
   const [catFilter, setCatFilter] = useState("all");
   const [selectedScenario, setSelectedScenario] = useState(null);
@@ -1071,16 +1192,16 @@ function EndgameTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
   const [feedback, setFeedback] = useState(null);
   const [status, setStatus] = useState("playing"); // "playing" | "won" | "drawn"
 
-  const chessRef = useRef(null);
-  const engineTimerRef = useRef(null);
+  const chessReference = useRef(null);
+  const engineTimerReference = useRef(null);
   const [fen, setFen] = useState("");
 
   // ── Start a scenario ───────────────────────────────────────────────────────
   const startScenario = useCallback(
     (scenario) => {
-      clearTimeout(engineTimerRef.current);
+      clearTimeout(engineTimerReference.current);
       const g = new Chess(scenario.fen);
-      chessRef.current = g;
+      chessReference.current = g;
       setSelectedScenario(scenario);
       setMoveCount(0);
       setStatus("playing");
@@ -1102,7 +1223,7 @@ function EndgameTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
   // ── Training move handler ──────────────────────────────────────────────────
   const handleTrainingMove = useCallback(
     (from, to) => {
-      const game = chessRef.current;
+      const game = chessReference.current;
       if (!game || status !== "playing") return false;
 
       try {
@@ -1119,7 +1240,12 @@ function EndgameTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
             type: "success",
             text: `🏆 Checkmate! Excellent technique! You successfully executed the ${selectedScenario?.category} endgame.`,
           });
-          onBoardUpdate({ fen: newFen, orientation: game.turn() === "w" ? "black" : "white", arrows: [], isTrainingActive: true });
+          onBoardUpdate({
+            fen: newFen,
+            orientation: game.turn() === "w" ? "black" : "white",
+            arrows: [],
+            isTrainingActive: true,
+          });
           return true;
         }
 
@@ -1129,7 +1255,12 @@ function EndgameTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
             type: "error",
             text: `⚠️ Stalemate or draw! In ${selectedScenario?.category} endgames, be careful not to trap the king without giving check. Try again!`,
           });
-          onBoardUpdate({ fen: newFen, orientation: game.turn() === "w" ? "white" : "black", arrows: [], isTrainingActive: true });
+          onBoardUpdate({
+            fen: newFen,
+            orientation: game.turn() === "w" ? "white" : "black",
+            arrows: [],
+            isTrainingActive: true,
+          });
           return true;
         }
 
@@ -1139,13 +1270,18 @@ function EndgameTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
           type: "info",
           text: tips,
         });
-        onBoardUpdate({ fen: newFen, orientation: game.turn() === "w" ? "white" : "black", arrows: [], isTrainingActive: true });
+        onBoardUpdate({
+          fen: newFen,
+          orientation: game.turn() === "w" ? "white" : "black",
+          arrows: [],
+          isTrainingActive: true,
+        });
         return true;
       } catch {
         return false;
       }
     },
-    [chessRef, status, selectedScenario, moveCount, onBoardUpdate],
+    [chessReference, status, selectedScenario, moveCount, onBoardUpdate],
   );
 
   // Register/unregister handler
@@ -1159,9 +1295,14 @@ function EndgameTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
   }, [phase, handleTrainingMove, onRegisterMoveHandler]);
 
   const handleBackToList = () => {
-    clearTimeout(engineTimerRef.current);
+    clearTimeout(engineTimerReference.current);
     onRegisterMoveHandler(null);
-    onBoardUpdate({ fen: null, orientation: "white", arrows: [], isTrainingActive: false });
+    onBoardUpdate({
+      fen: null,
+      orientation: "white",
+      arrows: [],
+      isTrainingActive: false,
+    });
     setPhase("list");
     setSelectedScenario(null);
   };
@@ -1229,7 +1370,9 @@ function EndgameTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
               </p>
               <div className="mt-1.5 flex items-center gap-1.5">
                 <Target className="h-3 w-3 text-primary/60" />
-                <span className="text-[11px] text-primary/70">{e.goalText}</span>
+                <span className="text-[11px] text-primary/70">
+                  {e.goalText}
+                </span>
               </div>
             </button>
           ))}
@@ -1317,7 +1460,8 @@ function EndgameTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20">
             <ArrowRight className="h-3.5 w-3.5 text-primary shrink-0" />
             <span className="text-xs text-primary">
-              {moveCount} {moveCount === 1 ? "move" : "moves"} made — keep going!
+              {moveCount} {moveCount === 1 ? "move" : "moves"} made — keep
+              going!
             </span>
           </div>
         )}
@@ -1378,10 +1522,13 @@ function EndgameTrainer({ onBoardUpdate, onRegisterMoveHandler, onBack }) {
       </div>
     </div>
   );
-}
+};
 
 // ── Endgame tip generator ──────────────────────────────────────────────────
-function getEndgameTip(scenario, game, moveCount) {
+/**
+ *
+ */
+const getEndgameTip = (scenario, game, moveCount) => {
   if (!scenario) return "Make your move!";
   const { category } = scenario;
 
@@ -1414,7 +1561,7 @@ function getEndgameTip(scenario, game, moveCount) {
 
   const tipSet = tips[category] || tips.default;
   return tipSet[moveCount % tipSet.length];
-}
+};
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ── TRAINING MODE SELECTOR ────────────────────────────────────────────────
@@ -1462,12 +1609,20 @@ const MODULES = [
  * - onBoardUpdate({ fen, orientation, arrows, isTrainingActive }) — updates main board
  * - onRegisterMoveHandler(fn | null) — registers/unregisters training move handler
  */
-export default function TrainingPanel({ onBoardUpdate, onRegisterMoveHandler }) {
+export default function TrainingPanel({
+  onBoardUpdate,
+  onRegisterMoveHandler,
+}) {
   const [activeModule, setActiveModule] = useState(null); // null | "puzzle" | "opening" | "endgame"
 
   const handleBack = () => {
     onRegisterMoveHandler(null);
-    onBoardUpdate({ fen: null, orientation: "white", arrows: [], isTrainingActive: false });
+    onBoardUpdate({
+      fen: null,
+      orientation: "white",
+      arrows: [],
+      isTrainingActive: false,
+    });
     setActiveModule(null);
   };
 
@@ -1494,33 +1649,35 @@ export default function TrainingPanel({ onBoardUpdate, onRegisterMoveHandler }) 
 
         {/* Module cards */}
         <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
-          {MODULES.map((mod) => {
-            const Icon = mod.icon;
+          {MODULES.map((module_) => {
+            const Icon = module_.icon;
             return (
               <button
-                key={mod.id}
-                onClick={() => setActiveModule(mod.id)}
-                className={`w-full text-left p-4 rounded-xl border transition-all ${mod.border} ${mod.bg} hover:scale-[1.01] group`}
+                key={module_.id}
+                onClick={() => setActiveModule(module_.id)}
+                className={`w-full text-left p-4 rounded-xl border transition-all ${module_.border} ${module_.bg} hover:scale-[1.01] group`}
               >
                 <div className="flex items-start gap-3">
-                  <div className={`mt-0.5 p-2 rounded-lg ${mod.bg} border border-white/10`}>
-                    <Icon className={`h-5 w-5 ${mod.color}`} />
+                  <div
+                    className={`mt-0.5 p-2 rounded-lg ${module_.bg} border border-white/10`}
+                  >
+                    <Icon className={`h-5 w-5 ${module_.color}`} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <p className={`text-sm font-semibold ${mod.color}`}>
-                        {mod.label}
+                      <p className={`text-sm font-semibold ${module_.color}`}>
+                        {module_.label}
                       </p>
                       <span className="text-[10px] text-muted-foreground font-mono shrink-0">
-                        {mod.count}
+                        {module_.count}
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                      {mod.desc}
+                      {module_.desc}
                     </p>
                   </div>
                   <ChevronRight
-                    className={`h-4 w-4 ${mod.color} opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-1`}
+                    className={`h-4 w-4 ${module_.color} opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-1`}
                   />
                 </div>
               </button>
@@ -1533,8 +1690,8 @@ export default function TrainingPanel({ onBoardUpdate, onRegisterMoveHandler }) 
           <div className="flex items-start gap-2 text-[11px] text-muted-foreground">
             <Info className="h-3.5 w-3.5 shrink-0 mt-0.5 text-primary/60" />
             <p>
-              Turn off <span className="text-primary">Learning</span> in the top bar
-              to switch back to Engine analysis and AI coach.
+              Turn off <span className="text-primary">Learning</span> in the top
+              bar to switch back to Engine analysis and AI coach.
             </p>
           </div>
         </div>
@@ -1542,7 +1699,7 @@ export default function TrainingPanel({ onBoardUpdate, onRegisterMoveHandler }) 
     );
   }
 
-  const sharedProps = {
+  const sharedProperties = {
     onBoardUpdate,
     onRegisterMoveHandler,
     onBack: handleBack,
@@ -1550,9 +1707,9 @@ export default function TrainingPanel({ onBoardUpdate, onRegisterMoveHandler }) 
 
   return (
     <div className="flex flex-col h-full border-l border-border bg-card">
-      {activeModule === "puzzle" && <PuzzleTrainer {...sharedProps} />}
-      {activeModule === "opening" && <OpeningTrainer {...sharedProps} />}
-      {activeModule === "endgame" && <EndgameTrainer {...sharedProps} />}
+      {activeModule === "puzzle" && <PuzzleTrainer {...sharedProperties} />}
+      {activeModule === "opening" && <OpeningTrainer {...sharedProperties} />}
+      {activeModule === "endgame" && <EndgameTrainer {...sharedProperties} />}
     </div>
   );
 }
