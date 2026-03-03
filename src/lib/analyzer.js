@@ -145,7 +145,7 @@ export const analyzeFullGame = async (
   const evalHistory = [];
 
   // Starting eval (from White's perspective)
-  const startResult = engineResults[0];
+  const [startResult] = engineResults; // prefer array destructuring
   const startScore = startResult
     ? clampEval(
         normalizeToWhite(

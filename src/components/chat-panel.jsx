@@ -20,8 +20,8 @@ import {
 } from "lucide-react";
 import { useState, useRef, useEffect, createElement } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 
 // ── Quality colour map ────────────────────────────────────────────────────
 const QUALITY_STYLES = {

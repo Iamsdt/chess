@@ -9,7 +9,7 @@ import {
 import { useState, useMemo } from "react";
 import { Chessboard } from "react-chessboard";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 /**

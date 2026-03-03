@@ -14,8 +14,8 @@ import {
 } from "lucide-react";
 import { useRef, useEffect, useMemo, useState, Fragment } from "react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { formatTime } from "@/hooks/use-chess-clock";
 
 const qualityVariantMap = {

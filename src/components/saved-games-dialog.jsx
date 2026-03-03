@@ -1,8 +1,8 @@
 import { X, Save, FolderOpen, Trash2, Clock, ChevronRight } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { loadAutoSave } from "@/lib/db";
 import useGameStore from "@/store/use-game-store";
 

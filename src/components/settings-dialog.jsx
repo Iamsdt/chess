@@ -1,15 +1,15 @@
 import { Key } from "lucide-react";
 import { useState, useEffect } from "react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+} from "@/components/ui/Dialog";
+import { Input } from "@/components/ui/Input";
 
 /**
  *

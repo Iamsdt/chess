@@ -271,6 +271,7 @@ const useEngineCoach = ({
     (fen, lastMoveSan) => {
       const sf = getStockfishEngine();
       sf.analyze(fen, 12, 1)
+        // eslint-disable-next-line promise/always-return
         .then((result) => {
           applyEvalScore(result, fen);
           const content = buildLiveAnalysisMessage(result, fen, lastMoveSan);

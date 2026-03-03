@@ -231,6 +231,7 @@ const App = () => {
     loadAutoSave()
       .then((saved) => {
         if (!saved?.pgn || !saved?.moveHistory?.length) return;
+        // eslint-disable-next-line promise/always-return
         try {
           const game = new Chess();
           game.loadPgn(saved.pgn);
@@ -257,7 +258,9 @@ const App = () => {
           setTimeout(() => {
             const sf = getStockfishEngine();
             sf.analyze(game.fen(), 10, 1)
+              // eslint-disable-next-line promise/no-nesting
               .then((result) => applyEvalScore(result, game.fen()))
+              // eslint-disable-next-line promise/no-nesting
               .catch(() => {});
           }, 800);
         } catch (error) {
@@ -584,7 +587,7 @@ const App = () => {
 
       if (viewIndexReference.current !== null) return null;
 
-      // Queue premove if not player's turn
+      // Queue if not player's turn
       if (
         opponent !== "manual" &&
         game.turn() !== playerColorReference.current[0]
