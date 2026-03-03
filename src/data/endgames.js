@@ -17,7 +17,7 @@ export const ENDGAMES = [
   {
     id: "kqk-1",
     title: "K+Q vs K — Basic Checkmate",
-    fen: "8/8/8/8/8/8/6K1/4q3 b - - 0 1",
+    fen: "8/8/8/8/5k2/6q1/8/7K b - - 0 1",
     description:
       "The most fundamental endgame. White king is in the corner — Black delivers checkmate. Learn the technique: box the king in with the queen, then use your king to close the net.",
     goal: "checkmate",
@@ -85,7 +85,7 @@ export const ENDGAMES = [
   {
     id: "philidor",
     title: "Philidor Position — Hold the Draw",
-    fen: "4k3/8/8/4PK2/8/8/8/4r3 b - - 0 1",
+    fen: "4k3/8/8/4PK2/4r3/8/8/4R3 b - - 0 1",
     description:
       "Black must draw with rook vs rook+pawn using the Philidor technique: keep the rook on the 6th rank, then switch to checking from behind. A critical defensive technique.",
     goal: "draw",

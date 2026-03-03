@@ -350,7 +350,9 @@ const ControlBar = ({
             isLiveMode ? "text-primary" : "text-muted-foreground"
           }`}
         />
-        <span className="text-xs text-muted-foreground">Learning</span>
+        <span className="text-xs text-muted-foreground">
+          {isLiveMode ? "Live Mode" : "Training"}
+        </span>
         <Switch checked={isLiveMode} onCheckedChange={onToggleLiveMode} />
       </div>
 
@@ -364,12 +366,12 @@ const ControlBar = ({
         Save / Load
       </Button>
 
-      <Button variant="ghost" size="sm" onClick={onSetPosition}>
+      {/* <Button variant="ghost" size="sm" onClick={onSetPosition}>
         <LayoutGrid className="h-4 w-4" />
         Set Position
-      </Button>
+      </Button> */}
 
-      <TrainDropdown
+      {/* <TrainDropdown
         onOpenPuzzles={onOpenPuzzles}
         onOpenOpeningDrill={onOpenOpeningDrill}
         onOpenEndgame={onOpenEndgame}
@@ -378,7 +380,7 @@ const ControlBar = ({
         clockTimeControl={clockTimeControl}
         onToggleClock={onToggleClock}
         onSetTimeControl={onSetTimeControl}
-      />
+      /> */}
     </div>
 
     {/* Right — dark mode + settings */}

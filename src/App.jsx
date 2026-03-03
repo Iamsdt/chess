@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { Chess } from "chess.js";
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 
@@ -14,6 +15,7 @@ import PositionSetupDialog from "@/components/position-setup-dialog";
 import PuzzleMode from "@/components/puzzle-mode";
 import SavedGamesDialog from "@/components/saved-games-dialog";
 import SettingsDialog from "@/components/settings-dialog";
+import TrainingPanel from "@/components/training-panel";
 import useAiChat from "@/hooks/use-ai-chat";
 import { useChessClock, TIME_CONTROLS } from "@/hooks/use-chess-clock";
 import useDarkMode from "@/hooks/use-dark-mode";
@@ -81,11 +83,58 @@ const App = () => {
     return entry ? { from: entry.from, to: entry.to } : null;
   }, [viewIndex, moveHistory, lastMoveSquares]);
 
+  // ── Training board state (declared early — used in displayBoardGame memo) ───
+  // Shape: { fen: string|null, orientation: string, arrows: [], isTrainingActive: bool }
+  const [bestMoveArrows, setBestMoveArrows] = useState([]);
+  const [trainingBoard, setTrainingBoard] = useState({
+    fen: null,
+    orientation: "white",
+    arrows: [],
+    isTrainingActive: false,
+  });
+  // Ref to training move handler set by TrainingPanel
+  const trainingHandlerReference = useRef(null);
+
+  // ── Training display overrides ────────────────────────────────────────────
+  // When learning mode is on and a training scenario is loaded, override the
+  // board with the training position.
+  const displayBoardGame = useMemo(() => {
+    if (isLiveMode && trainingBoard.isTrainingActive && trainingBoard.fen) {
+      const g = new Chess();
+      try {
+        g.load(trainingBoard.fen);
+      } catch {
+        /* ignore */
+      }
+      return g;
+    }
+    return displayGame;
+  }, [
+    isLiveMode,
+    trainingBoard.isTrainingActive,
+    trainingBoard.fen,
+    displayGame,
+  ]);
+
+  const displayBoardOrientation =
+    isLiveMode && trainingBoard.isTrainingActive
+      ? trainingBoard.orientation
+      : boardOrientation;
+
+  const displayBoardArrows =
+    isLiveMode && trainingBoard.isTrainingActive
+      ? trainingBoard.arrows
+      : bestMoveArrows;
+
+  const displayBoardLastMove =
+    isLiveMode && trainingBoard.isTrainingActive
+      ? null
+      : displayLastMoveSquares;
+
   const aiTimeoutReference = useRef(null);
   const [savedGamesOpen, setSavedGamesOpen] = useState(false);
   const autoSaveTimerReference = useRef(null);
   const [positionSetupOpen, setPositionSetupOpen] = useState(false);
-  const [bestMoveArrows, setBestMoveArrows] = useState([]);
 
   // ── Game report ──────────────────────────────────────────────────────────
   const [gameReport, setGameReport] = useState(null);
@@ -494,9 +543,42 @@ const App = () => {
     return () => window.removeEventListener("keydown", onKey);
   }, [handleNavigateBack, handleNavigateForward, handleExitReview]);
 
+  // ── Reset training state when Learning mode is toggled off ───────────────
+  useEffect(() => {
+    if (!isLiveMode) {
+      trainingHandlerReference.current = null;
+      setTrainingBoard({
+        fen: null,
+        orientation: "white",
+        arrows: [],
+        isTrainingActive: false,
+      });
+    }
+  }, [isLiveMode]);
+
+  // ── Training board callbacks ─────────────────────────────────────────────
+  const handleTrainingBoardUpdate = useCallback((state) => {
+    setTrainingBoard({
+      fen: state.fen ?? null,
+      orientation: state.orientation ?? "white",
+      arrows: state.arrows ?? [],
+      isTrainingActive: state.isTrainingActive ?? false,
+    });
+  }, []);
+
+  const handleRegisterMoveHandler = useCallback((function_) => {
+    trainingHandlerReference.current = function_ ?? null;
+  }, []);
+
   // ── Make a board move ────────────────────────────────────────────────────
   const handleMove = useCallback(
     (sourceSquare, targetSquare, piece) => {
+      // ── Route to training handler when Learning mode + training active ──
+      if (isLiveMode && trainingHandlerReference.current) {
+        trainingHandlerReference.current(sourceSquare, targetSquare);
+        return null;
+      }
+
       const game = gameReference.current;
       const preFen = game.fen();
 
@@ -838,13 +920,18 @@ const App = () => {
 
         <div className="flex items-center justify-center bg-background overflow-hidden p-4">
           <BoardPanel
-            game={displayGame}
+            game={displayBoardGame}
             onMove={handleMove}
-            lastMoveSquares={displayLastMoveSquares}
-            isAIThinking={isAIThinking}
-            boardOrientation={boardOrientation}
-            isReviewMode={viewIndex !== null}
-            arrows={bestMoveArrows}
+            lastMoveSquares={displayBoardLastMove}
+            isAIThinking={
+              isAIThinking && !(isLiveMode && trainingBoard.isTrainingActive)
+            }
+            boardOrientation={displayBoardOrientation}
+            isReviewMode={
+              viewIndex !== null &&
+              !(isLiveMode && trainingBoard.isTrainingActive)
+            }
+            arrows={displayBoardArrows}
             premove={premove}
             playerColor={playerColor}
             onPlayerColorChange={handlePlayerColorChange}
@@ -857,19 +944,26 @@ const App = () => {
         </div>
 
         <div className="min-w-0 min-h-0">
-          <ChatPanel
-            messages={messages}
-            onSendMessage={handleSendMessage}
-            isLoading={isLoading}
-            coachMode={coachMode}
-            onCoachModeChange={setCoachMode}
-            isLiveMode={isLiveMode}
-            onEngineAnalyze={handleEngineAnalyze}
-            onEngineBestMove={handleEngineBestMove}
-            onEngineHint={handleEngineHint}
-            onAskAI={handleAskAI}
-            onLearnWithAI={handleLearnWithAI}
-          />
+          {!isLiveMode ? (
+            <TrainingPanel
+              onBoardUpdate={handleTrainingBoardUpdate}
+              onRegisterMoveHandler={handleRegisterMoveHandler}
+            />
+          ) : (
+            <ChatPanel
+              messages={messages}
+              onSendMessage={handleSendMessage}
+              isLoading={isLoading}
+              coachMode={coachMode}
+              onCoachModeChange={setCoachMode}
+              isLiveMode={isLiveMode}
+              onEngineAnalyze={handleEngineAnalyze}
+              onEngineBestMove={handleEngineBestMove}
+              onEngineHint={handleEngineHint}
+              onAskAI={handleAskAI}
+              onLearnWithAI={handleLearnWithAI}
+            />
+          )}
         </div>
       </div>
 
