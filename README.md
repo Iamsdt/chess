@@ -23,19 +23,19 @@
 <table>
   <tr>
     <td align="center">
-      <img src="pics/Screenshot 2026-03-05 at 8.54.50 PM.png" alt="Live Game with AI Coach" width="100%"/>
+      <img src="pics/s1.png" alt="Live Game with AI Coach" width="100%"/>
       <br/><sub><b>Live Game with AI Coach Panel</b></sub>
     </td>
   </tr>
   <tr>
     <td align="center">
-      <img src="pics/Screenshot 2026-03-05 at 8.56.39 PM.png" alt="Training Mode" width="100%"/>
+      <img src="pics/s2.png" alt="Training Mode" width="100%"/>
       <br/><sub><b>Training Mode — Puzzles, Openings & Endgames</b></sub>
     </td>
   </tr>
   <tr>
     <td align="center">
-      <img src="pics/Screenshot 2026-03-05 at 8.56.53 PM.png" alt="Engine Analysis Panel" width="100%"/>
+      <img src="pics/s3.png" alt="Engine Analysis Panel" width="100%"/>
       <br/><sub><b>Deep Engine Analysis with Best Move, Hints & Position Analysis</b></sub>
     </td>
   </tr>
