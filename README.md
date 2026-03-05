@@ -2,7 +2,16 @@
 
 # ♟️ Chess King
 
-### Your AI-Powered Personal Chess Coach
+### AI-Powered Chess Coach in Your Browser
+
+Train like a Grandmaster using **Stockfish 18 + AI coaching (Gemini & GPT-4o)**.  
+Analyze positions, solve puzzles, study openings, and get **human-like explanations** for every move.
+
+No installation. No servers required. Runs entirely in your browser.
+
+⭐ **If you like this project, please consider starring the repository.**
+
+---
 
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)](https://vite.dev)
@@ -10,15 +19,37 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Chess King** is a fully browser-based, AI-powered chess training application that acts as your real-time personal coach. Unlike traditional chess apps that just show you the best move, Chess King explains *why* — teaching you to think like a Grandmaster.
-
-[Features](#features) · [Screenshots](#screenshots) · [Getting Started](#getting-started) · [Tech Stack](#tech-stack)
-
 </div>
 
 ---
 
-## Screenshots
+# ♟️ Chess King
+
+**Chess King** is an AI-powered chess training platform designed to help players understand chess deeply rather than just memorize moves.
+
+Most chess apps show the **best move**.
+
+**Chess King explains *why* it is the best move.**
+
+By combining **Stockfish engine analysis** with **large language models**, the system behaves like a **real chess coach**, helping players improve their thinking process.
+
+The application runs **entirely in the browser**, using WebAssembly for engine analysis and modern AI models for natural explanations.
+
+---
+
+# 🚀 Key Highlights
+
+- ♟ **Stockfish 18 running entirely in-browser (WASM)**
+- 🤖 **AI chess coach powered by Gemini + GPT-4o**
+- 📊 **Real-time engine evaluation bar**
+- 🧠 **Human-like explanations for positions**
+- 🎯 **Puzzle, opening, and endgame training**
+- 📈 **Full game analysis with move classification**
+- ⚡ **No backend required — fully browser based**
+
+---
+
+# 📸 Screenshots
 
 <table>
   <tr>
@@ -43,77 +74,177 @@
 
 ---
 
-## Features
+# 🤖 AI Coaching Engine
 
-### 🤖 AI Coaching Engine
-- **Real-time AI Coach** — Conversational coaching powered by Google Gemini & OpenAI GPT-4o. Ask anything about any position and get human-like explanations
-- **ELO-Aware Coaching** — AI adapts its language and depth of explanation to your skill level
-- **Hint System** — Get a nudge in the right direction without spoiling the solution
-- **Think Like a GM** — Deep GM-style thought process: candidate moves → calculation tree → positional plan → best move
+Chess King includes a conversational AI coach designed to guide players through positions like a human trainer.
 
-### ♟️ Stockfish 18 Integration
-- **Live Mode Analysis** — Stockfish 18 WASM engine runs entirely in-browser with zero server calls
-- **Real-Time Evaluation Bar** — See the position advantage shift with every move
-- **Best Move Suggestions** — Multi-PV analysis showing top engine lines with continuations
-- **Position Analysis on Demand** — Full depth analysis with top lines and tactical themes
+Features include:
 
-### 🎓 Training Modules
-- **Tactical Puzzles** — 44 curated puzzles to sharpen your calculation and pattern recognition
-- **Opening Drill** — 54 opening lines, memorize and practice theory move-by-move with explanations
-- **Endgame Training** — 21 essential endgame scenarios to master fundamental techniques
-- **Blunder Review Mode** — Replay your worst moves and learn from your mistakes
+- **Real-time AI explanations**
+- **Conversational chess analysis**
+- **Skill-level adaptive coaching**
+- **Move suggestions with reasoning**
 
-### 📊 Game Analysis
-- **Move Quality Classification** — Every move rated: Excellent, Good, Inaccuracy, Mistake, Blunder
-- **Threat Detection** — Automatic detection of forks, pins, skewers, and tactical patterns
-- **Full Game Report** — Accuracy % for both players with move-by-move breakdown
-- **Opening Recognition** — 40+ ECO codes identified and named in real-time
+The coach explains:
 
-### 🛠️ Board & Gameplay
-- **Play vs Chess Engine** — Custom minimax engine with alpha-beta pruning at multiple difficulty levels
-- **Interactive Board** — Drag-and-drop moves with legal move highlighting and arrow annotations
-- **Move History** — Full PGN-style notation sidebar with navigation
-- **Position Setup** — Load any FEN position to analyze or practice from
-- **Save & Load Games** — Persist your games locally via IndexedDB
-- **Flip Board** — View from either side
-- **Dark Mode** — Full dark/light theme support
+- Candidate moves
+- Tactical ideas
+- Strategic plans
+- Calculation trees
+
+Instead of simply telling the best move, it teaches **how strong players think**.
 
 ---
 
-## Getting Started
+# ♟️ Stockfish 18 Integration
 
-### Prerequisites
+The project integrates **Stockfish 18 compiled to WebAssembly**, allowing deep engine analysis directly inside the browser.
+
+Capabilities include:
+
+- **Multi-PV analysis**
+- **Evaluation bar**
+- **Best move suggestions**
+- **Threat detection**
+- **Position evaluation**
+
+All analysis runs **locally in your browser** without server calls.
+
+---
+
+# 🎓 Training Modules
+
+The platform includes multiple training systems designed to improve chess skills.
+
+### Tactical Puzzles
+Improve calculation and pattern recognition.
+
+- 44 curated puzzles
+- Tactical motif detection
+- Guided hints
+
+### Opening Drill
+
+Practice opening theory.
+
+- 54 opening lines
+- Move-by-move explanations
+- ECO opening recognition
+
+### Endgame Training
+
+Learn fundamental endgame techniques.
+
+- 21 classic endgame scenarios
+- Position-based training
+- Engine verification
+
+### Blunder Review Mode
+
+Review mistakes from previous games.
+
+- Blunder detection
+- Tactical explanation
+- Improvement suggestions
+
+---
+
+# 📊 Game Analysis
+
+Chess King analyzes entire games and provides detailed insights.
+
+Analysis includes:
+
+- Move quality classification
+- Accuracy percentage
+- Tactical pattern detection
+- Opening recognition
+
+Each move is categorized as:
+
+- Excellent
+- Good
+- Inaccuracy
+- Mistake
+- Blunder
+
+This helps players understand **where and why mistakes happen**.
+
+---
+
+# 🛠 Board & Gameplay Features
+
+The application includes a full interactive chess board system.
+
+Features include:
+
+- Drag-and-drop move input
+- Legal move highlighting
+- Arrow annotations
+- Move history with PGN
+- Position setup via FEN
+- Save/load games using IndexedDB
+- Board flipping
+- Dark mode support
+
+You can also play against a **custom minimax chess engine** with multiple difficulty levels.
+
+---
+
+# ⚙️ Getting Started
+
+## Prerequisites
+
 - Node.js 18+
 - npm or yarn
 
-### Installation
+---
+
+## Installation
+
+Clone the repository:
 
 ```bash
-# Clone the repository
 git clone https://github.com/Iamsdt/chess.git
 cd chess
+````
 
-# Install dependencies
+Install dependencies:
+
+```bash
 npm install
+```
 
-# Start the development server
+Start the development server:
+
+```bash
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+Open:
 
-### Environment Variables
+```
+http://localhost:5173
+```
 
-To enable AI coaching features, create a `.env` file in the root:
+---
+
+# 🔑 Environment Variables
+
+To enable AI coaching features, create a `.env` file:
 
 ```env
 VITE_GOOGLE_AI_API_KEY=your_google_gemini_api_key
 VITE_OPENAI_API_KEY=your_openai_api_key
 ```
 
-> **Note:** The app works fully offline for analysis and training. AI coaching features require API keys.
+Note:
 
-### Build for Production
+The project still works **fully offline for chess analysis and training** without API keys.
+
+---
+
+# 🏗 Build for Production
 
 ```bash
 npm run build
@@ -122,59 +253,103 @@ npm run preview
 
 ---
 
-## Tech Stack
+# 🧠 Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | React 19 + Vite 6 |
-| Styling | Tailwind CSS 4 + Radix UI |
-| Chess Engine | Stockfish 18 (WASM, Web Worker) |
-| Chess Logic | chess.js |
-| Board UI | react-chessboard |
-| AI Coaching | Google Gemini + OpenAI GPT-4o |
-| State Management | Zustand |
-| Local Storage | IndexedDB (via idb) |
-| Custom Engine | Minimax + Alpha-Beta Pruning |
+| Layer            | Technology                   |
+| ---------------- | ---------------------------- |
+| Frontend         | React 19 + Vite 6            |
+| Styling          | Tailwind CSS + Radix UI      |
+| Chess Logic      | chess.js                     |
+| Chess Board      | react-chessboard             |
+| Engine           | Stockfish 18 (WASM)          |
+| AI Models        | Gemini + GPT-4o              |
+| State Management | Zustand                      |
+| Storage          | IndexedDB (idb)              |
+| Custom Engine    | Minimax + Alpha-Beta pruning |
 
 ---
 
-## Project Structure
+# 📂 Project Structure
 
 ```
 src/
-├── components/          # UI components (board, panels, dialogs)
-│   ├── board-panel.jsx  # Main chess board
-│   ├── chat-panel.jsx   # AI coach chat interface
+├── components/
+│   ├── board-panel.jsx
+│   ├── chat-panel.jsx
 │   ├── training-panel.jsx
 │   ├── puzzle-mode.jsx
 │   ├── opening-drill-mode.jsx
 │   ├── endgame-mode.jsx
 │   └── blunder-review-mode.jsx
-├── hooks/               # Custom React hooks
-│   ├── use-engine-coach.js   # AI coaching logic
-│   ├── use-ai-chat.js        # Chat management
+│
+├── hooks/
+│   ├── use-engine-coach.js
+│   ├── use-ai-chat.js
 │   └── use-chess-clock.js
-├── lib/                 # Core logic
-│   ├── engine.js        # Custom chess engine (minimax)
-│   ├── stockfish.js     # Stockfish WASM wrapper
-│   ├── intelligence.js  # Threat & tactic detection
-│   ├── analyzer.js      # Full-game analysis
-│   └── openings.js      # ECO opening database
+│
+├── lib/
+│   ├── engine.js
+│   ├── stockfish.js
+│   ├── intelligence.js
+│   ├── analyzer.js
+│   └── openings.js
+│
 ├── store/
-│   └── use-game-store.js     # Global game state (Zustand)
+│   └── use-game-store.js
+│
 └── data/
-    ├── puzzles.js       # 44 tactical puzzles
-    └── endgames.js      # 21 endgame scenarios
+    ├── puzzles.js
+    └── endgames.js
 ```
 
 ---
 
-## License
+# 🗺 Roadmap
 
-MIT © [Shudipto](https://github.com/Iamsdt)
+Planned improvements:
+
+* Online multiplayer
+* Chess database
+* Opening explorer
+* Game import from Lichess / Chess.com
+* ELO rating system
+* AI game commentary
+* Advanced training modules
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome!
+
+If you'd like to improve the project:
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Submit a pull request
+
+Ideas for contributions:
+
+* Add more puzzles
+* Expand opening database
+* Improve UI/UX
+* Add new training modes
+
+---
+
+# 📜 License
+
+MIT License
+
+© Shudipto Trafder
 
 ---
 
 <div align="center">
-  <sub>Built with ♟️ and a lot of ☕ — Stop memorizing moves. Start understanding chess.</sub>
+
+Built with ♟️, AI, and a lot of ☕
+
+**Stop memorizing moves. Start understanding chess.**
+
 </div>
