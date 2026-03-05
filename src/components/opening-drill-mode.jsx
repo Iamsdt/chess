@@ -3,7 +3,7 @@ import { X, RefreshCw, BookOpen } from "lucide-react";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Chessboard } from "react-chessboard";
 
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { OPENINGS } from "@/lib/openings";
 
 // ── Category colors and emoji ────────────────────────────────────────────────

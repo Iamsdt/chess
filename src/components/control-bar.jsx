@@ -12,8 +12,8 @@ import {
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
-import { Button } from "@/components/ui/Button";
-import { Switch } from "@/components/ui/Switch";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 
 // ── Simple dropdown component ─────────────────────────────────────────────
 /**

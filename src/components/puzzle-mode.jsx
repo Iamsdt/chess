@@ -9,7 +9,7 @@ import {
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Chessboard } from "react-chessboard";
 
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { getPuzzleSession } from "@/data/puzzles";
 
 // Difficulty badge color

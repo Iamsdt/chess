@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { ENDGAMES } from "@/data/endgames";
 import { getPuzzleSession, PUZZLES } from "@/data/puzzles";
 import { OPENINGS } from "@/lib/openings";

@@ -1,14 +1,14 @@
 import { Chess } from "chess.js";
 import { useState } from "react";
 
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/Dialog";
-import { Input } from "@/components/ui/Input";
+import { Input } from "@/components/ui/input";
 
 const STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 

@@ -1,7 +1,7 @@
 import { X, Trash2, TrendingUp, BarChart2 } from "lucide-react";
 import { useState, useMemo } from "react";
 
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { getOpeningStats, clearOpeningStats } from "@/lib/opening-stats";
 
 /**
