@@ -1,11 +1,13 @@
 import { useRef, useCallback } from "react";
 
+import { getGMThoughtProcess } from "@/lib/ai";
 import { analyzeFullGame } from "@/lib/analyzer";
 import {
   buildAnalysisMessage,
   buildBestMoveCard,
   buildHintCard,
   buildLiveAnalysisMessage,
+  pvToSan,
 } from "@/lib/chess-helpers";
 import { buildMyMoveCard, buildThreatCard } from "@/lib/intelligence";
 import { getStockfishEngine } from "@/lib/stockfish";
@@ -287,6 +289,73 @@ const useEngineCoach = ({
     [applyEvalScore, setMessages],
   );
 
+  // ── Think Like a GM ─────────────────────────────────────────────────────
+  const handleThinkLikeGM = useCallback(
+    async (moveHistorySan = []) => {
+      setMessages((previous) => [
+        ...previous,
+        {
+          role: "user",
+          content: "🧠 Think Like a GM",
+          type: "engine-query",
+        },
+      ]);
+      setIsLoading(true);
+      try {
+        const sf = getStockfishEngine();
+        const fen = gameRef.current.fen();
+
+        // Deep MultiPV analysis — 3 lines at depth 18
+        const result = await sf.analyze(fen, 18, 3);
+        applyEvalScore(result, fen);
+
+        // Enrich each line with SAN moves for the AI prompt
+        const enrichedLines = result.lines.map((l) => ({
+          ...l,
+          sanMoves: pvToSan(fen, l.pv),
+        }));
+
+        const apiKey = localStorage.getItem("chess-coach-api-key") || "";
+        const model =
+          localStorage.getItem("chess-coach-model") || "gpt-4o-mini";
+        const elo = Number.parseInt(
+          localStorage.getItem("chess-coach-elo") || "1000",
+          10,
+        );
+
+        const gmData = await getGMThoughtProcess({
+          fen,
+          stockfishLines: enrichedLines,
+          moveHistorySan,
+          elo,
+          apiKey,
+          model,
+        });
+
+        setMessages((previous) => [
+          ...previous,
+          {
+            role: "assistant",
+            content: gmData,
+            type: "gm-thought",
+          },
+        ]);
+      } catch (error) {
+        setMessages((previous) => [
+          ...previous,
+          {
+            role: "assistant",
+            content: `GM Analysis error: ${error.message}`,
+            type: "engine",
+          },
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [gameRef, applyEvalScore, setMessages, setIsLoading],
+  );
+
   return {
     applyEvalScore,
     updateEvalBar,
@@ -296,6 +365,7 @@ const useEngineCoach = ({
     handleEngineAnalyze,
     handleEngineBestMove,
     handleEngineHint,
+    handleThinkLikeGM,
     triggerPostGameAnalysis,
     isAnalyzingRef: isAnalyzingReference,
   };

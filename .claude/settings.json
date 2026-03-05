@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(npm install zustand)",
-      "Bash(npm run build)"
+      "Bash(npm run build)",
+      "WebFetch(domain:ai.google.dev)",
+      "WebFetch(domain:github.com)",
+      "Bash(npm install @google/genai)",
+      "Bash(node -e \"const pkg = require\\(''./node_modules/@google/genai/package.json''\\); console.log\\(pkg.version\\)\")"
     ]
   }
 }

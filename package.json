@@ -17,6 +17,7 @@
     "test:percentage": "node -e \"const s=require('./coverage/coverage-summary.json').total; const avg=((s.lines.pct + s.statements.pct + s.functions.pct + s.branches.pct)/4).toFixed(2); const c=avg>=80?'\\x1b[32m':'\\x1b[31m'; console.log(c+'Overall Coverage: '+avg+'%\\x1b[0m');\""
   },
   "dependencies": {
+    "@google/genai": "^1.44.0",
     "@tailwindcss/vite": "^4.2.1",
     "chess.js": "^1.4.0",
     "class-variance-authority": "^0.7.1",

@@ -197,6 +197,7 @@ const App = () => {
     handleEngineAnalyze,
     handleEngineBestMove,
     handleEngineHint,
+    handleThinkLikeGM,
     triggerPostGameAnalysis,
     isAnalyzingRef,
   } = useEngineCoach({
@@ -211,6 +212,46 @@ const App = () => {
     setGameReportOpen,
   });
 
+  // ── AI board action callbacks (used by Google Gemini agent) ─────────────
+  const handleAISetPosition = useCallback((newFen) => {
+    try {
+      const game = new Chess();
+      game.load(newFen);
+      gameReference.current = game;
+      setFen(game.fen());
+      setMoveHistory([]);
+      setLastMoveSquares(null);
+      setBestMoveArrows([]);
+    } catch {
+      // ignore invalid FEN from AI
+    }
+  }, []);
+
+  const handleAIMakeMove = useCallback((san) => {
+    try {
+      const move = gameReference.current.move(san);
+      if (move) {
+        setFen(gameReference.current.fen());
+        setMoveHistory((previous) => [
+          ...previous,
+          {
+            san: move.san,
+            fen: gameReference.current.fen(),
+            from: move.from,
+            to: move.to,
+          },
+        ]);
+        setLastMoveSquares({ from: move.from, to: move.to });
+      }
+    } catch {
+      // ignore invalid move from AI
+    }
+  }, []);
+
+  const handleAIFlipBoard = useCallback((orientation) => {
+    setBoardOrientation(orientation);
+  }, []);
+
   // ── AI chat ──────────────────────────────────────────────────────────────
   const {
     handleSendMessage,
@@ -224,6 +265,11 @@ const App = () => {
     setIsLoading,
     setMoveQuality,
     setCoachMode,
+    boardActions: {
+      setPosition: handleAISetPosition,
+      makeMove: handleAIMakeMove,
+      flipBoard: handleAIFlipBoard,
+    },
   });
 
   // ── Auto-load last auto-save on mount ────────────────────────────────────
@@ -963,6 +1009,9 @@ const App = () => {
               onEngineAnalyze={handleEngineAnalyze}
               onEngineBestMove={handleEngineBestMove}
               onEngineHint={handleEngineHint}
+              onThinkLikeGM={() =>
+                handleThinkLikeGM(moveHistory.map((m) => m.san))
+              }
               onAskAI={handleAskAI}
               onLearnWithAI={handleLearnWithAI}
             />

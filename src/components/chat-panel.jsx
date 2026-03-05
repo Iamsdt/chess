@@ -14,9 +14,11 @@ import {
   BookOpen,
   X,
   ChevronRight,
+  ChevronDown,
   TrendingUp,
   TrendingDown,
   Minus,
+  Crown,
 } from "lucide-react";
 import { useState, useRef, useEffect, createElement } from "react";
 
@@ -456,6 +458,232 @@ const ThreatCard = ({ card, onAskAI, onLearnWithAI }) => {
   );
 };
 
+// ── GM Thought Card — "Think Like a GM" feature ───────────────────────────
+const VERDICT_STYLES = {
+  best: "bg-emerald-500/15 text-emerald-300 border-emerald-500/25",
+  good: "bg-blue-500/15 text-blue-300 border-blue-500/25",
+  risky: "bg-orange-500/15 text-orange-300 border-orange-500/25",
+  neutral: "bg-white/[0.06] text-foreground/70 border-white/10",
+};
+
+/**
+ *
+ */
+const GMStepSection = ({
+  stepNumber,
+  title,
+  icon: Icon,
+  iconCls,
+  children,
+  defaultOpen = false,
+}) => {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="rounded-lg border border-white/10 overflow-hidden">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-2 w-full px-3 py-2 bg-white/3 hover:bg-white/6 transition-colors text-left"
+      >
+        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold shrink-0">
+          {stepNumber}
+        </span>
+        {Icon && <Icon className={`h-3.5 w-3.5 shrink-0 ${iconCls}`} />}
+        <span className="text-xs font-semibold text-foreground/90 flex-1">
+          {title}
+        </span>
+        <ChevronDown
+          className={`h-3.5 w-3.5 text-muted-foreground/60 transition-transform shrink-0 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      {open && (
+        <div className="px-3 py-2.5 space-y-1.5 border-t border-white/6">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
+ *
+ */
+const GMThoughtCard = ({ card }) => {
+  if (!card || typeof card !== "object") return null;
+
+  const {
+    positionLabel,
+    step1,
+    step2,
+    step3,
+    step4,
+    bestMove,
+    bestMoveReason,
+  } = card;
+
+  return (
+    <div className="rounded-xl border border-amber-600/40 bg-amber-950/20 p-3 text-sm space-y-3 w-full">
+      {/* Header */}
+      <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center w-7 h-7 rounded-full bg-amber-500/20 shrink-0">
+          <Crown className="h-3.5 w-3.5 text-amber-400" />
+        </div>
+        <div>
+          <p className="text-xs font-bold text-amber-300">GM Thought Process</p>
+          {positionLabel && (
+            <p className="text-[10px] text-amber-400/60 leading-tight">
+              {positionLabel}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Steps */}
+      <div className="space-y-2">
+        {/* Step 1: What's happening */}
+        {step1 && (
+          <GMStepSection
+            stepNumber={1}
+            title={step1.title || "What's Happening?"}
+            icon={Search}
+            iconCls="text-cyan-400"
+            defaultOpen
+          >
+            {(step1.points || []).map((point, index) => (
+              <div key={index} className="flex items-start gap-1.5">
+                <span className="text-amber-400/70 text-[10px] mt-0.5 shrink-0">
+                  →
+                </span>
+                <p className="text-[11px] text-foreground/80 leading-relaxed">
+                  {point}
+                </p>
+              </div>
+            ))}
+          </GMStepSection>
+        )}
+
+        {/* Step 2: Candidate Moves */}
+        {step2 && (
+          <GMStepSection
+            stepNumber={2}
+            title={step2.title || "Candidate Moves"}
+            icon={Lightbulb}
+            iconCls="text-yellow-400"
+            defaultOpen
+          >
+            {(step2.moves || []).map((m, index) => {
+              const vStyle =
+                VERDICT_STYLES[m.verdict] || VERDICT_STYLES.neutral;
+              return (
+                <div key={index} className="flex items-start gap-2">
+                  <span
+                    className={`inline-flex items-center text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border shrink-0 mt-0.5 ${vStyle}`}
+                  >
+                    {m.move}
+                  </span>
+                  <p className="text-[11px] text-foreground/75 leading-relaxed">
+                    {m.idea}
+                  </p>
+                </div>
+              );
+            })}
+          </GMStepSection>
+        )}
+
+        {/* Step 3: Calculation */}
+        {step3 && (
+          <GMStepSection
+            stepNumber={3}
+            title={step3.title || "Calculation"}
+            icon={BrainCircuit}
+            iconCls="text-violet-400"
+          >
+            {(step3.lines || []).map((line, index) => (
+              <div key={index} className="space-y-0.5">
+                <div className="flex items-center gap-1 flex-wrap">
+                  {(line.sequence || []).map((mv, index) => (
+                    <span
+                      key={index}
+                      className="text-[10px] font-mono px-1 py-0.5 rounded bg-white/6 border border-white/10 text-foreground/80"
+                    >
+                      {mv}
+                    </span>
+                  ))}
+                  {line.eval && (
+                    <span className="text-[10px] font-mono text-emerald-400/80 ml-1">
+                      [{line.eval}]
+                    </span>
+                  )}
+                </div>
+                {line.verdict && (
+                  <p className="text-[10px] text-muted-foreground/60 italic pl-1">
+                    {line.verdict}
+                  </p>
+                )}
+              </div>
+            ))}
+          </GMStepSection>
+        )}
+
+        {/* Step 4: Plan */}
+        {step4 && (
+          <GMStepSection
+            stepNumber={4}
+            title={step4.title || "The Plan"}
+            icon={TrendingUp}
+            iconCls="text-emerald-400"
+          >
+            {(step4.immediate || []).map((p, index) => (
+              <div key={index} className="flex items-start gap-1.5">
+                <span className="text-emerald-400/70 text-[10px] mt-0.5 shrink-0">
+                  →
+                </span>
+                <p className="text-[11px] text-foreground/80 leading-relaxed">
+                  {p}
+                </p>
+              </div>
+            ))}
+            {step4.longTerm?.length > 0 && (
+              <div className="pt-1 border-t border-white/6 mt-1">
+                <p className="text-[10px] text-muted-foreground/50 uppercase tracking-wide mb-1">
+                  Long-term
+                </p>
+                {step4.longTerm.map((p, index) => (
+                  <div key={index} className="flex items-start gap-1.5">
+                    <span className="text-blue-400/70 text-[10px] mt-0.5 shrink-0">
+                      →
+                    </span>
+                    <p className="text-[11px] text-foreground/70 leading-relaxed">
+                      {p}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </GMStepSection>
+        )}
+      </div>
+
+      {/* Best Move */}
+      {bestMove && (
+        <div className="pt-2 border-t border-amber-500/20 flex items-center gap-2">
+          <Sparkles className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+          <span className="text-xs font-semibold text-amber-300">
+            Best Move:
+          </span>
+          <span className="font-mono font-bold text-base text-foreground">
+            {bestMove}
+          </span>
+          {bestMoveReason && (
+            <p className="text-[11px] text-muted-foreground/70 leading-snug ml-auto text-right max-w-[55%]">
+              {bestMoveReason}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ── Glossary Dialog ───────────────────────────────────────────────────────
 const GLOSSARY_SECTIONS = [
   {
@@ -721,6 +949,19 @@ const MessageBubble = ({ msg, onAskAI, onLearnWithAI }) => {
     );
   }
 
+  if (msg.type === "gm-thought" && typeof msg.content === "object") {
+    return (
+      <div className="flex gap-2.5 justify-start">
+        <div className="shrink-0 h-7 w-7 rounded-full flex items-center justify-center bg-amber-500/15">
+          <Crown className="h-3.5 w-3.5 text-amber-400" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <GMThoughtCard card={msg.content} />
+        </div>
+      </div>
+    );
+  }
+
   const isEngine = msg.type === "engine" || msg.type === "engine-query";
   const isUser = msg.role === "user";
 
@@ -774,6 +1015,7 @@ const ChatPanel = ({
   onEngineAnalyze,
   onEngineBestMove,
   onEngineHint,
+  onThinkLikeGM,
   onAskAI,
   onLearnWithAI,
 }) => {
@@ -822,7 +1064,8 @@ const ChatPanel = ({
         m.type === "my-move-analysis" ||
         m.type === "threat-card" ||
         m.type === "best-move-card" ||
-        m.type === "hint-card"
+        m.type === "hint-card" ||
+        m.type === "gm-thought"
       );
     }
     if (activeTab === "ai") {
@@ -982,6 +1225,17 @@ const ChatPanel = ({
               <span className="text-[11px] text-cyan-300">Hint</span>
             </Button>
           </div>
+          {/* Think Like a GM — full-width premium button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onThinkLikeGM}
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-2 py-2 border-amber-700/40 bg-amber-950/20 hover:bg-amber-950/40 hover:border-amber-600/60 text-amber-300"
+          >
+            <Crown className="h-4 w-4 text-amber-400" />
+            <span className="text-[11px] font-semibold">Think Like a GM</span>
+          </Button>
         </div>
       ) : (
         <div className="p-3 border-t border-border">
