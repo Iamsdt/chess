@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/Dialog";
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { GEMINI_MODELS } from "@/lib/google-ai";
 
