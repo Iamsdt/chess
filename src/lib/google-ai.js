@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, createPartFromFunctionResponse } from "@google/genai";
 
 // ── System prompt ────────────────────────────────────────────────────────────
 const GM_SYSTEM_PROMPT = `You are an elite chess coach at Grandmaster level. You have direct control over the student's chess board and can take actions on it.
@@ -77,17 +77,95 @@ const CHESS_TOOLS = [
 
 // ── Convert OpenAI-format messages → Google AI format ────────────────────────
 const toGoogleContents = (messages) =>
-  messages.map((m) => ({
-    role: m.role === "assistant" ? "model" : "user",
-    parts: [{ text: m.content }],
-  }));
+  messages
+    .filter(
+      (message) =>
+        typeof message?.content === "string" &&
+        (message.role === "assistant" || message.role === "user"),
+    )
+    .map((message) => ({
+      role: message.role === "assistant" ? "model" : "user",
+      parts: [{ text: message.content }],
+    }));
+
+const getResponseContent = (response) => response.candidates?.[0]?.content;
+
+const getFunctionCalls = (response) =>
+  (response.functionCalls || []).filter((call) => call?.name);
+
+const asString = (value, fallback = "") =>
+  typeof value === "string" ? value : fallback;
+
+const createGoogleClient = (apiKey) => new GoogleGenAI({ apiKey });
+
+const formatSummarySourceMessages = (messages) =>
+  messages
+    .filter((message) => typeof message?.content === "string")
+    .map((message) => {
+      const role = message.role === "assistant" ? "Assistant" : "User";
+      return `${role}: ${message.content.trim()}`;
+    })
+    .join("\n\n");
+
+export const summarizeGoogleConversation = async ({
+  messages,
+  existingSummary = "",
+  apiKey,
+  model = "gemini-2.5-flash",
+}) => {
+  if (!apiKey) {
+    throw new Error("Please set your Google API key in Settings.");
+  }
+
+  const ai = createGoogleClient(apiKey);
+  const sourceMessages = formatSummarySourceMessages(messages);
+
+  const response = await ai.models.generateContent({
+    model,
+    config: {
+      maxOutputTokens: 220,
+      temperature: 0.2,
+    },
+    contents: [
+      {
+        role: "user",
+        parts: [
+          {
+            text: [
+              "Compress this chess coaching conversation into a compact running summary.",
+              "Preserve only stable context that matters for future turns:",
+              "- user goals or questions",
+              "- strategic themes and plans discussed",
+              "- concrete move ideas or lines worth remembering",
+              "- unresolved follow-up questions",
+              "Do not preserve transient FEN details because live board state is sent separately every turn.",
+              "Return markdown with these headings only:",
+              "## Goals",
+              "## Key Ideas",
+              "## Open Questions",
+              "Keep it short and dense.",
+              "",
+              "Existing summary:",
+              existingSummary || "None",
+              "",
+              "New conversation slice:",
+              sourceMessages || "None",
+            ].join("\n"),
+          },
+        ],
+      },
+    ],
+  });
+
+  return response.text?.trim() || existingSummary;
+};
 
 /**
  * Send a message to Google Gemini with chess board action tool support.
  *
  * The model can call board action tools mid-conversation.
  * `onAction` is called immediately for each action so the board updates live.
- * @returns {{ text: string, actions: Array }}
+ * @returns {{ text: string, actions: Array, usageMetadata: object | null }} Generated reply text, emitted board actions, and Gemini usage metadata when available.
  */
 export const sendGoogleChatMessage = async ({
   messages,
@@ -99,9 +177,16 @@ export const sendGoogleChatMessage = async ({
 }) => {
   if (!apiKey) throw new Error("Please set your Google API key in Settings.");
 
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = createGoogleClient(apiKey);
 
-  const systemInstruction = `${GM_SYSTEM_PROMPT}\n\nCurrent board position (FEN): ${fen}\nStudent ELO: ~${elo}`;
+  const systemInstruction = `${GM_SYSTEM_PROMPT}
+
+Reason from the latest board context provided in every user turn. Treat that live position as the source of truth.
+Only use board tools when changing the board will genuinely help the lesson.
+If you use a board tool, briefly explain why before or after the action.
+
+Current board position (FEN): ${fen}
+Student ELO: ~${elo}`;
 
   const config = {
     tools: [{ functionDeclarations: CHESS_TOOLS }],
@@ -109,6 +194,7 @@ export const sendGoogleChatMessage = async ({
 
   let contents = toGoogleContents(messages);
   const actions = [];
+  let toolTurns = 0;
 
   // ── Agentic loop: run until no more function calls ────────────────────────
   let response = await ai.models.generateContent({
@@ -118,54 +204,72 @@ export const sendGoogleChatMessage = async ({
     config,
   });
 
-  while (response.functionCalls && response.functionCalls.length > 0) {
-    const functionResponses = [];
+  while (toolTurns < 8) {
+    const functionCalls = getFunctionCalls(response);
+    if (functionCalls.length === 0) break;
 
-    for (const call of response.functionCalls) {
-      const { name, args } = call;
+    const modelContent = getResponseContent(response);
+    if (!modelContent) {
+      throw new Error("Gemini returned tool calls without model content.");
+    }
+
+    const functionResponseParts = [];
+
+    for (const [index, call] of functionCalls.entries()) {
+      const { name, args: functionArguments = {}, id } = call;
       let actionResult = "Action executed.";
 
       if (name === "set_board_position") {
         const action = {
           type: "SET_POSITION",
-          fen: args.fen,
-          explanation: args.explanation,
+          fen: asString(functionArguments.fen),
+          explanation: asString(
+            functionArguments.explanation,
+            "Teaching position loaded.",
+          ),
         };
         actions.push(action);
         onAction?.(action);
-        actionResult = `Position loaded: ${args.fen}`;
+        actionResult = `Position loaded: ${action.fen}`;
       } else if (name === "make_move") {
         const action = {
           type: "MAKE_MOVE",
-          san: args.san,
-          explanation: args.explanation,
+          san: asString(functionArguments.san),
+          explanation: asString(
+            functionArguments.explanation,
+            "Demonstration move played.",
+          ),
         };
         actions.push(action);
         onAction?.(action);
-        actionResult = `Move ${args.san} played on the board.`;
+        actionResult = `Move ${action.san} played on the board.`;
       } else if (name === "flip_board") {
         const action = {
           type: "FLIP_BOARD",
-          orientation: args.orientation,
+          orientation: asString(functionArguments.orientation, "white"),
         };
         actions.push(action);
         onAction?.(action);
-        actionResult = `Board flipped to ${args.orientation} view.`;
+        actionResult = `Board flipped to ${action.orientation} view.`;
+      } else {
+        actionResult = `Unknown action requested: ${name}`;
       }
 
-      functionResponses.push({ name, response: { result: actionResult } });
+      functionResponseParts.push(
+        createPartFromFunctionResponse(id || `${name}-${index + 1}`, name, {
+          result: actionResult,
+          ok: !actionResult.startsWith("Unknown"),
+        }),
+      );
     }
 
-    // Extend contents: model's tool calls + our results
+    // Extend contents with the full model turn to preserve SDK-managed parts.
     contents = [
       ...contents,
-      {
-        role: "model",
-        parts: response.functionCalls.map((fc) => ({ functionCall: fc })),
-      },
+      modelContent,
       {
         role: "user",
-        parts: functionResponses.map((fr) => ({ functionResponse: fr })),
+        parts: functionResponseParts,
       },
     ];
 
@@ -175,9 +279,19 @@ export const sendGoogleChatMessage = async ({
       contents,
       config,
     });
+
+    toolTurns += 1;
   }
 
-  return { text: response.text || "", actions };
+  if (toolTurns === 8 && getFunctionCalls(response).length > 0) {
+    throw new Error("Gemini exceeded the board-action limit for one reply.");
+  }
+
+  return {
+    text: response.text || "",
+    actions,
+    usageMetadata: response.usageMetadata || null,
+  };
 };
 
 // ── Available Gemini models ───────────────────────────────────────────────────

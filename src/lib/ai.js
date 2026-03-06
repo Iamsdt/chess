@@ -6,6 +6,15 @@ const SYSTEM_PROMPT = `You are an expert chess coach. You help users understand 
 
 Always be encouraging and educational. Format your responses clearly.`;
 
+const formatSummarySourceMessages = (messages) =>
+  messages
+    .filter((message) => typeof message?.content === "string")
+    .map((message) => {
+      const role = message.role === "assistant" ? "Assistant" : "User";
+      return `${role}: ${message.content.trim()}`;
+    })
+    .join("\n\n");
+
 /**
  * Send a chat message to OpenAI and return the assistant's response text.
  */
@@ -104,6 +113,57 @@ export const evaluateMove = async ({ fen, lastMove, apiKey, model }) =>
     apiKey,
     model,
   });
+
+export const summarizeConversation = async ({
+  messages,
+  existingSummary = "",
+  apiKey,
+  model = "gpt-4o-mini",
+}) => {
+  if (!apiKey) {
+    throw new Error("Please set your OpenAI API key in Settings first.");
+  }
+
+  const sourceMessages = formatSummarySourceMessages(messages);
+
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        {
+          role: "system",
+          content:
+            "Compress a chess coaching conversation into a compact markdown summary. Preserve only stable user goals, strategic ideas, candidate lines worth remembering, and unresolved questions. Do not retain transient FEN details because live board state is provided separately each turn. Return only markdown under the headings ## Goals, ## Key Ideas, and ## Open Questions.",
+        },
+        {
+          role: "user",
+          content: [
+            "Existing summary:",
+            existingSummary || "None",
+            "",
+            "New conversation slice:",
+            sourceMessages || "None",
+          ].join("\n"),
+        },
+      ],
+      temperature: 0.2,
+      max_tokens: 220,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error?.message || `API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content?.trim() || existingSummary;
+};
 
 /**
  * Think Like a GM: given a FEN and Stockfish's top 3 lines, ask GPT to

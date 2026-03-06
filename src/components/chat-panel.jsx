@@ -21,6 +21,7 @@ import {
   Crown,
 } from "lucide-react";
 import { useState, useRef, useEffect, createElement } from "react";
+import ReactMarkdown from "react-markdown";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +60,78 @@ const QUALITY_STYLES = {
   },
 };
 
+const AI_MARKDOWN_COMPONENTS = {
+  h1: ({ children, ...properties }) => (
+    <h1 className="text-base font-semibold" {...properties}>
+      {children}
+    </h1>
+  ),
+  h2: ({ children, ...properties }) => (
+    <h2 className="mt-3 text-sm font-semibold" {...properties}>
+      {children}
+    </h2>
+  ),
+  h3: ({ children, ...properties }) => (
+    <h3
+      className="mt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+      {...properties}
+    >
+      {children}
+    </h3>
+  ),
+  p: ({ children, ...properties }) => (
+    <p className="mb-2 last:mb-0" {...properties}>
+      {children}
+    </p>
+  ),
+  ul: ({ children, ...properties }) => (
+    <ul className="mb-2 list-disc pl-5 space-y-1 last:mb-0" {...properties}>
+      {children}
+    </ul>
+  ),
+  ol: ({ children, ...properties }) => (
+    <ol className="mb-2 list-decimal pl-5 space-y-1 last:mb-0" {...properties}>
+      {children}
+    </ol>
+  ),
+  li: ({ children, ...properties }) => (
+    <li className="leading-relaxed" {...properties}>
+      {children}
+    </li>
+  ),
+  code: ({ inline, className, children, ...properties }) =>
+    inline ? (
+      <code
+        className="rounded bg-black/15 px-1 py-0.5 font-mono text-[0.92em]"
+        {...properties}
+      >
+        {children}
+      </code>
+    ) : (
+      <code
+        className={`block overflow-x-auto rounded-md bg-black/20 p-3 font-mono text-xs ${className || ""}`}
+        {...properties}
+      >
+        {children}
+      </code>
+    ),
+  strong: ({ children, ...properties }) => (
+    <strong className="font-semibold" {...properties}>
+      {children}
+    </strong>
+  ),
+  a: ({ children, ...properties }) => (
+    <a
+      className="text-cyan-300 underline underline-offset-2"
+      rel="noreferrer"
+      target="_blank"
+      {...properties}
+    >
+      {children}
+    </a>
+  ),
+};
+
 const SEVERITY_STYLES = {
   critical: {
     border: "border-red-500/70",
@@ -85,6 +158,14 @@ const SEVERITY_STYLES = {
     bg: "bg-teal-950/30",
     icon: "text-teal-400",
   },
+};
+
+const formatCompactTokens = (value) => {
+  if (!value) return "0";
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(value >= 10_000 ? 0 : 1)}k`;
+  }
+  return `${value}`;
 };
 
 // ── Eval score colour helper ──────────────────────────────────────────────
@@ -964,6 +1045,8 @@ const MessageBubble = ({ msg, onAskAI, onLearnWithAI }) => {
 
   const isEngine = msg.type === "engine" || msg.type === "engine-query";
   const isUser = msg.role === "user";
+  const isMarkdownAssistantMessage =
+    !isUser && !isEngine && typeof msg.content === "string";
 
   return (
     <div className={`flex gap-2.5 ${isUser ? "justify-end" : "justify-start"}`}>
@@ -990,7 +1073,15 @@ const MessageBubble = ({ msg, onAskAI, onLearnWithAI }) => {
               : "bg-secondary text-secondary-foreground"
         }`}
       >
-        {msg.content}
+        {isMarkdownAssistantMessage ? (
+          <div className="prose prose-invert max-w-none prose-p:my-0 prose-headings:my-0 prose-li:my-0 text-sm">
+            <ReactMarkdown components={AI_MARKDOWN_COMPONENTS} skipHtml>
+              {msg.content}
+            </ReactMarkdown>
+          </div>
+        ) : (
+          msg.content
+        )}
       </div>
       {isUser && (
         <div className="shrink-0 h-7 w-7 rounded-full bg-muted flex items-center justify-center">
@@ -1018,6 +1109,7 @@ const ChatPanel = ({
   onThinkLikeGM,
   onAskAI,
   onLearnWithAI,
+  tokenStats,
 }) => {
   const [input, setInput] = useState("");
   const messagesEndReference = useRef(null);
@@ -1064,8 +1156,7 @@ const ChatPanel = ({
         m.type === "my-move-analysis" ||
         m.type === "threat-card" ||
         m.type === "best-move-card" ||
-        m.type === "hint-card" ||
-        m.type === "gm-thought"
+        m.type === "hint-card"
       );
     }
     if (activeTab === "ai") {
@@ -1085,6 +1176,10 @@ const ChatPanel = ({
     { id: "engine", icon: Cpu, label: "Engine", iconCls: "text-cyan-400" },
     { id: "ai", icon: Bot, label: "AI Coach" },
   ];
+
+  const contextLabel = tokenStats
+    ? `${formatCompactTokens(tokenStats.activeTokens)} / ${formatCompactTokens(tokenStats.targetTokens)}`
+    : null;
 
   return (
     <div className="flex flex-col h-full border-l border-border bg-card">
@@ -1239,6 +1334,21 @@ const ChatPanel = ({
         </div>
       ) : (
         <div className="p-3 border-t border-border">
+          <div className="mb-2 flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-secondary/50 px-2 py-0.5">
+                <BrainCircuit className="h-3 w-3" />
+                <span>Context {contextLabel || "0 / 6k"}</span>
+              </span>
+              {tokenStats?.summaryEnabled && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-emerald-300">
+                  <Sparkles className="h-3 w-3" />
+                  <span>Summary on</span>
+                </span>
+              )}
+            </div>
+            <span>{tokenStats?.isApproximate ? "approx" : "exact"}</span>
+          </div>
           <div className="flex gap-2">
             <Input
               value={input}

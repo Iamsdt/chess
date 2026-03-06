@@ -258,6 +258,7 @@ const App = () => {
     evaluateLastMove,
     handleAskAI,
     handleLearnWithAI,
+    tokenStats,
   } = useAiChat({
     gameRef: gameReference,
     messages,
@@ -1009,11 +1010,13 @@ const App = () => {
               onEngineAnalyze={handleEngineAnalyze}
               onEngineBestMove={handleEngineBestMove}
               onEngineHint={handleEngineHint}
-              onThinkLikeGM={() =>
-                handleThinkLikeGM(moveHistory.map((m) => m.san))
-              }
+              onThinkLikeGM={() => {
+                setCoachMode("ai");
+                handleThinkLikeGM(moveHistory.map((m) => m.san));
+              }}
               onAskAI={handleAskAI}
               onLearnWithAI={handleLearnWithAI}
+              tokenStats={tokenStats}
             />
           )}
         </div>
