@@ -181,6 +181,15 @@ export const getGoogleModel = () =>
 export const getModel = () =>
   localStorage.getItem("chess-coach-model") || "gpt-4o-mini";
 
+export const getVllmApiKey = () =>
+  localStorage.getItem("chess-vllm-api-key") || "";
+
+export const getVllmModel = () =>
+  localStorage.getItem("chess-vllm-model") || "";
+
+export const getVllmBaseUrl = () =>
+  localStorage.getItem("chess-vllm-base-url") || "http://localhost:8000/v1";
+
 export const getElo = () =>
   Number.parseInt(localStorage.getItem("chess-coach-elo") || "1000", 10);
 
@@ -200,7 +209,7 @@ const actionToMessage = (action) => {
 
 /**
  * Handles all AI chat interactions:
- * - user chat messages (Google Gemini or OpenAI)
+ * - user chat messages (Google Gemini, OpenAI, or VLLM)
  * - evaluating last move quality
  * - asking AI about threats
  * - deep learning mode
@@ -228,7 +237,7 @@ const useAiChat = ({
   }, [messages.length]);
 
   const summarizeForContext = useCallback(
-    async (provider, apiKey, model, slice) => {
+    async (provider, apiKey, model, slice, baseUrl) => {
       if (slice.length === 0) return conversationSummary;
 
       try {
@@ -245,6 +254,7 @@ const useAiChat = ({
                 existingSummary: conversationSummary,
                 apiKey,
                 model,
+                baseUrl,
               });
 
         return trimSummary(summary);
@@ -256,7 +266,7 @@ const useAiChat = ({
   );
 
   const compactConversation = useCallback(
-    async ({ provider, apiKey, model, rawUserMessage }) => {
+    async ({ provider, apiKey, model, rawUserMessage, baseUrl }) => {
       const history = getConversationHistory(messages);
       const isSummaryRequest = SUMMARY_REQUEST_PATTERN.test(rawUserMessage);
 
@@ -287,6 +297,7 @@ const useAiChat = ({
             apiKey,
             model,
             olderSlice,
+            baseUrl,
           );
           setConversationSummary(nextSummary);
           prompt = buildPromptWithSummary(nextSummary);
@@ -488,33 +499,137 @@ const useAiChat = ({
     [compactConversation, gameRef, setMessages, setIsLoading],
   );
 
+  // ── VLLM path (OpenAI-compatible, custom base URL) ────────────────────────
+  const handleVllmMessage = useCallback(
+    async (userMessageContent, promptOverride) => {
+      const apiKey = getVllmApiKey();
+      const model = getVllmModel();
+      const baseUrl = getVllmBaseUrl();
+      const rawUserMessage = promptOverride || userMessageContent;
+
+      if (!apiKey) {
+        setMessages((previous) => [
+          ...previous,
+          {
+            role: "assistant",
+            content:
+              "Please set your VLLM API key in Settings (gear icon) to start chatting.",
+          },
+        ]);
+        return;
+      }
+
+      if (!baseUrl) {
+        setMessages((previous) => [
+          ...previous,
+          {
+            role: "assistant",
+            content: "Please set your VLLM base URL in Settings (gear icon).",
+          },
+        ]);
+        return;
+      }
+
+      if (!model) {
+        setMessages((previous) => [
+          ...previous,
+          {
+            role: "assistant",
+            content: "Please set your VLLM model name in Settings (gear icon).",
+          },
+        ]);
+        return;
+      }
+
+      setIsLoading(true);
+
+      try {
+        const { recentHistory, prompt, estimatedTokens, summaryEnabled } =
+          await compactConversation({
+            provider: "vllm",
+            apiKey,
+            model,
+            rawUserMessage,
+            baseUrl,
+          });
+        const allMessages = [
+          ...recentHistory,
+          { role: "user", content: prompt },
+        ];
+
+        const reply = await sendChatMessage({
+          messages: allMessages,
+          fen: gameRef.current.fen(),
+          apiKey,
+          model,
+          baseUrl,
+        });
+
+        setTokenStats({
+          activeTokens: estimatedTokens,
+          totalTokens: estimatedTokens + estimateTextTokens(reply),
+          targetTokens: DEFAULT_ACTIVE_CONTEXT_TARGET_TOKENS,
+          isApproximate: true,
+          summaryEnabled,
+        });
+
+        setMessages((previous) => [
+          ...previous,
+          { role: "assistant", content: reply },
+        ]);
+      } catch (error) {
+        setMessages((previous) => [
+          ...previous,
+          { role: "assistant", content: `Error: ${error.message}` },
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [compactConversation, gameRef, setMessages, setIsLoading],
+  );
+
   // ── Public: send a user chat message ────────────────────────────────────
   const handleSendMessage = useCallback(
     async (text) => {
       const userMessage = { role: "user", content: text };
       setMessages((previous) => [...previous, userMessage]);
 
-      if (getProvider() === "google") {
+      const provider = getProvider();
+      if (provider === "google") {
         await handleGoogleMessage(text);
+      } else if (provider === "vllm") {
+        await handleVllmMessage(text);
       } else {
         await handleOpenAIMessage(text);
       }
     },
-    [setMessages, handleGoogleMessage, handleOpenAIMessage],
+    [setMessages, handleGoogleMessage, handleOpenAIMessage, handleVllmMessage],
   );
 
-  // ── Evaluate last move quality (live mode, OpenAI only) ──────────────────
+  // ── Evaluate last move quality (live mode) ────────────────────────────
   const evaluateLastMove = useCallback(
     async (lastMove, currentFen) => {
-      // Only run with OpenAI for now (fast, cheap)
-      const apiKey = getApiKey();
+      const provider = getProvider();
+      let apiKey, model, baseUrl;
+
+      if (provider === "vllm") {
+        apiKey = getVllmApiKey();
+        model = getVllmModel();
+        baseUrl = getVllmBaseUrl();
+      } else if (provider === "openai") {
+        apiKey = getApiKey();
+        model = getModel();
+      }
+
       if (!apiKey) return;
       try {
         const result = await evaluateMove({
           fen: currentFen,
           lastMove,
           apiKey,
-          model: getModel(),
+          model,
+          baseUrl,
         });
         const firstLine = result.split("\n")[0].trim();
         const quality = firstLine.replace(/[^A-Za-z]/g, "");
@@ -551,8 +666,14 @@ const useAiChat = ({
 
       const prompt = `My opponent just played ${moveSan}, creating a ${threatName}. Position (FEN): ${gameRef.current.fen()}. Briefly explain this threat and my best defensive options.`;
 
-      if (getProvider() === "google") {
+      const provider = getProvider();
+      if (provider === "google") {
         await handleGoogleMessage(
+          `Explain: ${threatName} after ${moveSan}`,
+          prompt,
+        );
+      } else if (provider === "vllm") {
+        await handleVllmMessage(
           `Explain: ${threatName} after ${moveSan}`,
           prompt,
         );
@@ -569,6 +690,7 @@ const useAiChat = ({
       setCoachMode,
       handleGoogleMessage,
       handleOpenAIMessage,
+      handleVllmMessage,
     ],
   );
 
@@ -613,8 +735,11 @@ const useAiChat = ({
         { role: "user", content: userLabel },
       ]);
 
-      if (getProvider() === "google") {
+      const provider = getProvider();
+      if (provider === "google") {
         await handleGoogleMessage(userLabel, prompt);
+      } else if (provider === "vllm") {
+        await handleVllmMessage(userLabel, prompt);
       } else {
         await handleOpenAIMessage(userLabel, prompt);
       }
@@ -625,6 +750,7 @@ const useAiChat = ({
       setCoachMode,
       handleGoogleMessage,
       handleOpenAIMessage,
+      handleVllmMessage,
     ],
   );
 
