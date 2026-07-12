@@ -1,4 +1,4 @@
-import { X, Save, FolderOpen, Trash2, Clock, ChevronRight } from "lucide-react";
+import { X, Save, FolderOpen, Trash2, Clock, ChevronRight, Upload } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -81,6 +81,7 @@ export default function SavedGamesDialog({
   open,
   onClose,
   onLoadGame,
+  onImportPgn,
   currentGameSnapshot, // { pgn, fen, moveHistory, opponent, difficulty, boardOrientation }
 }) {
   const { savedGames, fetchSavedGames, saveCurrentGame, deleteSavedGame } =
@@ -90,6 +91,8 @@ export default function SavedGamesDialog({
   const [isSaving, setIsSaving] = useState(false);
   const [autoSaveEntry, setAutoSaveEntry] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [pgnInput, setPgnInput] = useState("");
+  const [importError, setImportError] = useState(null);
 
   // Load list and autosave whenever dialog opens
   useEffect(() => {
@@ -131,6 +134,20 @@ export default function SavedGamesDialog({
       await deleteSavedGame(id);
     },
     [deleteSavedGame],
+  );
+
+  const handleImportPgn = useCallback(
+    () => {
+      const trimmed = pgnInput.trim();
+      if (!trimmed) {
+        setImportError("Paste a PGN first.");
+        return;
+      }
+      setImportError(null);
+      onImportPgn({ type: "pgn", pgn: trimmed });
+      onClose();
+    },
+    [pgnInput, onImportPgn, onClose],
   );
 
   if (!open) return null;
@@ -192,6 +209,35 @@ export default function SavedGamesDialog({
                 No moves yet — make at least one move to save.
               </p>
             )}
+          </section>
+
+          {/* Import from PGN */}
+          <section>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+              Import from PGN
+            </h3>
+            <textarea
+              placeholder="Paste PGN here…"
+              value={pgnInput}
+              onChange={(e) => {
+                setPgnInput(e.target.value);
+                if (importError) setImportError(null);
+              }}
+              rows={4}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs font-mono resize-none focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
+            />
+            {importError && (
+              <p className="text-xs text-destructive mt-1">{importError}</p>
+            )}
+            <Button
+              size="sm"
+              onClick={handleImportPgn}
+              disabled={!pgnInput.trim()}
+              className="mt-2 h-8 px-3 gap-1.5"
+            >
+              <Upload className="h-3.5 w-3.5" />
+              Import & Analyze
+            </Button>
           </section>
 
           {/* Auto-save */}

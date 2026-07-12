@@ -19,6 +19,12 @@ const OPENAI_MODELS = [
   { id: "gpt-3.5-turbo", label: "GPT-3.5 Turbo" },
 ];
 
+const PROVIDERS = [
+  { id: "google", label: "Google Gemini" },
+  { id: "openai", label: "OpenAI" },
+  { id: "vllm", label: "VLLM" },
+];
+
 /**
  *
  */
@@ -28,6 +34,9 @@ const SettingsDialog = ({ open, onOpenChange }) => {
   const [googleModel, setGoogleModel] = useState("gemini-2.5-flash");
   const [openaiApiKey, setOpenaiApiKey] = useState("");
   const [openaiModel, setOpenaiModel] = useState("gpt-4o-mini");
+  const [vllmApiKey, setVllmApiKey] = useState("");
+  const [vllmModel, setVllmModel] = useState("");
+  const [vllmBaseUrl, setVllmBaseUrl] = useState("http://localhost:8000/v1");
   const [elo, setElo] = useState("1000");
 
   useEffect(() => {
@@ -39,6 +48,11 @@ const SettingsDialog = ({ open, onOpenChange }) => {
     );
     setOpenaiApiKey(localStorage.getItem("chess-coach-api-key") || "");
     setOpenaiModel(localStorage.getItem("chess-coach-model") || "gpt-4o-mini");
+    setVllmApiKey(localStorage.getItem("chess-vllm-api-key") || "");
+    setVllmModel(localStorage.getItem("chess-vllm-model") || "");
+    setVllmBaseUrl(
+      localStorage.getItem("chess-vllm-base-url") || "http://localhost:8000/v1",
+    );
     setElo(localStorage.getItem("chess-coach-elo") || "1000");
   }, [open]);
 
@@ -52,11 +66,12 @@ const SettingsDialog = ({ open, onOpenChange }) => {
     localStorage.setItem("chess-google-model", googleModel);
     localStorage.setItem("chess-coach-api-key", openaiApiKey);
     localStorage.setItem("chess-coach-model", openaiModel);
+    localStorage.setItem("chess-vllm-api-key", vllmApiKey);
+    localStorage.setItem("chess-vllm-model", vllmModel);
+    localStorage.setItem("chess-vllm-base-url", vllmBaseUrl);
     localStorage.setItem("chess-coach-elo", String(parsedElo));
     onOpenChange(false);
   };
-
-  const isGoogle = provider === "google";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -91,34 +106,26 @@ const SettingsDialog = ({ open, onOpenChange }) => {
           {/* AI Provider */}
           <div className="space-y-2">
             <label className="text-sm font-medium">AI Provider</label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setProvider("google")}
-                className={`rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
-                  isGoogle
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-input bg-transparent hover:bg-accent"
-                }`}
-              >
-                Google Gemini
-              </button>
-              <button
-                type="button"
-                onClick={() => setProvider("openai")}
-                className={`rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
-                  !isGoogle
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-input bg-transparent hover:bg-accent"
-                }`}
-              >
-                OpenAI
-              </button>
+            <div className="grid grid-cols-3 gap-2">
+              {PROVIDERS.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setProvider(p.id)}
+                  className={`rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
+                    provider === p.id
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-input bg-transparent hover:bg-accent"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
             </div>
           </div>
 
           {/* Google Gemini fields */}
-          {isGoogle && (
+          {provider === "google" && (
             <>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Google API Key</label>
@@ -155,7 +162,7 @@ const SettingsDialog = ({ open, onOpenChange }) => {
           )}
 
           {/* OpenAI fields */}
-          {!isGoogle && (
+          {provider === "openai" && (
             <>
               <div className="space-y-2">
                 <label className="text-sm font-medium">OpenAI API Key</label>
@@ -179,6 +186,46 @@ const SettingsDialog = ({ open, onOpenChange }) => {
                     </option>
                   ))}
                 </select>
+              </div>
+            </>
+          )}
+
+          {/* VLLM fields */}
+          {provider === "vllm" && (
+            <>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">VLLM API Key</label>
+                <Input
+                  type="password"
+                  placeholder="Your VLLM API key"
+                  value={vllmApiKey}
+                  onChange={(e) => setVllmApiKey(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Base URL</label>
+                <Input
+                  type="text"
+                  placeholder="http://localhost:8000/v1"
+                  value={vllmBaseUrl}
+                  onChange={(e) => setVllmBaseUrl(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Your VLLM server URL ending in{" "}
+                  <span className="font-mono">/v1</span>
+                </p>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Model</label>
+                <Input
+                  type="text"
+                  placeholder="model-name"
+                  value={vllmModel}
+                  onChange={(e) => setVllmModel(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  The model name deployed on your VLLM server.
+                </p>
               </div>
             </>
           )}

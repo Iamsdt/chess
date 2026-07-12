@@ -17,14 +17,17 @@ const formatSummarySourceMessages = (messages) =>
     })
     .join("\n\n");
 
+const OPENAI_BASE_URL = "https://api.openai.com/v1/chat/completions";
+
 /**
- * Send a chat message to OpenAI and return the assistant's response text.
+ * Send a chat message to an OpenAI-compatible API and return the assistant's response text.
  */
 export const sendChatMessage = async ({
   messages,
   fen,
   apiKey,
   model = "gpt-4o-mini",
+  baseUrl = OPENAI_BASE_URL,
 }) => {
   if (!apiKey) {
     throw new Error("Please set your API key in Settings first.");
@@ -35,7 +38,7 @@ export const sendChatMessage = async ({
     content: `${SYSTEM_PROMPT}\n\nCurrent board position (FEN): ${fen}`,
   };
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch(baseUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -61,7 +64,13 @@ export const sendChatMessage = async ({
 /**
  * Request a position explanation from the AI.
  */
-export const explainPosition = async ({ fen, moveHistory, apiKey, model }) => {
+export const explainPosition = async ({
+  fen,
+  moveHistory,
+  apiKey,
+  model,
+  baseUrl,
+}) => {
   const moveString =
     moveHistory.length > 0 ? moveHistory.join(" ") : "No moves yet";
   return sendChatMessage({
@@ -74,13 +83,20 @@ export const explainPosition = async ({ fen, moveHistory, apiKey, model }) => {
     fen,
     apiKey,
     model,
+    baseUrl,
   });
 };
 
 /**
  * Request a hint from the AI.
  */
-export const getHint = async ({ fen, apiKey, model, hintLevel = 1 }) => {
+export const getHint = async ({
+  fen,
+  apiKey,
+  model,
+  hintLevel = 1,
+  baseUrl,
+}) => {
   const levels = {
     1: "Give me a general hint about what I should focus on in this position. Don't reveal the exact move.",
     2: "Give me a specific directional hint. Which piece should I consider moving and roughly where?",
@@ -97,13 +113,14 @@ export const getHint = async ({ fen, apiKey, model, hintLevel = 1 }) => {
     fen,
     apiKey,
     model,
+    baseUrl,
   });
 };
 
 /**
  * Evaluate the quality of the last move.
  */
-export const evaluateMove = async ({ fen, lastMove, apiKey, model }) =>
+export const evaluateMove = async ({ fen, lastMove, apiKey, model, baseUrl }) =>
   sendChatMessage({
     messages: [
       {
@@ -114,6 +131,7 @@ export const evaluateMove = async ({ fen, lastMove, apiKey, model }) =>
     fen,
     apiKey,
     model,
+    baseUrl,
   });
 
 export const summarizeConversation = async ({
@@ -121,14 +139,15 @@ export const summarizeConversation = async ({
   existingSummary = "",
   apiKey,
   model = "gpt-4o-mini",
+  baseUrl = OPENAI_BASE_URL,
 }) => {
   if (!apiKey) {
-    throw new Error("Please set your OpenAI API key in Settings first.");
+    throw new Error("Please set your API key in Settings first.");
   }
 
   const sourceMessages = formatSummarySourceMessages(messages);
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch(baseUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -168,10 +187,8 @@ export const summarizeConversation = async ({
 };
 
 /**
- * Think Like a GM: given a FEN and Stockfish's top 3 lines, ask GPT to
+ * Think Like a GM: given a FEN and Stockfish's top 3 lines, ask the AI to
  * simulate a Grandmaster thought process in 4 structured steps.
- * @param {{ fen: string, stockfishLines: Array, moveHistorySan: string[], elo: number, apiKey: string, model: string }} options
- * @returns {Promise<{ positionLabel, step1, step2, step3, step4, bestMove, bestMoveReason }>}
  */
 export const getGMThoughtProcess = async ({
   fen,
@@ -180,12 +197,12 @@ export const getGMThoughtProcess = async ({
   elo = 1000,
   apiKey,
   model = "gpt-4o-mini",
+  baseUrl = OPENAI_BASE_URL,
 }) => {
   if (!apiKey) {
-    throw new Error("Please set your OpenAI API key in Settings first.");
+    throw new Error("Please set your API key in Settings first.");
   }
 
-  // Format Stockfish lines for the prompt
   const linesText = stockfishLines
     .map((l, index) => {
       const evalString = l.isMate
@@ -254,7 +271,7 @@ Rules:
 - bestMove must be the first move of Stockfish line 1.
 - Return ONLY raw JSON, nothing else.`;
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch(baseUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

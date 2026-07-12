@@ -454,9 +454,20 @@ const useEngineCoach = ({
           sanMoves: pvToSan(fen, l.pv),
         }));
 
-        const apiKey = localStorage.getItem("chess-coach-api-key") || "";
-        const model =
-          localStorage.getItem("chess-coach-model") || "gpt-4o-mini";
+        const provider = localStorage.getItem("chess-ai-provider") || "google";
+        let apiKey, model, baseUrl;
+
+        if (provider === "vllm") {
+          apiKey = localStorage.getItem("chess-vllm-api-key") || "";
+          model = localStorage.getItem("chess-vllm-model") || "";
+          baseUrl =
+            localStorage.getItem("chess-vllm-base-url") ||
+            "http://localhost:8000/v1";
+        } else if (provider === "openai") {
+          apiKey = localStorage.getItem("chess-coach-api-key") || "";
+          model = localStorage.getItem("chess-coach-model") || "gpt-4o-mini";
+        }
+
         const elo = Number.parseInt(
           localStorage.getItem("chess-coach-elo") || "1000",
           10,
@@ -464,7 +475,7 @@ const useEngineCoach = ({
 
         let content = buildGMMarkdownFromEngine(fen, moveHistorySan, result);
 
-        if (apiKey) {
+        if (apiKey && (provider === "openai" || provider === "vllm")) {
           try {
             const gmData = await getGMThoughtProcess({
               fen,
@@ -473,6 +484,7 @@ const useEngineCoach = ({
               elo,
               apiKey,
               model,
+              baseUrl,
             });
 
             content = buildGMMarkdownFromAI(gmData, fen);

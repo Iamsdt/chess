@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/chess/(assets/.*)", "destination": "/$1" },
+    { "source": "/chess", "destination": "/index.html" },
+    { "source": "/chess/(.*)", "destination": "/index.html" }
+  ]
+}
