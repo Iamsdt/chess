@@ -1073,6 +1073,7 @@ const App = () => {
         open={savedGamesOpen}
         onClose={() => setSavedGamesOpen(false)}
         onLoadGame={handleLoadGame}
+        onImportPgn={handleLoadPosition}
         currentGameSnapshot={getCurrentSnapshot()}
       />
 
