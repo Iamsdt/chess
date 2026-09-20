@@ -1,4 +1,10 @@
 node_modules/
-dist
+dist/
+coverage/
 .env
-dist/index.html
+.env.*
+!.env.example
+playwright-report/
+test-results/
+.DS_Store
+*.tsbuildinfo

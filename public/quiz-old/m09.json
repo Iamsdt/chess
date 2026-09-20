@@ -1,0 +1,10 @@
+{
+  "kind": "quiz",
+  "id": "m09",
+  "title": "Windmill Prelude",
+  "fen": "r4rk1/1pp2ppp/p1np1q2/4pb2/2B1P3/6PP/PPP1NPB1/R2Q1RK1 w - - 1 14",
+  "solution": ["c4f7"],
+  "theme": "deflection",
+  "difficulty": "medium",
+  "description": "White to move — a bishop sacrifice starts a winning combination."
+}

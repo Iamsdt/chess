@@ -1,0 +1,10 @@
+{
+  "kind": "quiz",
+  "id": "m01",
+  "title": "Knight Fork Clinic",
+  "fen": "r1bqkb1r/pppp1ppp/2n2n2/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 4",
+  "solution": ["f3e5"],
+  "theme": "fork",
+  "difficulty": "medium",
+  "description": "White to move — the knight can fork two pieces simultaneously."
+}

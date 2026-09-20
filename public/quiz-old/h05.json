@@ -1,0 +1,10 @@
+{
+  "kind": "quiz",
+  "id": "h05",
+  "title": "Back Rank + Deflection",
+  "fen": "3r2k1/5pp1/2p4p/1p2r3/1Pq5/2N3QP/5PP1/3RR1K1 b - - 0 25",
+  "solution": ["c4c3", "g3c3", "e5e1"],
+  "theme": "back-rank",
+  "difficulty": "hard",
+  "description": "Black to move — sacrifice the queen to expose the back rank."
+}

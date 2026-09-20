@@ -1,0 +1,10 @@
+{
+  "kind": "quiz",
+  "id": "m03",
+  "title": "Discovered Attack",
+  "fen": "r1bqkb1r/pppp1ppp/2n5/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 4",
+  "solution": ["d5e6"],
+  "theme": "discovered",
+  "difficulty": "medium",
+  "description": "White to move — en passant reveals a discovered attack."
+}

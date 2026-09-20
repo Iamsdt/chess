@@ -1,0 +1,10 @@
+{
+  "kind": "quiz",
+  "id": "m10",
+  "title": "Rook + Bishop Teamwork",
+  "fen": "6k1/5pp1/7p/8/8/2B5/8/R5K1 w - - 0 1",
+  "solution": ["a1a8"],
+  "theme": "checkmate",
+  "difficulty": "medium",
+  "description": "White to move — coordinate rook and bishop for checkmate."
+}

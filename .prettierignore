@@ -1,0 +1,18 @@
+dist
+coverage
+node_modules
+playwright-report
+test-results
+
+# The previous JavaScript app, kept for reference only.
+src-old
+
+# The approved design, treated as a read-only visual source of truth.
+prototype
+
+# Generated data and vendored engine builds.
+public
+package-lock.json
+
+# Maintained by the sprint planner; reformatting churns against it.
+docs/sprint-plan.md

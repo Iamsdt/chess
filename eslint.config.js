@@ -1,174 +1,176 @@
-import config from "@10xscale/eslint-modern"
-import path from "node:path"
-import { fileURLToPath } from "node:url"
+import js from '@eslint/js'
+import prettierConfig from 'eslint-config-prettier'
+import importPlugin from 'eslint-plugin-import'
+import jsxA11y from 'eslint-plugin-jsx-a11y'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import globals from 'globals'
+import tseslint from 'typescript-eslint'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-export default [
-  // ---------------------------------------------------------------------------
-  // 🚫 Ignore test files completely
-  // ---------------------------------------------------------------------------
+export default tseslint.config(
   {
     ignores: [
-      "**/src/tests/**",
-      "**/*.test.{js,jsx}",
-      "**/*.spec.{js,jsx}",
-      "**/src/services/mock/**",
-      "**/.github/**",
-      "**/public/**",
+      'dist',
+      'coverage',
+      'node_modules',
+      'src-old',
+      'prototype',
+      'public',
+      'playwright-report',
+      'test-results',
     ],
   },
 
-  // ---------------------------------------------------------------------------
-  // Base shared config
-  // ---------------------------------------------------------------------------
-  ...config,
+  js.configs.recommended,
+  ...tseslint.configs.strictTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
 
-  // ---------------------------------------------------------------------------
-  // App config — overrides for this chess project
-  // ---------------------------------------------------------------------------
   {
     languageOptions: {
-      globals: {
-        window: "readonly",
-        navigator: "readonly",
-        document: "readonly",
-        FormData: "readonly",
-        File: "readonly",
-        setTimeout: "readonly",
-        clearTimeout: "readonly",
-        setInterval: "readonly",
-        clearInterval: "readonly",
-        console: "readonly",
-        atob: "readonly",
-        btoa: "readonly",
-        URL: "readonly",
-        AbortController: "readonly",
-        performance: "readonly",
-        PerformanceObserver: "readonly",
-        module: "readonly",
-        alert: "readonly",
-        AbortSignal: "readonly",
-        localStorage: "readonly",
-        sessionStorage: "readonly",
-        fetch: "readonly",
-        process: "readonly",
-        AudioContext: "readonly",
-        webkitAudioContext: "readonly",
-        Worker: "readonly",
-        indexedDB: "readonly",
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
       },
     },
-
+    plugins: { import: importPlugin },
+    settings: {
+      'import/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+          // The app/node split is intentional, so don't warn about two projects.
+          noWarnOnMultipleProjects: true,
+          project: ['./tsconfig.app.json', './tsconfig.node.json'],
+        },
+      },
+    },
     rules: {
-      // ── React ────────────────────────────────────────────────────────────
-      "react/jsx-handler-names": "off",
-      // PropTypes not required for a JS project — use TypeScript for type safety
-      "react/prop-types": "off",
-      // Allow both arrow functions and named functions for components
-      "react/function-component-definition": "off",
-      // Allow array index in keys when there's no stable id available
-      "react/no-array-index-key": "warn",
-
-      // ── Complexity — chess logic is inherently complex ───────────────────
-      // Allow higher complexity for game logic functions
-      "complexity": ["warn", { max: 25 }],
-      "sonarjs/cognitive-complexity": ["warn", 30],
-      // Large functions are acceptable in game logic hooks
-      "max-lines-per-function": ["warn", { max: 400, skipBlankLines: true, skipComments: true }],
-      // Chess engine code has deeply nested loops/conditions
-      "max-depth": ["warn", { max: 10 }],
-
-      // ── Naming conventions ───────────────────────────────────────────────
-      // Allow common abbreviations used in chess code
-      "unicorn/prevent-abbreviations": [
-        "error",
+      // §5 quality bar: no `any`, errors are values, no dead code.
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
+      ],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'import/order': [
+        'error',
         {
-          replacements: {
-            // Allow chess-specific abbreviations
-            preFen: false,
-            postFen: false,
-            fen: false,
-            san: false,
-            uci: false,
-            pgn: false,
-            // Allow e for catch blocks - too common
-            e: false,
-          },
-          allowList: {
-            preFen: true,
-            postFen: true,
-            fen: true,
-            san: true,
-            uci: true,
-            uci: true,
-            pgn: true,
-            pv: true,
-            adv: true,
-            idx: true,
-            osc: true,
-            cls: true,
-            db: true,
-          },
+          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'type'],
+          pathGroups: [{ pattern: '@/**', group: 'internal', position: 'before' }],
+          'newlines-between': 'always',
+          alphabetize: { order: 'asc', caseInsensitive: true },
         },
       ],
-
-      // ── Promises ─────────────────────────────────────────────────────────
-      // Relax promise rules — fire-and-forget patterns are common in UI code
-      "promise/always-return": "warn",
-      "promise/no-nesting": "warn",
-      // Allow custom promise constructor parameter names (used in stockfish wrapper)
-      "promise/param-names": "off",
-
-      // ── Duplicates ───────────────────────────────────────────────────────
-      // Increase threshold for duplicate literals (chess notation is repetitive)
-      "sonarjs/no-duplicate-string": ["warn", { threshold: 5 }],
-
-      // ── React Hooks ──────────────────────────────────────────────────────
-      // React compiler memoization preservation — warn instead of error
-      "react-hooks/preserve-manual-memoization": "warn",
-      // setState in effects is acceptable for init patterns (loading from storage etc.)
-      "react-hooks/set-state-in-effect": "warn",
-      // Ref mutations outside effects are acceptable for sync patterns
-      "react-hooks/refs": "warn",
-
-      // ── Code structure ───────────────────────────────────────────────────
-      // Consistent returns in functions that sometimes return early
-      "consistent-return": "warn",
-      // Array destructuring not always clearer for position-based access
-      "prefer-destructuring": "warn",
-      // JSDoc indentation should be consistent but not a hard error
-      "jsdoc/check-indentation": "warn",
-
-      // ── Accessibility ───────────────────────────────────────────────────
-      // A11y rules as warnings — chess UI interactivity is non-standard
-      "jsx-a11y/click-events-have-key-events": "warn",
-      "jsx-a11y/no-static-element-interactions": "warn",
-      "jsx-a11y/no-autofocus": "warn",
-      "jsx-a11y/label-has-associated-control": "warn",
-    },
-
-    settings: {
-      "import/resolver": {
-        alias: {
-          map: [
-            ["@", path.resolve(__dirname, "./src")],
-            ["@hooks", path.resolve(__dirname, "./src/hooks")],
-            ["@lib", path.resolve(__dirname, "./src/lib")],
-            ["@context", path.resolve(__dirname, "./src/lib/context")],
-            ["@pages", path.resolve(__dirname, "./src/pages")],
-            ["@constants", path.resolve(__dirname, "./src/lib/constants")],
-            ["@api", path.resolve(__dirname, "./src/services/api")],
-            ["@query", path.resolve(__dirname, "./src/services/query")],
-            ["@store", path.resolve(__dirname, "./src/services/store")],
-            ["@public", path.resolve(__dirname, "./public")],
-          ],
-          extensions: [".js", ".jsx"],
-        },
-        node: {
-          extensions: [".js", ".jsx"],
-        },
-      },
+      'import/no-duplicates': 'error',
     },
   },
-]
+
+  // Layer boundaries (§2 file ownership). Pure layers must not reach up into
+  // React, features must not reach past the repositories into Dexie.
+  {
+    files: ['src/domain/**/*.ts', 'src/chess/**/*.ts', 'src/engine/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'react',
+              message: 'Pure layers stay free of React. Keep logic testable in isolation.',
+            },
+            { name: 'react-dom', message: 'Pure layers stay free of React.' },
+            { name: 'zustand', message: 'Pure layers hold no UI state.' },
+            { name: 'dexie', message: 'Pure layers do not touch storage. Take data as arguments.' },
+          ],
+          patterns: [
+            {
+              group: [
+                '@/app',
+                '@/app/*',
+                '@/design',
+                '@/design/*',
+                '@/board',
+                '@/board/*',
+                '@/features',
+                '@/features/*',
+              ],
+              message: 'Pure layers must not depend on UI layers.',
+            },
+            {
+              group: ['@/data', '@/data/*'],
+              message: 'Pure layers must not depend on persistence.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/features/**/*.{ts,tsx}', 'src/app/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'dexie',
+              message: 'Features never touch Dexie directly. Use a repository from @/data.',
+            },
+          ],
+          patterns: [
+            {
+              group: ['@/data/db*', '@/data/**/db*'],
+              message: 'Features never touch the Dexie instance. Use a repository from @/data.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    languageOptions: { globals: globals.browser },
+    plugins: { 'react-hooks': reactHooks, 'react-refresh': reactRefresh, 'jsx-a11y': jsxA11y },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      'react-hooks/exhaustive-deps': 'error',
+      ...jsxA11y.flatConfigs.recommended.rules,
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+    },
+  },
+
+  // Build scripts report to the terminal; that is their whole job.
+  {
+    files: ['scripts/**/*.{js,mjs}'],
+    rules: { 'no-console': 'off' },
+  },
+
+  {
+    files: ['**/*.{test,spec}.{ts,tsx}', 'src/test/**/*.ts', 'e2e/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+    },
+  },
+
+  {
+    files: ['*.config.{ts,js}', 'e2e/**/*.ts'],
+    languageOptions: { globals: globals.node },
+  },
+
+  // Config files are plain JS and live outside the TS projects.
+  {
+    files: ['**/*.js', '**/*.mjs', '**/*.cjs'],
+    ...tseslint.configs.disableTypeChecked,
+    languageOptions: {
+      ...tseslint.configs.disableTypeChecked.languageOptions,
+      globals: globals.node,
+    },
+  },
+
+  prettierConfig,
+)

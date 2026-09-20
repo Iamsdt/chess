@@ -1,0 +1,10 @@
+{
+  "kind": "quiz",
+  "id": "h09",
+  "title": "Queen Sacrifice for Promotion",
+  "fen": "1Q6/8/8/8/8/8/k1K5/8 w - - 0 1",
+  "solution": ["b8b1"],
+  "theme": "checkmate",
+  "difficulty": "hard",
+  "description": "White to move — find the quiet queen move that forces checkmate."
+}

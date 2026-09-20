@@ -1,0 +1,204 @@
+/* Chess King · Grove Bloom token contract.
+   Ported from prototype/assets/theme.js so prototype markup ports 1:1.
+   S01 owns the token layer only — S02 adds the component primitives on top. */
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #f7f3ec;
+  --foreground: #1b2620;
+  --card: #ffffff;
+  --card-foreground: #1b2620;
+  --popover: #ffffff;
+  --popover-foreground: #1b2620;
+  --primary: #24463a;
+  --primary-foreground: #f7f3ec;
+  --secondary: #f0ebe1;
+  --secondary-foreground: #24463a;
+  --muted: #f0ebe1;
+  --muted-foreground: #6a7068;
+  --accent: #e4efe3;
+  --accent-foreground: #24463a;
+  --destructive: #c2412d;
+  --destructive-soft: #fbe6e1;
+  --border: #e8e1d4;
+  --input: #e2dacb;
+  --ring: #5f8b6c;
+  --cta: #e0673c;
+  --cta-strong: #b24f2b;
+  --cta-soft: #fdf0ea;
+  --cta-foreground: #ffffff;
+  --reward: #f2c24e;
+  --reward-soft: #fdf3d8;
+  --reward-ink: #7a5710;
+  --sky: #dcebf3;
+  --sky-ink: #2d5a78;
+  --lilac: #ece7fb;
+  --lilac-ink: #5a48b0;
+  --success: #3f7a4a;
+  --sidebar: #f7f3ec;
+  --radius: 1rem;
+
+  /* move quality */
+  --q-brilliant: #1fb89a;
+  --q-great: #5b8fc9;
+  --q-best: #5f8b6c;
+  --q-excellent: #7da35f;
+  --q-good: #9aa88f;
+  --q-book: #a8845c;
+  --q-inaccuracy: #e9b949;
+  --q-mistake: #e58a3c;
+  --q-miss: #e46a55;
+  --q-blunder: #cf3b2c;
+
+  /* board */
+  --vb-light: #f5eedf;
+  --vb-dark: #a3b89b;
+  --vb-hl: rgba(242, 194, 78, 0.55);
+  --vb-sel: rgba(36, 70, 58, 0.35);
+  --vb-arrow: rgba(36, 70, 58, 0.85);
+  --vb-arrow-alt: rgba(224, 103, 60, 0.92);
+  --vb-arrow-ai: rgba(90, 72, 176, 0.85);
+  --vb-focus: #e0673c;
+}
+
+.dark {
+  --background: #0e1311;
+  --foreground: #e9eee8;
+  --card: #151b17;
+  --card-foreground: #e9eee8;
+  --popover: #151b17;
+  --popover-foreground: #e9eee8;
+  --primary: #b5d3a8;
+  --primary-foreground: #0f1a10;
+  --secondary: #1b231f;
+  --secondary-foreground: #dfe8da;
+  --muted: #1d2621;
+  --muted-foreground: #8f9a92;
+  --accent: #1f2b24;
+  --accent-foreground: #cfe3c6;
+  --destructive: #f07a64;
+  --destructive-soft: rgba(240, 122, 100, 0.12);
+  --border: #26322b;
+  --input: #2c3a32;
+  --ring: #7fa07a;
+  --cta: #ec7d4f;
+  --cta-strong: #b55a33;
+  --cta-soft: rgba(236, 125, 79, 0.12);
+  --cta-foreground: #1b0b03;
+  --reward: #f2c867;
+  --reward-soft: rgba(242, 200, 103, 0.12);
+  --reward-ink: #f2c867;
+  --sky: rgba(143, 184, 212, 0.14);
+  --sky-ink: #9cc4de;
+  --lilac: rgba(165, 148, 255, 0.13);
+  --lilac-ink: #b9adff;
+  --success: #8fcf95;
+  --sidebar: #0e1311;
+  --vb-light: #dfe2d4;
+  --vb-dark: #7d977b;
+  --vb-arrow: rgba(181, 211, 168, 0.95);
+  --vb-arrow-ai: rgba(185, 173, 255, 0.9);
+}
+
+[data-board='walnut'] {
+  --vb-light: #f0d9b5;
+  --vb-dark: #b58863;
+}
+[data-board='slate'] {
+  --vb-light: #dee3e6;
+  --vb-dark: #8ca2ad;
+}
+[data-board='dusk'] {
+  --vb-light: #dde3ec;
+  --vb-dark: #8190ad;
+}
+[data-board='sand'] {
+  --vb-light: #f3e4cf;
+  --vb-dark: #d19a78;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-cta: var(--cta);
+  --color-cta-strong: var(--cta-strong);
+  --color-cta-soft: var(--cta-soft);
+  --color-cta-foreground: var(--cta-foreground);
+  --color-reward: var(--reward);
+  --color-reward-soft: var(--reward-soft);
+  --color-reward-ink: var(--reward-ink);
+  --color-sky: var(--sky);
+  --color-sky-ink: var(--sky-ink);
+  --color-lilac: var(--lilac);
+  --color-lilac-ink: var(--lilac-ink);
+  --color-success: var(--success);
+  --color-sidebar: var(--sidebar);
+  --color-q-brilliant: var(--q-brilliant);
+  --color-q-great: var(--q-great);
+  --color-q-best: var(--q-best);
+  --color-q-excellent: var(--q-excellent);
+  --color-q-good: var(--q-good);
+  --color-q-book: var(--q-book);
+  --color-q-inaccuracy: var(--q-inaccuracy);
+  --color-q-mistake: var(--q-mistake);
+  --color-q-miss: var(--q-miss);
+  --color-q-blunder: var(--q-blunder);
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 6px);
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html,
+  body,
+  #root {
+    @apply h-full;
+  }
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-tight;
+  }
+  ::selection {
+    @apply bg-accent;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "kind": "quiz",
+  "id": "e06",
+  "title": "Rook Roller",
+  "fen": "k7/1R6/1K6/8/8/8/8/8 w - - 0 1",
+  "solution": ["b7b8"],
+  "theme": "checkmate",
+  "difficulty": "easy",
+  "description": "White to move — one rook move ends the game."
+}

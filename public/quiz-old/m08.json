@@ -1,0 +1,10 @@
+{
+  "kind": "quiz",
+  "id": "m08",
+  "title": "Zwischenzug",
+  "fen": "r3r1k1/pp3ppp/2p5/3pb3/3P4/2N2N2/PPQ2PPP/R1B1R1K1 b - - 0 15",
+  "solution": ["e5f4"],
+  "theme": "hanging",
+  "difficulty": "medium",
+  "description": "Black to move — don't recapture yet; find the in-between move."
+}

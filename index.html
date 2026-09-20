@@ -2,20 +2,25 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Chess Coach</title>
-    <!-- Apply dark class immediately to avoid flash of light theme -->
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f7f3ec" />
+    <title>Chess King</title>
+    <!-- Apply the saved theme before first paint to avoid a flash. S02 owns the theme provider. -->
     <script>
-      (function () {
-        var saved = localStorage.getItem("chess-dark-mode");
-        var dark = saved !== null ? saved === "true" : true;
-        if (dark) document.documentElement.classList.add("dark");
-      })();
+      ;(function () {
+        try {
+          var saved = localStorage.getItem('ck-theme')
+          var dark =
+            saved === 'dark' ||
+            (saved !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
+          if (dark) document.documentElement.classList.add('dark')
+        } catch {}
+      })()
     </script>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

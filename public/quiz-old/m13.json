@@ -1,0 +1,10 @@
+{
+  "kind": "quiz",
+  "id": "m13",
+  "title": "Overloaded Defender",
+  "fen": "2r2rk1/5ppp/1q2p3/pp2P3/3p1PP1/1P1R4/PBQ3PP/5RK1 b - - 0 22",
+  "solution": ["c8c2"],
+  "theme": "deflection",
+  "difficulty": "medium",
+  "description": "Black to move — the defender has too much to protect."
+}

@@ -10,7 +10,7 @@
       "url": "https://mcp.context7.com/mcp"
     },
     "shadcn": {
-        "type": "local",
+      "type": "local",
       "command": ["npx", "-y", "shadcn-mcp@latest", "mcp"]
     }
   },

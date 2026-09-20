@@ -29,7 +29,7 @@ No installation. No servers required. Runs entirely in your browser.
 
 Most chess apps show the **best move**.
 
-**Chess King explains *why* it is the best move.**
+**Chess King explains _why_ it is the best move.**
 
 By combining **Stockfish engine analysis** with **large language models**, the system behaves like a **real chess coach**, helping players improve their thinking process.
 
@@ -117,6 +117,7 @@ All analysis runs **locally in your browser** without server calls.
 The platform includes multiple training systems designed to improve chess skills.
 
 ### Tactical Puzzles
+
 Improve calculation and pattern recognition.
 
 - 44 curated puzzles
@@ -207,7 +208,7 @@ Clone the repository:
 ```bash
 git clone https://github.com/Iamsdt/chess.git
 cd chess
-````
+```
 
 Install dependencies:
 
@@ -322,13 +323,13 @@ src/
 
 Planned improvements:
 
-* Online multiplayer
-* Chess database
-* Opening explorer
-* Game import from Lichess / Chess.com
-* ELO rating system
-* AI game commentary
-* Advanced training modules
+- Online multiplayer
+- Chess database
+- Opening explorer
+- Game import from Lichess / Chess.com
+- ELO rating system
+- AI game commentary
+- Advanced training modules
 
 ---
 
@@ -345,10 +346,10 @@ If you'd like to improve the project:
 
 Ideas for contributions:
 
-* Add more puzzles
-* Expand opening database
-* Improve UI/UX
-* Add new training modes
+- Add more puzzles
+- Expand opening database
+- Improve UI/UX
+- Add new training modes
 
 ---
 

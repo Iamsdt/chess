@@ -1,0 +1,10 @@
+{
+  "kind": "quiz",
+  "id": "e01",
+  "title": "Fool's Mate",
+  "fen": "rnbqkbnr/pppp1ppp/8/4p3/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq g3 0 2",
+  "solution": ["d8h4"],
+  "theme": "checkmate",
+  "difficulty": "easy",
+  "description": "Black to move — the fastest checkmate in chess!"
+}
