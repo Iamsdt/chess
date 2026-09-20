@@ -17,27 +17,41 @@ npm run dev          # http://localhost:5173
 One extra step before you run the end-to-end tests:
 
 ```bash
-npm run e2e:install  # downloads the Chromium build Playwright drives
+npm run e2e:install  # downloads the Chromium build Playwright drives (~130 MB)
 npm run e2e
 ```
 
+If you would rather not download it, point Playwright at a browser you already have:
+
+```bash
+PW_CHANNEL=chrome npm run e2e
+```
+
+That is fine for the functional specs. CI leaves `PW_CHANNEL` unset so every run comes
+from the pinned Chromium build.
+
 ## The commands that matter
 
-| Command                 | What it does                                        |
-| ----------------------- | --------------------------------------------------- |
-| `npm run dev`           | Dev server with hot reload                          |
-| `npm run typecheck`     | `tsc -b` across the app and node projects           |
-| `npm run lint`          | ESLint, including the layer-boundary rules          |
-| `npm run format`        | Prettier, with Tailwind class sorting               |
-| `npm test`              | Vitest once                                         |
-| `npm run test:watch`    | Vitest in watch mode                                |
-| `npm run test:coverage` | Vitest with a coverage report in `coverage/`        |
-| `npm run build`         | Typecheck, then the production build                |
-| `npm run size`          | Bundle size budget (200 KB JS / 60 KB CSS, gzipped) |
-| `npm run e2e`           | Playwright against a preview build                  |
-| `npm run validate`      | Everything CI runs, in one go                       |
+| Command                 | What it does                                              |
+| ----------------------- | --------------------------------------------------------- |
+| `npm run dev`           | Dev server with hot reload                                |
+| `npm run typecheck`     | `tsc -b` across the app and node projects                 |
+| `npm run lint`          | ESLint, including the layer-boundary rules                |
+| `npm run format`        | Prettier, with Tailwind class sorting                     |
+| `npm test`              | Vitest once                                               |
+| `npm run test:watch`    | Vitest in watch mode                                      |
+| `npm run test:coverage` | Vitest with a coverage report in `coverage/`              |
+| `npm run build`         | Typecheck, then the production build                      |
+| `npm run size`          | Bundle size budget (200 KB JS / 60 KB CSS, gzipped)       |
+| `npm run e2e`           | Playwright against a preview build                        |
+| `npm run validate`      | Everything CI runs, in one go                             |
+| `npm run screenshots`   | Review PNGs in `docs/screenshots/` (light/dark, 1440/390) |
 
 `npm run validate` is what to run before you open a pull request.
+
+A sprint that changes a screen also runs `npm run screenshots` and attaches the PNGs to the
+PR, which is the prototype-parity check the sprint plan asks for in §6.4. The folder is
+git-ignored on purpose — the images are regenerated on demand rather than kept in history.
 
 ## How the code is organised
 

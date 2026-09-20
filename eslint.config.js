@@ -143,6 +143,15 @@ export default tseslint.config(
     },
   },
 
+  // S02 · shadcn's convention is to export a component's `cva` variants next to it
+  // (`buttonVariants`, `badgeVariants`, `tabsListVariants`, `ctaButtonVariants`) so
+  // callers can reuse the class recipe. That costs a full HMR reload of the one file
+  // and nothing else, which is a fair trade for staying diffable against the registry.
+  {
+    files: ['src/design/ui/**/*.tsx', 'src/design/components/**/*.tsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
+
   // Build scripts report to the terminal; that is their whole job.
   {
     files: ['scripts/**/*.{js,mjs}'],

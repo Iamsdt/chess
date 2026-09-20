@@ -1,0 +1,14 @@
+{
+  /* Playwright specs run in Node, but every `page.evaluate` callback is compiled here and
+     executed in the browser — so this project needs the DOM lib that `tsconfig.node.json`
+     deliberately withholds from the build-tool configs. */
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] },
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.e2e.tsbuildinfo"
+  },
+  "include": ["e2e/**/*.ts"]
+}

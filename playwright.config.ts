@@ -1,7 +1,16 @@
 import { defineConfig, devices } from '@playwright/test'
 
+const HOST = '127.0.0.1'
 const PORT = '4173'
-const baseURL = `http://127.0.0.1:${PORT}`
+const baseURL = `http://${HOST}:${PORT}`
+
+/**
+ * Lets a contributor reuse an already-installed browser (`PW_CHANNEL=chrome`) instead of
+ * downloading Playwright's bundled one. CI leaves it unset so every run — and every
+ * screenshot baseline — comes from the pinned Chromium build.
+ */
+const channel = process.env.PW_CHANNEL
+const channelOption = channel ? { channel } : {}
 
 export default defineConfig({
   testDir: './e2e',
@@ -15,12 +24,18 @@ export default defineConfig({
   projects: [
     {
       name: 'desktop',
-      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
+      use: {
+        ...devices['Desktop Chrome'],
+        ...channelOption,
+        viewport: { width: 1440, height: 900 },
+      },
     },
-    { name: 'mobile', use: { ...devices['Pixel 7'] } },
+    { name: 'mobile', use: { ...devices['Pixel 7'], ...channelOption } },
   ],
   webServer: {
-    command: `npm run preview -- --port ${PORT} --strictPort`,
+    // Bind the host explicitly: `vite preview` defaults to `localhost`, which resolves to
+    // `::1` alone on some machines, so polling `127.0.0.1` would hang until the timeout.
+    command: `npm run preview -- --host ${HOST} --port ${PORT} --strictPort`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

@@ -1,11 +1,18 @@
 /* Chess King · Grove Bloom token contract.
    Ported from prototype/assets/theme.js so prototype markup ports 1:1.
    S01 owns the token layer only — S02 adds the component primitives on top. */
+/* The three families named in `@theme` below. The prototype injects the same Google
+   Fonts URL from theme.js; loading it here keeps index.html untouched. A later sprint
+   should self-host these so the app still looks right offline. */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import 'tailwindcss';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-:root {
+/* `.light` mirrors `:root` so a subtree can opt back into the light palette — the
+   kitchen sink shows both themes side by side with it. */
+:root,
+.light {
   --background: #f7f3ec;
   --foreground: #1b2620;
   --card: #ffffff;
@@ -51,6 +58,8 @@
   --q-mistake: #e58a3c;
   --q-miss: #e46a55;
   --q-blunder: #cf3b2c;
+  /* Ink for the one light-backed glyph; inline as text-[#3a2c00] in the prototype. */
+  --q-inaccuracy-ink: #3a2c00;
 
   /* board */
   --vb-light: #f5eedf;
@@ -162,6 +171,7 @@
   --color-q-mistake: var(--q-mistake);
   --color-q-miss: var(--q-miss);
   --color-q-blunder: var(--q-blunder);
+  --color-q-inaccuracy-ink: var(--q-inaccuracy-ink);
   --radius-sm: calc(var(--radius) - 6px);
   --radius-md: calc(var(--radius) - 4px);
   --radius-lg: var(--radius);
@@ -200,5 +210,255 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Component primitives, ported verbatim from prototype/assets/theme.js so
+   prototype markup can be pasted into a React tree and look identical.
+   The React components in @/design compose these same utilities.
+   --------------------------------------------------------------------------- */
+@layer components {
+  /* buttons */
+  .btn {
+    @apply inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md px-4 text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-default {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+  .btn-cta {
+    @apply h-11 rounded-xl bg-cta px-6 text-[15px] font-semibold text-cta-foreground shadow-[0_4px_0_var(--cta-strong)] hover:brightness-105 active:translate-y-[3px] active:shadow-[0_1px_0_var(--cta-strong)];
+  }
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  }
+  .btn-outline {
+    @apply border bg-card hover:bg-accent hover:text-accent-foreground;
+  }
+  .btn-ghost {
+    @apply hover:bg-accent hover:text-accent-foreground;
+  }
+  .btn-destructive {
+    @apply bg-destructive-soft text-destructive hover:bg-destructive hover:text-white;
+  }
+  .btn-sm {
+    @apply h-8 gap-1.5 rounded-md px-3 text-xs;
+  }
+  .btn-lg {
+    @apply h-11 rounded-xl px-6 text-[15px];
+  }
+  .btn-icon {
+    @apply size-9 px-0;
+  }
+  .btn-icon.btn-sm {
+    @apply size-8;
+  }
+
+  /* surfaces */
+  .card {
+    @apply rounded-xl border bg-card text-card-foreground shadow-[0_1px_2px_rgba(40,30,10,0.04)];
+  }
+  .card-hover {
+    @apply transition hover:-translate-y-0.5 hover:shadow-md;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap;
+  }
+  .badge-soft {
+    @apply border-transparent bg-accent text-accent-foreground;
+  }
+  .badge-cta {
+    @apply border-transparent bg-cta text-white;
+  }
+  .badge-reward {
+    @apply border-transparent bg-reward-soft text-reward-ink;
+  }
+  .badge-danger {
+    @apply border-destructive/30 text-destructive;
+  }
+  .label {
+    @apply text-xs font-medium text-muted-foreground;
+  }
+  .eyebrow {
+    @apply text-xs font-semibold tracking-wider text-muted-foreground uppercase;
+  }
+  .kbd {
+    @apply inline-flex h-5 items-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground;
+  }
+  .san {
+    @apply rounded bg-muted px-1 py-px font-mono text-[12.5px] font-medium text-foreground;
+  }
+  .page {
+    @apply mx-auto w-full max-w-[1100px] p-6 lg:p-8;
+  }
+  .page-title {
+    @apply font-display text-[32px] leading-tight font-bold tracking-tight;
+  }
+
+  /* forms */
+  .input {
+    @apply flex h-10 w-full rounded-md border border-input bg-card px-3 text-sm shadow-xs transition outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/40;
+  }
+  .textarea {
+    @apply w-full rounded-md border border-input bg-card px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:ring-[3px] focus-visible:ring-ring/40;
+  }
+  .field-label {
+    @apply text-sm font-medium;
+  }
+  .help {
+    @apply text-xs text-muted-foreground;
+  }
+  .seg {
+    @apply inline-flex rounded-lg bg-muted p-1 text-sm;
+  }
+  .seg > * {
+    @apply cursor-pointer rounded-md px-3 py-1.5 font-medium text-muted-foreground transition;
+  }
+  .seg > .is-active {
+    @apply bg-card text-foreground shadow-sm;
+  }
+  .option {
+    @apply flex w-full cursor-pointer items-center gap-3 rounded-xl border bg-card p-4 text-left transition hover:border-ring/60;
+  }
+  .option.is-active {
+    @apply border-primary bg-accent/50 ring-2 ring-primary/20;
+  }
+  .avatar {
+    @apply grid size-9 shrink-0 place-items-center rounded-full text-xs font-bold;
+  }
+
+  /* controls used by ported prototype markup (the Radix versions style themselves) */
+  .switch {
+    @apply relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full bg-input transition-colors has-[:checked]:bg-primary;
+  }
+  .switch input {
+    @apply sr-only;
+  }
+  .switch span {
+    @apply pointer-events-none block size-4 translate-x-0.5 rounded-full bg-white shadow-sm transition-transform;
+  }
+  .switch:has(input:checked) span {
+    @apply translate-x-[18px];
+  }
+  .switch:has(input:focus-visible) {
+    @apply ring-[3px] ring-ring/50;
+  }
+  .tabs {
+    @apply flex gap-1 border-b;
+  }
+  .tab {
+    @apply -mb-px cursor-pointer border-b-2 border-transparent px-3 pt-1 pb-2.5 text-sm font-medium text-muted-foreground hover:text-foreground;
+  }
+  .tab.is-active {
+    @apply border-primary text-foreground;
+  }
+  .progress {
+    @apply h-2 w-full overflow-hidden rounded-full bg-muted;
+  }
+  .progress > span {
+    @apply block h-full rounded-full bg-primary transition-[width] duration-500;
+  }
+
+  /* nav */
+  .nav-item {
+    @apply flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground/70 transition-colors hover:bg-card hover:text-foreground;
+  }
+  .nav-item[aria-current] {
+    @apply bg-card text-foreground shadow-[0_1px_2px_rgba(40,30,10,0.06)] ring-1 ring-border;
+  }
+
+  /* chat */
+  .sage-av {
+    @apply grid size-7 shrink-0 place-items-center rounded-lg bg-primary text-reward;
+  }
+  .bubble {
+    @apply rounded-2xl rounded-tl-md bg-muted px-3.5 py-2.5 text-sm leading-relaxed;
+  }
+  .bubble b {
+    @apply font-semibold text-primary;
+  }
+  .bubble-me {
+    @apply rounded-2xl rounded-tr-md bg-primary px-3.5 py-2.5 text-left text-sm leading-relaxed text-primary-foreground;
+  }
+  .chat-card {
+    @apply overflow-hidden rounded-2xl border bg-background;
+  }
+  .reply {
+    @apply cursor-pointer rounded-full border bg-card px-3 py-1.5 text-xs font-medium transition hover:bg-accent;
+  }
+  .reply-cta {
+    @apply border-cta/40 bg-cta-soft text-cta hover:bg-cta hover:text-white;
+  }
+  .msg-time {
+    @apply text-[11px] text-muted-foreground;
+  }
+
+  /* move quality glyph */
+  .q {
+    @apply inline-grid size-5 shrink-0 place-items-center rounded-full text-[10px] leading-none font-extrabold text-white;
+  }
+  .q-brilliant {
+    @apply bg-q-brilliant;
+  }
+  .q-great {
+    @apply bg-q-great;
+  }
+  .q-best {
+    @apply bg-q-best;
+  }
+  .q-excellent {
+    @apply bg-q-excellent;
+  }
+  .q-good {
+    @apply bg-q-good;
+  }
+  .q-book {
+    @apply bg-q-book;
+  }
+  .q-inaccuracy {
+    @apply bg-q-inaccuracy text-q-inaccuracy-ink;
+  }
+  .q-mistake {
+    @apply bg-q-mistake;
+  }
+  .q-miss {
+    @apply bg-q-miss;
+  }
+  .q-blunder {
+    @apply bg-q-blunder;
+  }
+
+  /* move list */
+  .mv {
+    @apply inline-flex cursor-pointer items-center gap-1.5 rounded px-1.5 py-0.5 font-mono text-[13px] font-medium hover:bg-muted;
+  }
+  .mv.is-current {
+    @apply bg-accent text-accent-foreground ring-1 ring-primary/30;
+  }
+
+  /* clocks */
+  .clock {
+    @apply ml-auto rounded-lg bg-muted px-3 py-1 font-mono text-lg font-semibold text-muted-foreground tabular-nums;
+  }
+  .clock.is-running {
+    @apply bg-primary text-primary-foreground;
+  }
+  .clock.is-low {
+    @apply bg-destructive text-white;
+  }
+
+  .rise {
+    animation: rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
