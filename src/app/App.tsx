@@ -1,35 +1,30 @@
-import { cn, ThemeProvider } from '@/design'
-import { KitchenSink } from '@/design/dev'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { RouterProvider } from '@tanstack/react-router'
 
-/**
- * S01 placeholder route. S04 replaces this with the TanStack Router shell —
- * it exists so the scaffold has something real to boot, type-check and smoke-test.
- */
+import { ThemeProvider, Toaster, TooltipProvider } from '@/design'
+
+import { router } from './router'
+
+/** One client for the whole app. Worker calls (engine, import, analysis) are the async
+ *  boundary this exists for; feature sprints add the queries. */
+const queryClient = new QueryClient({
+  defaultOptions: {
+    // Local work — IndexedDB and workers — is cheap to repeat but never changes behind
+    // our back, so refetching on window focus is pure noise here.
+    queries: { refetchOnWindowFocus: false, retry: 1 },
+  },
+})
+
+/** The application root: appearance, async cache, routing and the toast outlet. */
 export function App() {
-  // S04 replaces this with a TanStack Router route.
-  const isKitchenSink =
-    typeof window !== 'undefined' && window.location.pathname === '/dev/kitchen-sink'
-
-  return <ThemeProvider>{isKitchenSink ? <KitchenSink /> : <Scaffold />}</ThemeProvider>
-}
-
-function Scaffold() {
   return (
-    <main className="grid min-h-full place-items-center p-6">
-      <div
-        className={cn(
-          'w-full max-w-md rounded-xl border bg-card p-8 text-card-foreground',
-          'shadow-[0_1px_2px_rgba(40,30,10,.04)]',
-        )}
-      >
-        <p className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-          Scaffold
-        </p>
-        <h1 className="mt-2 text-[32px] leading-tight font-bold">Chess King</h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          The Grove Bloom token contract is loaded. Screens arrive in S04.
-        </p>
-      </div>
-    </main>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider delayDuration={300}>
+          <RouterProvider router={router} />
+        </TooltipProvider>
+        <Toaster position="bottom-center" />
+      </QueryClientProvider>
+    </ThemeProvider>
   )
 }

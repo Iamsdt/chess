@@ -28,8 +28,24 @@ const VIEWPORTS = [
   { name: '390', width: 390, height: 844 },
 ]
 const THEMES = ['light', 'dark']
+/**
+ * A representative screen per layout rather than all 24 routes: one page screen, one board
+ * screen and one chat-closed screen exercise every frame the shell has, and the reviewer
+ * compares each against the matching file in `prototype/`.
+ */
 const ROUTES = [
-  { name: 'shell', path: '/' },
+  { name: 'today', path: '/' },
+  { name: 'play-setup', path: '/play' },
+  { name: 'puzzles', path: '/puzzles' },
+  { name: 'puzzle-solve', path: '/puzzles/solve' },
+  { name: 'learn', path: '/learn' },
+  { name: 'mistakes', path: '/mistakes' },
+  { name: 'games', path: '/games' },
+  { name: 'review', path: '/games/review' },
+  { name: 'analysis', path: '/analysis' },
+  { name: 'progress', path: '/progress' },
+  { name: 'settings', path: '/settings' },
+  { name: 'onboarding', path: '/onboarding' },
   { name: 'kitchen-sink', path: '/dev/kitchen-sink' },
 ]
 

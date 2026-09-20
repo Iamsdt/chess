@@ -4,6 +4,8 @@
 
 **Stack:** Vite + React 19 + **TypeScript** (strict; zod for runtime validation at boundaries) · TanStack Router · Zustand (UI state) + TanStack Query (async/worker calls) · Dexie (IndexedDB) · Tailwind v4 + shadcn/ui · chess.js · **Stockfish 19 lite, multi-threaded** WASM (1.6 MB; single-threaded lite as fallback) · Comlink for workers · Vitest + Testing Library + Playwright · ESLint + Prettier + Husky · GitHub Actions → Cloudflare Workers static assets.
 
+**Companion specs (read before the sprints that reference them):** [`docs/coach-agent.md`](./coach-agent.md) — what the Sage agent can and cannot do, its 8 modes, the grandmaster thinking mode, its 22 tools, memory layers and guardrails. Sprints S09, S21, S21b, S21c and S23 must follow it.
+
 **Engineering rules that apply to every sprint** (the "quality bar", see §5): contract-first (shared types + zod schemas), strict types with no `any`, pure domain logic separated from React, everything heavy off the main thread, tests with every unit of work, no dead code, no TODOs left behind.
 
 ---
@@ -20,7 +22,7 @@
 | **S06** | Chess core          | chess.js wrapper, FEN/PGN/SAN utils, material, ECO opening detection, pure classifiers                                                     | S03                |
 | **S07** | Engine layer        | Stockfish 19 lite multi-thread worker pool, UCI parser, lanes, cancellation, benchmarks                                                  | S03                |
 | **S08** | Board component     | Interactive board: drag/click, arrows, marks, hints, promotion, themes, piece sets, a11y                                                   | S02, S03           |
-| **S09** | Chat UI (mock)      | Sage panel: thread, composer, attachments, streaming renderer, `CoachPort` interface + mock                                                | S02, S03           |
+| **S09** | Chat UI (mock)      | Sage panel per [coach-agent.md](./coach-agent.md): thread, composer, tool-call + analysis cards, `CoachPort` + mock                                                | S02, S03           |
 | **S10** | Puzzle + lesson data| Import the 10,000-puzzle Lichess CSV set into IndexedDB, lesson packs, attribution, registry                                                   | S03                |
 | **S11** | Background jobs     | Durable job queue (IndexedDB), idle scheduler, Web Locks, BroadcastChannel, worker orchestration, devtools                                 | S05, S07           |
 | **S12** | Play vs engine      | Game state machine, clocks, takeback, promotion, sounds, blunder guard, setup + game screens                                               | S05, S06, S07, S08 |
@@ -32,7 +34,9 @@
 | **S18** | Drills              | Endgame drills vs engine (par moves), board-vision drills                                                                                  | S07, S08           |
 | **S19** | Analysis board      | MultiPV lines, variation tree, position setup, FEN/PGN in/out, optional online explorer                                                    | S07, S06, S08      |
 | **S20** | Games library       | PGN import/export in a worker, Lichess + Chess.com import, filters, table                                                                  | S05, S06, S11      |
-| **S21** | Sage providers      | BYOK crypto (AES-GCM + optional passphrase), Gemini/OpenAI/Anthropic adapters, streaming, context builder, spoiler guard, token accounting | S09, S07, S05      |
+| **S21** | Coach runtime       | Vercel AI SDK, provider presets + custom OpenAI-compatible entry, BYOK crypto, streaming, tool loop, cost meter ([spec](./coach-agent.md)) | S09, S07, S05 |
+| **S21b**| Coach tools & memory| The 22 local tools, context builder, memory layers, engine-truth guardrail ([spec §5–§7](./coach-agent.md)) | S21, S06, S07, S05 |
+| **S21c**| Grandmaster mode    | Assess → candidates → calculate → compare → plan → takeaway, board-linked cards ([spec §4](./coach-agent.md)) | S21b, S08 |
 | **S22** | Growth              | Rating charts, skill radar, heatmap, garden levels, milestones                                                                             | S05                |
 | **S23** | Settings            | All panels incl. live board/piece switching, data export/import, storage, about                                                            | S02, S05, S21      |
 | **S24** | Habit loop          | Streak + freeze, daily goal, today's path builder, session summary, garden growth                                                          | S05, S14           |
@@ -55,6 +59,7 @@ WAVE 2  (6 agents, parallel)           S04  S05  S06  S07  S08  S09  S10
 WAVE 3  (5 agents, parallel)           S11  S12*  S14*  S19  S20
 WAVE 4  (6 agents, parallel)           S13  S15  S16  S17  S18  S22  S23
 WAVE 5  (5 agents, parallel)           S21  S24  S25  S26  S27
+WAVE 5b (2 agents, after S21)          S21b → S21c
 WAVE 6  (2 agents)                     S28  S29
 ```
 
@@ -72,7 +77,7 @@ src/data/           S05   dexie, repositories, backup
 src/chess/          S06   rules, pgn, eco, classify
 src/engine/         S07   stockfish worker, pool, uci
 src/board/          S08   board component + pieces
-src/coach/          S09 (ui) + S21 (providers, crypto)
+src/coach/          S09 (ui) + S21 (runtime, crypto) + S21b (tools, memory) + S21c (gm mode)
 src/content/        S10   pack schema, loader, packs
 src/jobs/           S11   queue, scheduler, workers
 src/features/play/        S12
@@ -170,9 +175,9 @@ Every sprint below states: **Goal · Scope · Interfaces · Done when · Tests**
 
 #### S09 · Chat UI (mock coach)
 
-- **Goal:** the whole Sage panel, provider-agnostic.
+- **Goal:** the whole Sage panel, provider-agnostic. Follow [`docs/coach-agent.md`](./coach-agent.md) for modes, message kinds and what Sage may show.
 - **Scope:** thread with day dividers, timestamps, bubbles, board attachment cards, quick replies, typing indicator, streaming token renderer, markdown subset (bold, lists, `san`), "no spoilers" and "engine" toggles, attachment chip for the current position, per-screen seed messages, chat history list, new chat, empty/no-key states, error + retry states, virtualized list for long threads.
-- **Interfaces:** `CoachPort` (`send(messages, context, {signal}) → AsyncIterable<Delta>`), `useCoach()`; ships with `MockCoach` returning scripted replies.
+- **Interfaces:** `CoachPort` (`send(messages, context, {signal}) → AsyncIterable<StreamPart>`) where `StreamPart` covers text deltas, **tool-call start/result**, **partial structured analysis** (for grandmaster cards) and finish-with-usage — shaped to match the AI SDK stream so S21 plugs in without changing the UI; `useCoach()`; ships with `MockCoach` replaying scripted transcripts, including a full grandmaster answer.
 - **Done when:** every prototype chat state renders from the mock; panel works as overlay on mobile.
 - **Tests:** streaming render test, cancellation test, a11y (live region announces new messages).
 
@@ -290,12 +295,27 @@ Every sprint below states: **Goal · Scope · Interfaces · Done when · Tests**
 
 ### WAVE 5 — coach, habit, offline, sharing
 
-#### S21 · Sage providers (BYOK + crypto)
+#### S21 · Coach runtime (AI SDK + BYOK)
 
-- **Goal:** the real coach, with the user's key kept safe.
-- **Scope:** key vault — AES-GCM with a **non-extractable** CryptoKey stored in IndexedDB, optional passphrase lock (PBKDF2, session unlock), keys never in backups, masked display, test-key call, remove-key; provider adapters (Gemini, OpenAI, Anthropic) behind `CoachPort` with streaming, abort, retries, and provider-specific browser headers; context builder (current position, engine lines when "engine" is on, recent games, weak themes, current screen) with a token budget and redaction; spoiler guard (system prompt + client-side answer filter during puzzles/lessons); token + cost accounting per month; graceful degradation when no key.
-- **Done when:** real streaming answers appear in the S09 UI; locked vault cannot decrypt without the passphrase; backup file provably contains no key material.
-- **Tests:** vault unit tests (encrypt/decrypt/lock/wrong passphrase), adapter tests against recorded responses, spoiler-guard tests, backup-has-no-key test.
+- **Goal:** the real coach behind `CoachPort`, on the user's own key, with no account and no server. Spec: [`docs/coach-agent.md`](./coach-agent.md).
+- **Scope:** **Vercel AI SDK** (library only — not the hosted AI Gateway, which would need a Vercel account) as the provider-agnostic runtime: presets for OpenAI, Google Gemini and Anthropic plus a **Custom (OpenAI-compatible)** entry where the user supplies base URL, key and model name (covers OpenRouter, Groq, Together, DeepSeek, a self-hosted LiteLLM proxy, local Ollama/LM Studio); provider instances created with custom headers and `fetch` so browser-specific requirements are handled; key vault — AES-GCM with a **non-extractable** CryptoKey in IndexedDB, optional passphrase lock (PBKDF2, unlock once per session), never in backups, masked display, test-key call, remove-key; streaming with abort and retry; the multi-step tool loop with per-answer tool-call and wall-clock budgets; mode registry (the 8 modes) selecting prompt + allowed tools; token and cost accounting with a monthly ceiling; graceful degradation with no key.
+- **Spike first (half a day, findings recorded in `docs/coach-notes.md`):** confirm direct browser calls and CORS for each preset provider with a user key (Anthropic needs its explicit browser-access header), and measure the lazily-loaded bundle cost of `ai` + provider packages.
+- **Done when:** real streaming answers appear in the S09 UI from at least OpenAI, Gemini and one OpenAI-compatible endpoint; the locked vault cannot decrypt without the passphrase; a backup file provably contains no key material; cancelling an answer stops both the request and any engine work it started.
+- **Tests:** vault unit tests (encrypt/decrypt/lock/wrong passphrase), provider adapter tests against recorded responses, tool-loop budget tests, spoiler-guard tests, backup-has-no-key test.
+
+#### S21b · Coach tools, context & memory
+
+- **Goal:** make Sage useful rather than talkative — it should look things up, check with the engine and act. Spec: [`docs/coach-agent.md`](./coach-agent.md) §5–§7.
+- **Scope:** implement all 22 tools in five groups (engine, rules/position, board control, your data, actions), each with a zod schema, a local `execute`, a timeout and a result shape the model can quote; the **context builder** (turn / session / profile / taught / summary layers) assembling within a fixed token budget, newest and most relevant first, with a user-visible "what Sage sees" panel and per-layer clear; memory persistence in IndexedDB; the **engine-truth guardrail** (an evaluation claimed without a matching tool result is rejected and the turn retried) and **line validation** (every variation replayed through S06 rules before display); spoiler guard; fair-play switch that disables the coach during live games.
+- **Done when:** Sage can answer "is my knight hanging?" using tools only, draw the answer on the board, and be caught by the guardrail when a doctored model response invents an evaluation.
+- **Tests:** per-tool unit tests with fixtures, context-budget tests (never exceeds the cap, always includes the current position), guardrail tests with doctored responses, memory persistence tests.
+
+#### S21c · Grandmaster thinking mode
+
+- **Goal:** the headline teaching feature — not a move, but how a strong player reaches it. Spec: [`docs/coach-agent.md`](./coach-agent.md) §4.
+- **Scope:** structured analysis schema (assess, candidates, calculation lines, comparison, plan, takeaway) streamed as a partial object and rendered as board-linked cards; three candidate arrows; engine-verified lines with a step-through player on the board (play/pause, next move, return to your game); "why not X?" follow-up on any candidate; depth of explanation scaled to the user's rating; save-takeaway to notes; entry points from the game, review and analysis screens.
+- **Done when:** a grandmaster answer on a mid-game position renders in under ~8 s to first card, every shown line is legal and matches the engine, and interrupting mid-answer leaves the board clean.
+- **Tests:** schema streaming tests, line-legality tests over a fixture set of 20 positions, board-cleanup test on cancel, rating-adaptation snapshot tests.
 
 #### S24 · Habit loop
 
@@ -351,6 +371,7 @@ Every sprint below states: **Goal · Scope · Interfaces · Done when · Tests**
 - **S11 gates anything long-running** (S13 review, S20 bulk import, S22 stats). Features enqueue jobs; they never spawn their own workers.
 - **S15 (SRS) gates S17 (openings drill)** — one scheduler, reused.
 - **S09 gates S21**: the chat UI is built against `CoachPort` first, providers later. Nothing in the UI knows which provider is in use.
+- **S21 → S21b → S21c run in order** (runtime, then tools and memory, then grandmaster mode). All three follow [`docs/coach-agent.md`](./coach-agent.md); if an agent wants to deviate from that spec, it updates the spec in the same PR.
 - **S12 gates S28**: live play reuses the same game machine as sparring.
 - **S29 runs last** but its budgets are enforced from Wave 3 onward in CI.
 
@@ -418,6 +439,7 @@ Every sprint below states: **Goal · Scope · Interfaces · Done when · Tests**
 | 3    | S11, S12, S14, S19, S20           | 5                  | 9                |
 | 4    | S13, S15, S16, S17, S18, S22, S23 | 6–7                | 11               |
 | 5    | S21, S24, S25, S26, S27           | 5                  | 8                |
+| 5b   | S21b, S21c                        | 1–2 (sequential)   | 5                |
 | 6    | S28, S29                          | 2                  | 4                |
 
 Sequential wall-clock is roughly the longest sprint in each wave plus integration: about **8–10 working sessions** with a full agent team, versus ~45 agent-days of work.

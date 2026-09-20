@@ -16,3 +16,4 @@ package-lock.json
 
 # Maintained by the sprint planner; reformatting churns against it.
 docs/sprint-plan.md
+docs/coach-agent.md

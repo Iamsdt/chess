@@ -201,7 +201,10 @@ export const ThemeModeSchema = z.enum(THEME_MODES)
 export type ThemeMode = z.infer<typeof ThemeModeSchema>
 
 /** Board themes as named by the prototype's CSS scopes. */
-export const BOARD_THEMES = ['green', 'walnut', 'slate', 'dusk', 'sand'] as const
+/** `grove` is the unset default: it is the palette `globals.css` paints when no
+ *  `[data-board]` is set, and the name S02's provider and S08's board both use.
+ *  The prototype's settings screen labels it "Green" — that is a label, not a key. */
+export const BOARD_THEMES = ['grove', 'walnut', 'slate', 'dusk', 'sand'] as const
 export const BoardThemeSchema = z.enum(BOARD_THEMES)
 export type BoardTheme = z.infer<typeof BoardThemeSchema>
 

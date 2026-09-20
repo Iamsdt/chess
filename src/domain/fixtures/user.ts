@@ -48,7 +48,7 @@ export function makeSettings(overrides?: Partial<Settings>): Settings {
       reminderEnabled: true,
       reminderTime: '20:00',
       board: {
-        theme: 'green',
+        theme: 'grove',
         pieceSet: 'california',
         coordinates: true,
         highlightLastMove: true,

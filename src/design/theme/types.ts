@@ -1,3 +1,5 @@
+import type { BoardTheme, PieceSet } from '@/domain'
+
 /** Theme preference. `system` is stored as the absence of a key so the
  *  index.html boot script and the prototype both keep working. */
 export type ThemeMode = 'light' | 'dark' | 'system'
@@ -5,11 +7,10 @@ export type ThemeMode = 'light' | 'dark' | 'system'
 /** The resolved appearance actually applied to `<html>`. */
 export type ResolvedTheme = 'light' | 'dark'
 
-/** Board palettes from `[data-board]` in globals.css. `grove` is the unset default. */
-export type BoardTheme = 'grove' | 'walnut' | 'slate' | 'dusk' | 'sand'
-
-/** Piece artwork folders under `public/pieces/`. Consumed by S08's `<Board>`. */
-export type PieceSet = 'california' | 'staunty' | 'maestro' | 'alpha'
+/* Board palettes and piece sets are S03's contract — re-exported, never restated, so
+ * the design system and the persisted setting cannot drift apart. Type-only, so no
+ * zod schema is pulled into the UI bundle. */
+export type { BoardTheme, PieceSet }
 
 export const THEME_MODES = ['light', 'dark', 'system'] as const satisfies readonly ThemeMode[]
 export const BOARD_THEMES = [

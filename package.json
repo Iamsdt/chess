@@ -24,7 +24,9 @@
     "validate": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run build && npm run size",
     "prepare": "husky",
     "size": "node scripts/check-size.mjs",
-    "screenshots": "node scripts/screenshots.mjs"
+    "screenshots": "node scripts/screenshots.mjs",
+    "bench:engine": "node scripts/bench-engine.mjs",
+    "content:validate": "node scripts/content-validate.mjs"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -36,9 +38,16 @@
     ]
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.103.1",
+    "@tanstack/react-router": "^1.170.38",
+    "@tanstack/react-virtual": "^3.14.13",
     "chess.js": "^1.4.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "comlink": "^4.4.2",
+    "dexie": "^4.4.6",
+    "dexie-react-hooks": "^4.4.0",
     "lucide-react": "^0.575.0",
     "radix-ui": "^1.6.7",
     "react": "^19.2.0",
@@ -53,6 +62,7 @@
     "@eslint/js": "^9.39.1",
     "@playwright/test": "^1.50.0",
     "@tailwindcss/vite": "^4.2.1",
+    "@tanstack/router-plugin": "^1.168.40",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
@@ -71,6 +81,7 @@
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
+    "fake-indexeddb": "^6.2.5",
     "globals": "^16.5.0",
     "husky": "^9.1.7",
     "jsdom": "^26.0.0",

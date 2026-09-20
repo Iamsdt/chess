@@ -55,7 +55,7 @@ export type Profile = z.infer<typeof ProfileSchema>
 
 /** Board and piece appearance; changing any of these takes effect immediately. */
 export const BoardSettingsSchema = z.object({
-  theme: BoardThemeSchema.default('green'),
+  theme: BoardThemeSchema.default('grove'),
   pieceSet: PieceSetSchema.default('california'),
   coordinates: z.boolean().default(true),
   highlightLastMove: z.boolean().default(true),
