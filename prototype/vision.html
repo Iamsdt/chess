@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Board vision · Chess King</title>
+<script src="assets/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="assets/board.js" defer></script>
+<script src="assets/shell.js" defer></script>
+<style>
+  /* keep ranks equal height when a rank is empty */
+  .vb { grid-template-rows: repeat(8, 1fr); }
+  /* Board pages: the board is sized by viewport height so the whole drill fits without scrolling */
+  .board-size { width: min(100%, calc(100dvh - 56px - 48px - 52px)); }
+</style>
+</head>
+<body data-nav="puzzles" data-layout="board" data-chat="closed"
+      data-chat-context="Board vision · Name the square · score 14 · coordinates off"
+      data-chat-note="Chat is closed during timed drills. Open it any time; the clock keeps running."
+      data-chat-quick="How do I learn squares faster?|Why does this help my games?|Which squares do I miss?">
+
+<template id="chat-seed">
+  <div data-divider>Drill started · 8:14 PM</div>
+  <div data-sage data-time="8:14 PM">A trick that helps: the long diagonals. <b>a1 to h8</b> is all dark squares, <b>h1 to a8</b> all light. Anchor on those and the rest falls into place.</div>
+</template>
+
+<main>
+  <!-- drill header -->
+  <header class="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur lg:px-6">
+    <a href="puzzles.html" class="btn btn-ghost btn-sm"><i data-lucide="arrow-left"></i><span class="max-sm:hidden">Puzzles</span></a>
+    <div class="mx-1 h-5 w-px bg-border"></div>
+    <h1 class="flex items-center gap-2 text-base font-bold"><i data-lucide="scan-eye" class="text-cta"></i>Name the square</h1>
+    <span class="badge max-sm:hidden">1 min</span>
+    <div class="ml-auto flex items-center gap-1">
+      <div class="seg text-xs max-sm:hidden" aria-label="Board orientation">
+        <button class="is-active" id="as-white">As White</button>
+        <button id="as-black">As Black</button>
+      </div>
+      <button class="btn btn-ghost btn-sm text-muted-foreground" data-toast="Restarted. Fresh minute." data-toast-icon="rotate-ccw"><i data-lucide="rotate-ccw"></i><span class="max-sm:hidden">Restart</span></button>
+    </div>
+  </header>
+
+  <div class="grid gap-5 p-4 lg:p-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+    <!-- board column -->
+    <section class="flex justify-center" aria-label="Vision board">
+      <div class="board-size space-y-2.5">
+        <div class="overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.45)] ring-1 ring-border">
+          <div class="vb" id="vis-board"
+               data-fen="r1bq1rk1/ppp2ppp/2np1n2/2b1p3/2B1P3/2PP1N2/PP3PPP/RNBQ1RK1 w - - 1 7"
+               data-focus="g5" aria-label="Board without coordinates, one square circled"></div>
+        </div>
+        <p class="flex items-center justify-center gap-1.5 text-xs text-muted-foreground"><i data-lucide="eye-off" class="size-3.5"></i>Coordinates are off for this drill</p>
+      </div>
+    </section>
+
+    <!-- side panel -->
+    <aside class="card flex min-h-0 flex-col overflow-hidden xl:max-h-[calc(100dvh-56px-48px)]" aria-label="Drill panel">
+      <div class="grid grid-cols-3 border-b text-center">
+        <div class="p-3"><div class="label">Time</div><div class="clock is-running mx-auto mt-1 w-fit" data-tick="38" role="timer" aria-label="Time left">0:38</div></div>
+        <div class="border-x p-3"><div class="label">Score</div><div class="mt-1 font-display text-3xl font-bold tabular-nums leading-9" id="score">14</div></div>
+        <div class="p-3"><div class="label">Streak</div><div class="mt-1 inline-flex items-center gap-1 font-display text-3xl font-bold tabular-nums leading-9 text-reward-ink"><i data-lucide="zap" class="size-5"></i><span id="streak">6</span></div></div>
+      </div>
+
+      <div class="min-h-0 flex-1 space-y-5 overflow-auto p-5">
+        <div class="text-center">
+          <p class="label">Square 15</p>
+          <h2 class="mt-1 font-display text-[28px] font-bold leading-tight">Which square is circled?</h2>
+          <p class="mt-1 text-sm text-muted-foreground">Pick a file, then a rank. Or just type it.</p>
+        </div>
+
+        <fieldset>
+          <legend class="label mb-1.5">File</legend>
+          <div class="grid grid-cols-8 gap-1" data-chips id="files">
+            <button class="btn btn-outline h-10 px-0 font-mono text-base [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">a</button>
+            <button class="btn btn-outline h-10 px-0 font-mono text-base [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">b</button>
+            <button class="btn btn-outline h-10 px-0 font-mono text-base [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">c</button>
+            <button class="btn btn-outline h-10 px-0 font-mono text-base [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">d</button>
+            <button class="btn btn-outline h-10 px-0 font-mono text-base [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">e</button>
+            <button class="btn btn-outline h-10 px-0 font-mono text-base [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">f</button>
+            <button class="btn btn-outline h-10 px-0 font-mono text-base [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">g</button>
+            <button class="btn btn-outline h-10 px-0 font-mono text-base [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">h</button>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend class="label mb-1.5">Rank</legend>
+          <div class="grid grid-cols-8 gap-1" data-chips id="ranks">
+            <button class="btn btn-outline h-10 px-0 font-mono text-base [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">1</button>
+            <button class="btn btn-outline h-10 px-0 font-mono text-base [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">2</button>
+            <button class="btn btn-outline h-10 px-0 font-mono text-base [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">3</button>
+            <button class="btn btn-outline h-10 px-0 font-mono text-base [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">4</button>
+            <button class="btn btn-outline h-10 px-0 font-mono text-base [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">5</button>
+            <button class="btn btn-outline h-10 px-0 font-mono text-base [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">6</button>
+            <button class="btn btn-outline h-10 px-0 font-mono text-base [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">7</button>
+            <button class="btn btn-outline h-10 px-0 font-mono text-base [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">8</button>
+          </div>
+        </fieldset>
+        <form class="flex gap-2" id="typed">
+          <label class="sr-only" for="sq-input">Type the square</label>
+          <input id="sq-input" class="input font-mono" placeholder="Type it, e.g. e4" maxlength="2" autocomplete="off">
+          <button class="btn btn-default" type="submit">Check</button>
+        </form>
+
+        <div class="rounded-xl bg-muted/60 p-3">
+          <div class="label">Last three</div>
+          <div class="mt-2 flex flex-wrap gap-1.5 font-mono text-xs">
+            <span class="badge badge-soft"><i data-lucide="check" class="size-3"></i>c6</span>
+            <span class="badge badge-soft"><i data-lucide="check" class="size-3"></i>f3</span>
+            <span class="badge border-transparent bg-cta-soft text-cta"><i data-lucide="x" class="size-3"></i>d6, not d5</span>
+          </div>
+        </div>
+      </div>
+      <div class="border-t p-3 text-center text-xs text-muted-foreground">Your best: <b class="font-semibold text-foreground">19</b> in a minute · 5 to go</div>
+    </aside>
+  </div>
+
+  <!-- other drills -->
+  <section class="px-4 pb-8 lg:px-6" aria-labelledby="drills-h">
+    <h2 id="drills-h" class="font-display text-xl font-bold">More vision drills</h2>
+    <div class="mt-4 grid gap-4 sm:grid-cols-3">
+      <button class="card card-hover flex items-start gap-3 p-5 text-left" data-toast="Find all checks starts after this drill" data-toast-icon="scan-eye">
+        <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-cta-soft text-cta"><i data-lucide="crosshair" class="size-5"></i></span>
+        <span><span class="block font-display text-lg font-bold">Find all checks</span><span class="mt-0.5 block text-sm text-muted-foreground">Tap every checking move before the clock ends. Builds the "checks first" habit.</span><span class="mt-2 block text-xs text-muted-foreground">Best: 9 positions</span></span>
+      </button>
+      <button class="card card-hover flex items-start gap-3 p-5 text-left" data-toast="Knight route starts after this drill" data-toast-icon="scan-eye">
+        <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-sky text-sky-ink"><i data-lucide="route" class="size-5"></i></span>
+        <span><span class="block font-display text-lg font-bold">Knight route</span><span class="mt-0.5 block text-sm text-muted-foreground">Get the knight from one square to another in the fewest jumps.</span><span class="mt-2 block text-xs text-muted-foreground">Best: 12 routes</span></span>
+      </button>
+      <button class="card card-hover flex items-start gap-3 p-5 text-left" data-toast="Blindfold move starts after this drill" data-toast-icon="scan-eye">
+        <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-lilac text-lilac-ink"><i data-lucide="eye-off" class="size-5"></i></span>
+        <span><span class="block font-display text-lg font-bold">Blindfold move</span><span class="mt-0.5 block text-sm text-muted-foreground">Hear a short line of moves, then say where the piece ends up.</span><span class="mt-2 block text-xs text-muted-foreground">New · try it</span></span>
+      </button>
+    </div>
+  </section>
+</main>
+
+<script>
+  // Prototype behaviour: g5 is the answer; pick file + rank or type it.
+  document.addEventListener('DOMContentLoaded', () => {
+    const board = document.getElementById('vis-board');
+    const check = sq => {
+      const ok = sq.toLowerCase() === 'g5';
+      window.CK.toast(ok ? 'Correct, g5. +1' : `Not quite: that was g5`, ok ? 'check' : 'x');
+      if (ok) { document.getElementById('score').textContent = 15; document.getElementById('streak').textContent = 7; }
+      document.querySelectorAll('#files .is-active, #ranks .is-active').forEach(b => b.classList.remove('is-active'));
+    };
+    const pick = () => setTimeout(() => {
+      const f = document.querySelector('#files .is-active'), r = document.querySelector('#ranks .is-active');
+      if (f && r) check(f.textContent + r.textContent);
+    });
+    document.querySelectorAll('#files button, #ranks button').forEach(b => b.addEventListener('click', pick));
+    document.getElementById('typed').addEventListener('submit', e => { e.preventDefault(); const i = document.getElementById('sq-input'); if (i.value.trim()) check(i.value.trim()); i.value = ''; });
+    const orient = o => { board.dataset.orient = o; window.VB.render(board); };
+    document.getElementById('as-white').addEventListener('click', () => orient('w'));
+    document.getElementById('as-black').addEventListener('click', () => orient('b'));
+  });
+</script>
+</body>
+</html>

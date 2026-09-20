@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My games · Chess King</title>
+<script src="assets/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="assets/board.js" defer></script>
+<script src="assets/shell.js" defer></script>
+</head>
+<body data-nav="games"
+      data-chat-context="your game library · 42 games · last 30 days"
+      data-chat-attach="Last 8 games"
+      data-chat-quick="What patterns do you see?|Which opening should I drop?|Why do I lose to Rafi?">
+
+<template id="chat-seed">
+  <div data-divider>Today, 8:45 PM</div>
+  <div data-sage data-time="8:45 PM" data-replies="Show the 3 games|Make a drill from them" data-cta="1">
+    <div class="bubble">I looked across your last 8 games. Three things stand out:</div>
+    <div class="bubble"><b>1.</b> Your Italian is steady: 3 wins from 3, all above 80% accuracy.<br><b>2.</b> Against the Sicilian you drift around move 15. Both losses to Rafi started there.<br><b>3.</b> Most of your mistakes come right after a capture. You recapture on autopilot.</div>
+  </div>
+  <div data-me data-time="8:46 PM">What's the quickest fix?</div>
+  <div data-sage data-time="8:46 PM">After every capture, pause and ask: <b>“Is there something better than taking back?”</b> That one habit would have saved 4 of your 11 mistakes.</div>
+</template>
+
+<main>
+  <div class="page">
+    <header class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="label">Library · stored in this browser</p>
+        <h1 class="page-title mt-1">My games</h1>
+        <p class="mt-1 text-sm text-muted-foreground">42 games · 26 won · every one reviewed</p>
+      </div>
+      <a href="play-setup.html" class="btn btn-cta"><i data-lucide="swords" class="size-[18px]"></i>New game</a>
+    </header>
+
+    <!-- filters -->
+    <section class="card mt-6 p-4" aria-label="Filter games">
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="relative min-w-[200px] flex-1">
+          <i data-lucide="search" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></i>
+          <label for="q" class="sr-only">Search games</label>
+          <input id="q" class="input pl-9" placeholder="Search opponent or opening…">
+        </div>
+        <div class="seg" role="radiogroup" aria-label="Result">
+          <button type="button" class="is-active">All</button>
+          <button type="button">Won</button>
+          <button type="button">Lost</button>
+          <button type="button">Drawn</button>
+        </div>
+        <label class="sr-only" for="date">Date range</label>
+        <select id="date" class="input w-auto pr-8">
+          <option>Last 30 days</option>
+          <option>Last 7 days</option>
+          <option>This year</option>
+          <option>All time</option>
+        </select>
+      </div>
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <span class="label mr-1">Opponent</span>
+        <div class="flex flex-wrap gap-1.5" data-chips>
+          <button type="button" class="reply is-active [&.is-active]:border-primary [&.is-active]:bg-accent">All</button>
+          <button type="button" class="reply [&.is-active]:border-primary [&.is-active]:bg-accent"><i data-lucide="cpu" class="mr-1 inline size-3"></i>Stockfish</button>
+          <button type="button" class="reply [&.is-active]:border-primary [&.is-active]:bg-accent"><i data-lucide="users" class="mr-1 inline size-3"></i>Friend</button>
+          <button type="button" class="reply [&.is-active]:border-primary [&.is-active]:bg-accent"><i data-lucide="download" class="mr-1 inline size-3"></i>Imported</button>
+        </div>
+        <span class="mx-1 h-5 w-px bg-border max-sm:hidden"></span>
+        <span class="label mr-1">Opening</span>
+        <div class="flex flex-wrap gap-1.5" data-chips>
+          <button type="button" class="reply is-active [&.is-active]:border-primary [&.is-active]:bg-accent">Any</button>
+          <button type="button" class="reply [&.is-active]:border-primary [&.is-active]:bg-accent">Italian</button>
+          <button type="button" class="reply [&.is-active]:border-primary [&.is-active]:bg-accent">Sicilian</button>
+          <button type="button" class="reply [&.is-active]:border-primary [&.is-active]:bg-accent">Caro-Kann</button>
+          <button type="button" class="reply [&.is-active]:border-primary [&.is-active]:bg-accent">London</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- table -->
+    <section class="@container card mt-4 overflow-hidden" aria-labelledby="list-h">
+      <h2 id="list-h" class="sr-only">Games</h2>
+      <table class="w-full text-sm">
+        <thead class="border-b bg-muted/40 text-left text-xs text-muted-foreground">
+          <tr>
+            <th scope="col" class="px-4 py-2.5 font-medium">Result</th>
+            <th scope="col" class="px-3 py-2.5 font-medium">Opponent</th>
+            <th scope="col" class="px-3 py-2.5 font-medium @max-[640px]:hidden">Opening</th>
+            <th scope="col" class="px-3 py-2.5 text-right font-medium @max-[900px]:hidden">Moves</th>
+            <th scope="col" class="px-3 py-2.5 text-right font-medium @max-[520px]:hidden">Accuracy</th>
+            <th scope="col" class="px-3 py-2.5 font-medium @max-[440px]:hidden">Mistakes</th>
+            <th scope="col" class="px-3 py-2.5 font-medium @max-[780px]:hidden">Date</th>
+            <th scope="col" class="px-4 py-2.5"><span class="sr-only">Review</span></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y [&_td]:py-3">
+          <tr class="bg-accent/30 hover:bg-muted/40">
+            <td class="px-4"><span class="badge border-transparent bg-accent text-accent-foreground">Won</span></td>
+            <td class="px-3"><div class="flex items-center gap-2"><span class="avatar size-7 rounded-lg bg-[#3b4a44] text-[#cfe0d6]"><i data-lucide="cpu" class="size-3.5"></i></span><div class="leading-tight"><div class="font-medium">Stockfish 1200</div><div class="text-xs text-muted-foreground">White · 10 + 5</div></div></div></td>
+            <td class="px-3 @max-[640px]:hidden">Italian · Giuoco Pianissimo</td>
+            <td class="px-3 text-right tabular-nums @max-[900px]:hidden">37</td>
+            <td class="px-3 text-right font-medium tabular-nums @max-[520px]:hidden">84%</td>
+            <td class="px-3 @max-[440px]:hidden"><span class="badge border-transparent bg-cta-soft text-cta">3 to review</span></td>
+            <td class="whitespace-nowrap px-3 text-muted-foreground @max-[780px]:hidden">Today</td>
+            <td class="px-4 text-right"><a href="review.html" class="btn btn-outline btn-sm">Review</a></td>
+          </tr>
+          <tr class="hover:bg-muted/40">
+            <td class="px-4"><span class="badge badge-danger">Lost</span></td>
+            <td class="px-3"><div class="flex items-center gap-2"><span class="avatar size-7 bg-[#e9a15a] text-[10px] text-[#3b1d00]">RA</span><div class="leading-tight"><div class="font-medium">Rafi</div><div class="text-xs text-muted-foreground">White · correspondence</div></div></div></td>
+            <td class="px-3 @max-[640px]:hidden">Sicilian · Najdorf</td>
+            <td class="px-3 text-right tabular-nums @max-[900px]:hidden">41</td>
+            <td class="px-3 text-right font-medium tabular-nums @max-[520px]:hidden">71%</td>
+            <td class="px-3 @max-[440px]:hidden"><span class="badge border-transparent bg-cta-soft text-cta">2 to review</span></td>
+            <td class="whitespace-nowrap px-3 text-muted-foreground @max-[780px]:hidden">Thu, 17 Sep</td>
+            <td class="px-4 text-right"><a href="review.html" class="btn btn-outline btn-sm">Review</a></td>
+          </tr>
+          <tr class="hover:bg-muted/40">
+            <td class="px-4"><span class="badge border-transparent bg-accent text-accent-foreground">Won</span></td>
+            <td class="px-3"><div class="flex items-center gap-2"><span class="avatar size-7 rounded-lg bg-[#3b4a44] text-[#cfe0d6]"><i data-lucide="cpu" class="size-3.5"></i></span><div class="leading-tight"><div class="font-medium">Stockfish 1100</div><div class="text-xs text-muted-foreground">Black · 15 + 10</div></div></div></td>
+            <td class="px-3 @max-[640px]:hidden">Caro-Kann · Advance</td>
+            <td class="px-3 text-right tabular-nums @max-[900px]:hidden">29</td>
+            <td class="px-3 text-right font-medium tabular-nums @max-[520px]:hidden">81%</td>
+            <td class="px-3 @max-[440px]:hidden"><span class="badge border-transparent bg-cta-soft text-cta">1 to review</span></td>
+            <td class="whitespace-nowrap px-3 text-muted-foreground @max-[780px]:hidden">Tue, 15 Sep</td>
+            <td class="px-4 text-right"><a href="review.html" class="btn btn-outline btn-sm">Review</a></td>
+          </tr>
+          <tr class="hover:bg-muted/40">
+            <td class="px-4"><span class="badge text-muted-foreground">Draw</span></td>
+            <td class="px-3"><div class="flex items-center gap-2"><span class="avatar size-7 bg-sky text-sky-ink"><i data-lucide="download" class="size-3.5"></i></span><div class="leading-tight"><div class="font-medium">bishop_bard <span class="font-normal text-muted-foreground">1412</span></div><div class="text-xs text-muted-foreground">Imported · Lichess · 10 + 0</div></div></div></td>
+            <td class="px-3 @max-[640px]:hidden">London System</td>
+            <td class="px-3 text-right tabular-nums @max-[900px]:hidden">58</td>
+            <td class="px-3 text-right font-medium tabular-nums @max-[520px]:hidden">76%</td>
+            <td class="px-3 @max-[440px]:hidden"><span class="badge border-transparent bg-cta-soft text-cta">2 to review</span></td>
+            <td class="whitespace-nowrap px-3 text-muted-foreground @max-[780px]:hidden">Mon, 14 Sep</td>
+            <td class="px-4 text-right"><a href="review.html" class="btn btn-outline btn-sm">Review</a></td>
+          </tr>
+          <tr class="hover:bg-muted/40">
+            <td class="px-4"><span class="badge border-transparent bg-accent text-accent-foreground">Won</span></td>
+            <td class="px-3"><div class="flex items-center gap-2"><span class="avatar size-7 rounded-lg bg-[#3b4a44] text-[#cfe0d6]"><i data-lucide="cpu" class="size-3.5"></i></span><div class="leading-tight"><div class="font-medium">Stockfish 1100</div><div class="text-xs text-muted-foreground">White · 10 + 5</div></div></div></td>
+            <td class="px-3 @max-[640px]:hidden">Italian · Two Knights</td>
+            <td class="px-3 text-right tabular-nums @max-[900px]:hidden">33</td>
+            <td class="px-3 text-right font-medium tabular-nums @max-[520px]:hidden">86%</td>
+            <td class="px-3 @max-[440px]:hidden"><span class="badge badge-soft"><i data-lucide="check" class="size-3"></i>Clean</span></td>
+            <td class="whitespace-nowrap px-3 text-muted-foreground @max-[780px]:hidden">Sun, 13 Sep</td>
+            <td class="px-4 text-right"><a href="review.html" class="btn btn-outline btn-sm">Review</a></td>
+          </tr>
+          <tr class="hover:bg-muted/40">
+            <td class="px-4"><span class="badge badge-danger">Lost</span></td>
+            <td class="px-3"><div class="flex items-center gap-2"><span class="avatar size-7 bg-[#e9a15a] text-[10px] text-[#3b1d00]">RA</span><div class="leading-tight"><div class="font-medium">Rafi</div><div class="text-xs text-muted-foreground">White · 15 + 10 · live</div></div></div></td>
+            <td class="px-3 @max-[640px]:hidden">Sicilian · Alapin</td>
+            <td class="px-3 text-right tabular-nums @max-[900px]:hidden">35</td>
+            <td class="px-3 text-right font-medium tabular-nums @max-[520px]:hidden">68%</td>
+            <td class="px-3 @max-[440px]:hidden"><span class="badge border-transparent bg-cta-soft text-cta">3 to review</span></td>
+            <td class="whitespace-nowrap px-3 text-muted-foreground @max-[780px]:hidden">Fri, 11 Sep</td>
+            <td class="px-4 text-right"><a href="review.html" class="btn btn-outline btn-sm">Review</a></td>
+          </tr>
+          <tr class="hover:bg-muted/40">
+            <td class="px-4"><span class="badge border-transparent bg-accent text-accent-foreground">Won</span></td>
+            <td class="px-3"><div class="flex items-center gap-2"><span class="avatar size-7 bg-sky text-sky-ink"><i data-lucide="download" class="size-3.5"></i></span><div class="leading-tight"><div class="font-medium">knightowl77 <span class="font-normal text-muted-foreground">1368</span></div><div class="text-xs text-muted-foreground">Imported · Chess.com · 10 + 0</div></div></div></td>
+            <td class="px-3 @max-[640px]:hidden">Italian · Giuoco Pianissimo</td>
+            <td class="px-3 text-right tabular-nums @max-[900px]:hidden">44</td>
+            <td class="px-3 text-right font-medium tabular-nums @max-[520px]:hidden">82%</td>
+            <td class="px-3 @max-[440px]:hidden"><span class="badge border-transparent bg-cta-soft text-cta">1 to review</span></td>
+            <td class="whitespace-nowrap px-3 text-muted-foreground @max-[780px]:hidden">Wed, 9 Sep</td>
+            <td class="px-4 text-right"><a href="review.html" class="btn btn-outline btn-sm">Review</a></td>
+          </tr>
+          <tr class="hover:bg-muted/40">
+            <td class="px-4"><span class="badge border-transparent bg-accent text-accent-foreground">Won</span></td>
+            <td class="px-3"><div class="flex items-center gap-2"><span class="avatar size-7 rounded-lg bg-[#3b4a44] text-[#cfe0d6]"><i data-lucide="cpu" class="size-3.5"></i></span><div class="leading-tight"><div class="font-medium">Stockfish 1000</div><div class="text-xs text-muted-foreground">Black · untimed</div></div></div></td>
+            <td class="px-3 @max-[640px]:hidden">Caro-Kann · Classical</td>
+            <td class="px-3 text-right tabular-nums @max-[900px]:hidden">31</td>
+            <td class="px-3 text-right font-medium tabular-nums @max-[520px]:hidden">88%</td>
+            <td class="px-3 @max-[440px]:hidden"><span class="badge badge-soft"><i data-lucide="check" class="size-3"></i>Clean</span></td>
+            <td class="whitespace-nowrap px-3 text-muted-foreground @max-[780px]:hidden">Mon, 7 Sep</td>
+            <td class="px-4 text-right"><a href="review.html" class="btn btn-outline btn-sm">Review</a></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="flex items-center justify-between border-t px-4 py-3 text-xs text-muted-foreground">
+        <span>Showing 8 of 42</span>
+        <button class="btn btn-ghost btn-sm" data-toast="Loaded 8 more games" data-toast-icon="library">Show more</button>
+      </div>
+    </section>
+
+    <div class="@container mt-6"><div class="grid gap-4 @[820px]:grid-cols-[minmax(0,1fr)_320px]">
+      <!-- import -->
+      <section class="card p-5" aria-labelledby="imp-h">
+        <div class="flex items-center gap-2">
+          <span class="grid size-8 place-items-center rounded-lg bg-sky text-sky-ink"><i data-lucide="download"></i></span>
+          <h2 id="imp-h" class="text-lg font-bold">Import games</h2>
+        </div>
+        <p class="help mt-1">Imported games get the same review and feed your Mistake Bank.</p>
+        <div class="tabs mt-4 overflow-x-auto whitespace-nowrap [scrollbar-width:none]">
+          <button class="tab is-active" data-tab="pgn" data-group="imp">Paste PGN/FEN</button>
+          <button class="tab" data-tab="li" data-group="imp">Lichess</button>
+          <button class="tab" data-tab="cc" data-group="imp">Chess.com</button>
+        </div>
+        <div class="pt-4" data-panel="pgn" data-group="imp">
+          <label for="pgn" class="field-label">PGN or FEN</label>
+          <textarea id="pgn" rows="5" class="textarea mt-1.5 font-mono text-xs" spellcheck="false" placeholder='[Event "Club night"]&#10;1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. c3 Nf6 …'></textarea>
+          <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
+            <p class="help">Several games at once are fine.</p>
+            <button class="btn btn-default btn-sm" data-toast="1 game imported · review starts in the background" data-toast-icon="download"><i data-lucide="download"></i>Import</button>
+          </div>
+        </div>
+        <div class="pt-4" data-panel="li" data-group="imp" hidden>
+          <label for="li-user" class="field-label">Lichess username</label>
+          <div class="mt-1.5 flex gap-2"><input id="li-user" class="input" placeholder="e.g. bishop_bard"><button class="btn btn-default shrink-0" data-toast="Found 23 new games from Lichess" data-toast-icon="download">Fetch</button></div>
+          <p class="mt-3 flex gap-2 rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground"><i data-lucide="shield" class="mt-px size-3.5"></i><span>Fetched directly from your browser via Lichess's public API. No password, and nothing passes through a Chess King server.</span></p>
+          <label class="mt-3 flex items-center gap-3 text-sm"><span class="switch"><input type="checkbox" checked><span></span></span>Only rated games from the last 90 days</label>
+        </div>
+        <div class="pt-4" data-panel="cc" data-group="imp" hidden>
+          <label for="cc-user" class="field-label">Chess.com username</label>
+          <div class="mt-1.5 flex gap-2"><input id="cc-user" class="input" placeholder="e.g. knightowl77"><button class="btn btn-default shrink-0" data-toast="Found 12 new games from Chess.com" data-toast-icon="download">Fetch</button></div>
+          <p class="mt-3 flex gap-2 rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground"><i data-lucide="shield" class="mt-px size-3.5"></i><span>Fetched directly from your browser via Chess.com's public API. Only public games are available, and it may take a few seconds per month of games.</span></p>
+        </div>
+      </section>
+
+      <!-- export + empty example -->
+      <div class="space-y-4">
+        <section class="card p-5" aria-labelledby="exp-h">
+          <div class="flex items-center gap-2">
+            <span class="grid size-8 place-items-center rounded-lg bg-accent text-accent-foreground"><i data-lucide="upload"></i></span>
+            <h2 id="exp-h" class="text-lg font-bold">Export</h2>
+          </div>
+          <p class="help mt-1">Your games are yours. Take them anywhere.</p>
+          <div class="mt-4 grid gap-2">
+            <button class="btn btn-outline justify-start" data-toast="chess-king-games.pgn downloaded (42 games)" data-toast-icon="file-down"><i data-lucide="file-down"></i>Download all as PGN</button>
+            <a href="settings.html#data" class="btn btn-ghost justify-start text-muted-foreground"><i data-lucide="archive"></i>Full backup in Settings<i data-lucide="chevron-right" class="ml-auto"></i></a>
+          </div>
+        </section>
+
+        <section class="rounded-xl border border-dashed p-5 text-center" aria-label="Example of an empty filter result">
+          <p class="eyebrow">When a filter finds nothing</p>
+          <span class="mx-auto mt-3 grid size-10 place-items-center rounded-full bg-muted text-muted-foreground"><i data-lucide="sprout"></i></span>
+          <p class="mt-2 text-sm font-medium">No Caro-Kann games as White yet</p>
+          <p class="mt-0.5 text-xs text-muted-foreground">Play one against Stockfish and it will show up here.</p>
+        </section>
+      </div>
+    </div></div>
+  </div>
+</main>
+</body>
+</html>

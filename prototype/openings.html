@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Openings · Chess King</title>
+<script src="assets/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="assets/board.js" defer></script>
+<script src="assets/shell.js" defer></script>
+<style>.san{white-space:nowrap} .vb{grid-template-rows:repeat(8,1fr)}</style>
+</head>
+<body data-nav="openings"
+      data-chat-context="your repertoire · 4 openings · 34 lines · how you score in each"
+      data-chat-attach="My repertoire"
+      data-chat-quick="What fits my style?|Which line should I fix first?|Build me a line vs 1.d4">
+
+<template id="chat-seed">
+  <div data-divider>Today, 8:10 PM</div>
+  <div data-me data-time="8:10 PM">Rafi plays the Sicilian. Should I switch from the Caro-Kann?</div>
+  <div data-sage data-time="8:10 PM">
+    <div class="bubble">I'd keep it. Your games say you like <b>solid pawn chains</b> and slow plans. You score 58% with the Caro-Kann, and you make fewer early mistakes there than anywhere else.</div>
+    <div class="bubble">The Najdorf is great, but it asks for a lot of sharp theory. If you want a second weapon vs 1.e4, the <b>French</b> fits you better. Same pawn chain, same <span class="san">…c5</span> break:</div>
+    <div class="chat-card">
+      <div class="vb" data-fen="rnbqkbnr/ppp2ppp/4p3/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3" data-orient="b" data-arrows="c7c5:ai"></div>
+      <div class="flex items-center justify-between gap-2 px-3 py-2 text-xs"><span>French Defence · C00</span><span class="text-muted-foreground">Style match 86%</span></div>
+    </div>
+  </div>
+  <div data-me data-time="8:11 PM">Would I have to learn a lot?</div>
+  <div data-sage data-time="8:11 PM" data-replies="Add French as a draft|Stay with Caro-Kann" data-cta="1">Start with <b>3 lines</b>, not 30. You'd pick every move yourself, and I'd only fill in the replies people actually play at your level.</div>
+</template>
+
+<main>
+  <div class="page">
+    <header class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="label">Library</p>
+        <h1 class="page-title mt-1">Openings</h1>
+        <p class="mt-1 text-sm text-muted-foreground">A repertoire you build yourself, one move at a time. Drill it until it's automatic.</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="text-right text-sm leading-tight max-sm:text-left"><div class="font-medium">7 lines due</div><div class="text-xs text-muted-foreground">about 5 min</div></div>
+        <a href="opening-drill.html" class="btn btn-cta"><i data-lucide="repeat" class="size-[18px]"></i>Drill due lines</a>
+      </div>
+    </header>
+
+    <div class="tabs mt-7" role="tablist">
+      <button class="tab is-active" data-tab="mine" data-group="op" role="tab">My repertoire</button>
+      <button class="tab" data-tab="explore" data-group="op" role="tab">Explore</button>
+    </div>
+
+    <!-- MY REPERTOIRE -->
+    <div data-panel="mine" data-group="op" class="mt-6 space-y-8">
+      <section aria-labelledby="w-h">
+        <h2 id="w-h" class="flex items-center gap-2 text-lg font-bold"><span class="size-3 rounded-full bg-white ring-1 ring-border"></span>As White</h2>
+        <div class="mt-3 grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,370px),1fr))]">
+          <article class="card card-hover flex gap-4 p-4">
+            <div class="w-24 shrink-0 self-start overflow-hidden rounded-lg ring-1 ring-border sm:w-28"><div class="vb" data-fen="r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4" aria-label="Italian Game position"></div></div>
+            <div class="flex min-w-0 flex-1 flex-col">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0"><h3 class="truncate text-base font-bold">Italian Game</h3><p class="text-xs text-muted-foreground">C50 · Giuoco Pianissimo · 9 lines</p></div>
+                <span class="badge border-transparent bg-cta-soft text-cta">3 due</span>
+              </div>
+              <div class="mt-3 flex items-center gap-2"><span class="progress h-1.5 flex-1"><span style="width:82%"></span></span><span class="text-xs font-medium">82%</span></div>
+              <p class="mt-1 text-xs text-muted-foreground">Mastery · you score 61% in games</p>
+              <div class="mt-auto flex gap-2 pt-3">
+                <a href="opening-drill.html" class="btn btn-default btn-sm"><i data-lucide="repeat"></i>Drill</a>
+                <button class="btn btn-outline btn-sm" data-toast="Opening the Italian tree editor" data-toast-icon="git-branch"><i data-lucide="git-branch"></i>Edit tree</button>
+              </div>
+            </div>
+          </article>
+          <article class="card card-hover flex gap-4 p-4">
+            <div class="w-24 shrink-0 self-start overflow-hidden rounded-lg ring-1 ring-border sm:w-28"><div class="vb" data-fen="rnbqkb1r/pp3ppp/4pn2/2pp4/3P1B2/2P1PN2/PP3PPP/RN1QKB1R b KQkq - 0 5" aria-label="London System position"></div></div>
+            <div class="flex min-w-0 flex-1 flex-col">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0"><h3 class="truncate text-base font-bold">London System</h3><p class="text-xs text-muted-foreground">D02 · vs 1…d5 and 1…Nf6 · 5 lines</p></div>
+                <span class="badge text-muted-foreground">Up to date</span>
+              </div>
+              <div class="mt-3 flex items-center gap-2"><span class="progress h-1.5 flex-1"><span style="width:64%"></span></span><span class="text-xs font-medium">64%</span></div>
+              <p class="mt-1 text-xs text-muted-foreground">Mastery · next review in 3 days</p>
+              <div class="mt-auto flex gap-2 pt-3">
+                <a href="opening-drill.html" class="btn btn-outline btn-sm"><i data-lucide="repeat"></i>Drill</a>
+                <button class="btn btn-outline btn-sm" data-toast="Opening the London tree editor" data-toast-icon="git-branch"><i data-lucide="git-branch"></i>Edit tree</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="b-h">
+        <h2 id="b-h" class="flex items-center gap-2 text-lg font-bold"><span class="size-3 rounded-full bg-foreground"></span>As Black</h2>
+        <div class="mt-3 grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,370px),1fr))]">
+          <article class="card card-hover flex gap-4 border-cta/30 p-4">
+            <div class="w-24 shrink-0 self-start overflow-hidden rounded-lg ring-1 ring-border sm:w-28"><div class="vb" data-orient="b" data-fen="rnbqkbnr/pp2pppp/2p5/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3" aria-label="Caro-Kann position"></div></div>
+            <div class="flex min-w-0 flex-1 flex-col">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0"><p class="label">vs 1.e4</p><h3 class="truncate text-base font-bold">Caro-Kann Defence</h3><p class="text-xs text-muted-foreground">B10–B19 · Advance, Classical, Exchange · 16 lines</p></div>
+                <span class="badge border-transparent bg-cta-soft text-cta">3 due</span>
+              </div>
+              <div class="mt-3 flex items-center gap-2"><span class="progress h-1.5 flex-1"><span style="width:57%"></span></span><span class="text-xs font-medium">57%</span></div>
+              <p class="mt-1 text-xs text-muted-foreground">Mastery · Advance line 3 is shaky</p>
+              <div class="mt-auto flex gap-2 pt-3">
+                <a href="opening-drill.html" class="btn btn-default btn-sm"><i data-lucide="repeat"></i>Drill</a>
+                <a href="#tree" class="btn btn-outline btn-sm"><i data-lucide="git-branch"></i>Edit tree</a>
+              </div>
+            </div>
+          </article>
+          <article class="card card-hover flex gap-4 p-4">
+            <div class="w-24 shrink-0 self-start overflow-hidden rounded-lg ring-1 ring-border sm:w-28"><div class="vb" data-orient="b" data-fen="rnbqkb1r/ppp2ppp/4pn2/3p4/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4" aria-label="Queen's Gambit Declined position"></div></div>
+            <div class="flex min-w-0 flex-1 flex-col">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0"><p class="label">vs 1.d4</p><h3 class="truncate text-base font-bold">Queen's Gambit Declined</h3><p class="text-xs text-muted-foreground">D30 · Orthodox setup · 4 lines</p></div>
+                <span class="badge border-transparent bg-cta-soft text-cta">1 due</span>
+              </div>
+              <div class="mt-3 flex items-center gap-2"><span class="progress h-1.5 flex-1"><span style="width:41%"></span></span><span class="text-xs font-medium">41%</span></div>
+              <p class="mt-1 text-xs text-muted-foreground">Mastery · started 2 weeks ago</p>
+              <div class="mt-auto flex gap-2 pt-3">
+                <a href="opening-drill.html" class="btn btn-outline btn-sm"><i data-lucide="repeat"></i>Drill</a>
+                <button class="btn btn-outline btn-sm" data-toast="Opening the QGD tree editor" data-toast-icon="git-branch"><i data-lucide="git-branch"></i>Edit tree</button>
+              </div>
+            </div>
+          </article>
+        </div>
+        <button class="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed px-4 py-3 text-sm text-muted-foreground hover:bg-card" onclick="document.querySelector('.tab[data-tab=explore]').click();document.querySelector('main').scrollTop=0"><i data-lucide="plus"></i>Add an opening · vs 1.c4, 1.Nf3 and others are open</button>
+      </section>
+
+      <!-- tree preview -->
+      <section id="tree" class="card overflow-hidden" aria-labelledby="tree-h">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4">
+          <div>
+            <h2 id="tree-h" class="text-lg font-bold">Caro-Kann tree</h2>
+            <p class="text-sm text-muted-foreground">Your moves are marked. Grey moves are alternatives you haven't chosen.</p>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-ghost btn-sm" data-ask="Is my Caro-Kann tree missing anything important at my level?"><i data-lucide="message-circle"></i>Check with Sage</button>
+            <button class="btn btn-outline btn-sm" data-toast="Tree editor opens here" data-toast-icon="pencil"><i data-lucide="pencil"></i>Edit</button>
+          </div>
+        </div>
+        <div class="grid gap-0 lg:grid-cols-[minmax(0,1fr)_240px]">
+          <div class="overflow-x-auto p-5 font-mono text-[13px]">
+            <div class="flex items-center gap-2"><span class="text-muted-foreground">1.</span>e4 <span class="rounded bg-accent px-1.5 py-0.5 font-semibold text-accent-foreground ring-1 ring-primary/30">c6</span></div>
+            <ul class="ml-3 mt-1 space-y-1 border-l-2 border-border pl-4">
+              <li>
+                <div class="flex items-center gap-2"><span class="text-muted-foreground">2.</span>d4 <span class="rounded bg-accent px-1.5 py-0.5 font-semibold text-accent-foreground ring-1 ring-primary/30">d5</span></div>
+                <ul class="ml-3 mt-1 space-y-1.5 border-l-2 border-border pl-4">
+                  <li>
+                    <div class="flex flex-wrap items-center gap-2"><span class="text-muted-foreground">3.</span>e5 <span class="rounded bg-accent px-1.5 py-0.5 font-semibold text-accent-foreground ring-1 ring-primary/30">Bf5</span><span class="font-sans text-xs text-muted-foreground">Advance · 8 lines</span><span class="text-muted-foreground/60">· …c5</span></div>
+                    <ul class="ml-3 mt-1 space-y-1 border-l-2 border-border pl-4">
+                      <li class="flex flex-wrap items-center gap-2"><span class="text-muted-foreground">4.</span>Nf3 <span class="font-semibold text-primary">e6</span> <span class="text-muted-foreground">5.</span>Be2 <span class="font-semibold text-primary">c5</span><span class="badge ml-1 border-transparent bg-cta-soft font-sans text-cta">due</span></li>
+                      <li class="flex flex-wrap items-center gap-2"><span class="text-muted-foreground">4.</span>Nc3 <span class="font-semibold text-primary">e6</span> <span class="text-muted-foreground">5.</span>g4 <span class="font-semibold text-primary">Bg6</span><span class="font-sans text-xs text-muted-foreground">Bayonet</span></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <div class="flex flex-wrap items-center gap-2"><span class="text-muted-foreground">3.</span>Nc3 <span class="rounded bg-accent px-1.5 py-0.5 font-semibold text-accent-foreground ring-1 ring-primary/30">dxe4</span> <span class="text-muted-foreground">4.</span>Nxe4 <span class="font-semibold text-primary">Bf5</span> <span class="text-muted-foreground">5.</span>Ng3 <span class="font-semibold text-primary">Bg6</span><span class="font-sans text-xs text-muted-foreground">Classical</span><span class="text-muted-foreground/60">· 4…Nd7</span></div>
+                  </li>
+                  <li>
+                    <div class="flex flex-wrap items-center gap-2"><span class="text-muted-foreground">3.</span>exd5 <span class="rounded bg-accent px-1.5 py-0.5 font-semibold text-accent-foreground ring-1 ring-primary/30">cxd5</span> <span class="text-muted-foreground">4.</span>Bd3 <span class="font-semibold text-primary">Nc6</span><span class="font-sans text-xs text-muted-foreground">Exchange</span><span class="badge ml-1 border-transparent bg-cta-soft font-sans text-cta">due</span></div>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <div class="flex flex-wrap items-center gap-2"><span class="text-muted-foreground">2.</span>Nc3 <span class="rounded bg-accent px-1.5 py-0.5 font-semibold text-accent-foreground ring-1 ring-primary/30">d5</span> <span class="text-muted-foreground">3.</span>Nf3 <span class="font-semibold text-primary">Bg4</span><span class="font-sans text-xs text-muted-foreground">Two Knights</span><span class="badge ml-1 border-transparent bg-cta-soft font-sans text-cta">due</span></div>
+              </li>
+              <li class="text-muted-foreground/60">
+                <div class="flex items-center gap-2">2.c4 <span class="font-sans text-xs">not in repertoire yet</span><button class="font-sans text-xs font-medium text-primary hover:underline" data-toast="Pick your reply to 2.c4 on the board" data-toast-icon="plus">Add</button></div>
+              </li>
+            </ul>
+          </div>
+          <aside class="border-t bg-muted/30 p-5 lg:border-l lg:border-t-0">
+            <div class="overflow-hidden rounded-lg ring-1 ring-border"><div class="vb" data-orient="b" data-fen="rnbqkbnr/pp2pppp/2p5/3pP3/3P4/8/PPP2PPP/RNBQKBNR b KQkq - 0 3" data-hl="e4,e5" aria-label="Position after 3.e5, Black to move"></div></div>
+            <p class="mt-2 text-xs text-muted-foreground">After <span class="san">3.e5</span>. Your move here: <span class="san">…Bf5</span>. The bishop gets out before <span class="san">…e6</span> locks it in.</p>
+            <dl class="mt-3 grid grid-cols-2 gap-2 text-xs">
+              <div class="rounded-lg bg-card p-2.5"><dt class="text-muted-foreground">Lines</dt><dd class="font-display text-lg font-bold">16</dd></div>
+              <div class="rounded-lg bg-card p-2.5"><dt class="text-muted-foreground">Your moves</dt><dd class="font-display text-lg font-bold">58</dd></div>
+            </dl>
+          </aside>
+        </div>
+      </section>
+    </div>
+
+    <!-- EXPLORE -->
+    <div data-panel="explore" data-group="op" class="mt-6" hidden>
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="relative min-w-[220px] flex-1"><i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></i><input class="input pl-9" placeholder="Search by name, ECO or moves" aria-label="Search openings"></div>
+        <div class="seg" role="group" aria-label="Filter by color"><button class="is-active">All</button><button>White</button><button>Black</button></div>
+        <div class="flex gap-1.5" data-chips>
+          <button class="reply is-active [&.is-active]:border-primary [&.is-active]:bg-accent">Any style</button>
+          <button class="reply [&.is-active]:border-primary [&.is-active]:bg-accent">Solid</button>
+          <button class="reply [&.is-active]:border-primary [&.is-active]:bg-accent">Sharp</button>
+        </div>
+      </div>
+
+      <div class="mt-5 grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))]">
+        <article class="card flex flex-col p-4">
+          <div class="flex items-start gap-3">
+            <div class="w-20 shrink-0 self-start overflow-hidden rounded-lg ring-1 ring-border"><div class="vb" data-orient="b" data-fen="rnbqkbnr/ppp2ppp/4p3/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3" aria-label="French Defence position"></div></div>
+            <div class="min-w-0"><h3 class="text-base font-bold leading-tight">French Defence</h3><p class="mt-0.5 font-mono text-xs text-muted-foreground">C00 · 1.e4 e6</p><span class="badge mt-1.5 border-transparent bg-reward-soft text-reward-ink"><i data-lucide="sparkles" class="size-3"></i>Fits your style</span></div>
+          </div>
+          <dl class="mt-4 grid grid-cols-2 gap-2 text-xs">
+            <div><dt class="text-muted-foreground">Popularity</dt><dd class="mt-1 flex items-center gap-1.5"><span class="progress h-1.5"><span style="width:62%"></span></span>62%</dd></div>
+            <div><dt class="text-muted-foreground">Difficulty</dt><dd class="mt-1 font-medium">Medium</dd></div>
+          </dl>
+          <div class="mt-3 flex flex-wrap gap-1.5"><span class="badge border-transparent bg-sky text-sky-ink">solid</span><span class="badge border-transparent bg-muted text-muted-foreground">pawn chains</span></div>
+          <button class="btn btn-outline btn-sm mt-4 self-start" data-toast="French Defence added as a draft. Pick your first moves." data-toast-icon="plus"><i data-lucide="plus"></i>Add to repertoire</button>
+        </article>
+        <article class="card flex flex-col p-4">
+          <div class="flex items-start gap-3">
+            <div class="w-20 shrink-0 self-start overflow-hidden rounded-lg ring-1 ring-border"><div class="vb" data-orient="b" data-fen="rnbqkb1r/1p2pppp/p2p1n2/8/3NP3/2N5/PPP2PPP/R1BQKB1R w KQkq - 0 6" aria-label="Sicilian Najdorf position"></div></div>
+            <div class="min-w-0"><h3 class="text-base font-bold leading-tight">Sicilian Najdorf</h3><p class="mt-0.5 font-mono text-xs text-muted-foreground">B90 · 5…a6</p><span class="badge mt-1.5 text-muted-foreground">Rafi plays this</span></div>
+          </div>
+          <dl class="mt-4 grid grid-cols-2 gap-2 text-xs">
+            <div><dt class="text-muted-foreground">Popularity</dt><dd class="mt-1 flex items-center gap-1.5"><span class="progress h-1.5"><span style="width:78%"></span></span>78%</dd></div>
+            <div><dt class="text-muted-foreground">Difficulty</dt><dd class="mt-1 font-medium">Hard</dd></div>
+          </dl>
+          <div class="mt-3 flex flex-wrap gap-1.5"><span class="badge border-transparent bg-cta-soft text-cta">sharp</span><span class="badge border-transparent bg-muted text-muted-foreground">heavy theory</span></div>
+          <button class="btn btn-outline btn-sm mt-4 self-start" data-toast="Sicilian Najdorf added as a draft" data-toast-icon="plus"><i data-lucide="plus"></i>Add to repertoire</button>
+        </article>
+        <article class="card flex flex-col p-4">
+          <div class="flex items-start gap-3">
+            <div class="w-20 shrink-0 self-start overflow-hidden rounded-lg ring-1 ring-border"><div class="vb" data-fen="r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3" aria-label="Ruy Lopez position"></div></div>
+            <div class="min-w-0"><h3 class="text-base font-bold leading-tight">Ruy Lopez</h3><p class="mt-0.5 font-mono text-xs text-muted-foreground">C60 · 3.Bb5</p></div>
+          </div>
+          <dl class="mt-4 grid grid-cols-2 gap-2 text-xs">
+            <div><dt class="text-muted-foreground">Popularity</dt><dd class="mt-1 flex items-center gap-1.5"><span class="progress h-1.5"><span style="width:70%"></span></span>70%</dd></div>
+            <div><dt class="text-muted-foreground">Difficulty</dt><dd class="mt-1 font-medium">Medium</dd></div>
+          </dl>
+          <div class="mt-3 flex flex-wrap gap-1.5"><span class="badge border-transparent bg-sky text-sky-ink">solid</span><span class="badge border-transparent bg-muted text-muted-foreground">long plans</span></div>
+          <button class="btn btn-outline btn-sm mt-4 self-start" data-toast="Ruy Lopez added as a draft" data-toast-icon="plus"><i data-lucide="plus"></i>Add to repertoire</button>
+        </article>
+        <article class="card flex flex-col p-4">
+          <div class="flex items-start gap-3">
+            <div class="w-20 shrink-0 self-start overflow-hidden rounded-lg ring-1 ring-border"><div class="vb" data-orient="b" data-fen="rnbqkbnr/pp2pppp/2p5/3p4/2PP4/8/PP2PPPP/RNBQKBNR w KQkq - 0 3" aria-label="Slav Defence position"></div></div>
+            <div class="min-w-0"><h3 class="text-base font-bold leading-tight">Slav Defence</h3><p class="mt-0.5 font-mono text-xs text-muted-foreground">D10 · 2…c6</p><span class="badge mt-1.5 border-transparent bg-reward-soft text-reward-ink"><i data-lucide="sparkles" class="size-3"></i>Caro-Kann cousin</span></div>
+          </div>
+          <dl class="mt-4 grid grid-cols-2 gap-2 text-xs">
+            <div><dt class="text-muted-foreground">Popularity</dt><dd class="mt-1 flex items-center gap-1.5"><span class="progress h-1.5"><span style="width:55%"></span></span>55%</dd></div>
+            <div><dt class="text-muted-foreground">Difficulty</dt><dd class="mt-1 font-medium">Easy</dd></div>
+          </dl>
+          <div class="mt-3 flex flex-wrap gap-1.5"><span class="badge border-transparent bg-sky text-sky-ink">solid</span><span class="badge border-transparent bg-muted text-muted-foreground">vs 1.d4</span></div>
+          <button class="btn btn-outline btn-sm mt-4 self-start" data-toast="Slav Defence added as a draft" data-toast-icon="plus"><i data-lucide="plus"></i>Add to repertoire</button>
+        </article>
+        <article class="card flex flex-col p-4">
+          <div class="flex items-start gap-3">
+            <div class="w-20 shrink-0 self-start overflow-hidden rounded-lg ring-1 ring-border"><div class="vb" data-orient="b" data-fen="rnbqk2r/ppp1ppbp/3p1np1/8/2PPP3/2N5/PP3PPP/R1BQKBNR w KQkq - 0 5" aria-label="King's Indian Defence position"></div></div>
+            <div class="min-w-0"><h3 class="text-base font-bold leading-tight">King's Indian Defence</h3><p class="mt-0.5 font-mono text-xs text-muted-foreground">E60 · 1.d4 Nf6 2.c4 g6</p></div>
+          </div>
+          <dl class="mt-4 grid grid-cols-2 gap-2 text-xs">
+            <div><dt class="text-muted-foreground">Popularity</dt><dd class="mt-1 flex items-center gap-1.5"><span class="progress h-1.5"><span style="width:48%"></span></span>48%</dd></div>
+            <div><dt class="text-muted-foreground">Difficulty</dt><dd class="mt-1 font-medium">Hard</dd></div>
+          </dl>
+          <div class="mt-3 flex flex-wrap gap-1.5"><span class="badge border-transparent bg-cta-soft text-cta">sharp</span><span class="badge border-transparent bg-muted text-muted-foreground">kingside attack</span></div>
+          <button class="btn btn-outline btn-sm mt-4 self-start" data-toast="King's Indian added as a draft" data-toast-icon="plus"><i data-lucide="plus"></i>Add to repertoire</button>
+        </article>
+        <article class="card flex flex-col p-4">
+          <div class="flex items-start gap-3">
+            <div class="w-20 shrink-0 self-start overflow-hidden rounded-lg ring-1 ring-border"><div class="vb" data-fen="rnbqkbnr/pppp1ppp/8/4p3/4P3/2N5/PPPP1PPP/R1BQKBNR b KQkq - 1 2" aria-label="Vienna Game position"></div></div>
+            <div class="min-w-0"><h3 class="text-base font-bold leading-tight">Vienna Game</h3><p class="mt-0.5 font-mono text-xs text-muted-foreground">C25 · 2.Nc3</p></div>
+          </div>
+          <dl class="mt-4 grid grid-cols-2 gap-2 text-xs">
+            <div><dt class="text-muted-foreground">Popularity</dt><dd class="mt-1 flex items-center gap-1.5"><span class="progress h-1.5"><span style="width:34%"></span></span>34%</dd></div>
+            <div><dt class="text-muted-foreground">Difficulty</dt><dd class="mt-1 font-medium">Easy</dd></div>
+          </dl>
+          <div class="mt-3 flex flex-wrap gap-1.5"><span class="badge border-transparent bg-cta-soft text-cta">sharp</span><span class="badge border-transparent bg-muted text-muted-foreground">surprise value</span></div>
+          <button class="btn btn-outline btn-sm mt-4 self-start" data-toast="Vienna Game added as a draft" data-toast-icon="plus"><i data-lucide="plus"></i>Add to repertoire</button>
+        </article>
+      </div>
+      <p class="mt-4 flex items-center gap-2 text-xs text-muted-foreground"><i data-lucide="info" class="size-3.5"></i>Popularity is how often players rated 1200 to 1600 choose it. Opening data ships as a content pack you can replace.</p>
+    </div>
+  </div>
+</main>
+<script>/* chat-seed boards are built by shell.js after board.js has run */ addEventListener("DOMContentLoaded", () => window.VB && VB.renderAll());</script>
+</body>
+</html>

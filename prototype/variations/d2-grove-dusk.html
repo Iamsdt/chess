@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D2 · Grove Dusk — Chess King</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="board.js" defer></script>
+<style type="text/tailwindcss">
+/* D2 · Grove Dusk — the calm-habit system at night. Same shadcn tokens, dark values. */
+:root{
+  --background:#0e1311; --foreground:#e9eee8;
+  --card:#141a17; --card-foreground:#e9eee8;
+  --primary:#b5d3a8; --primary-foreground:#0f1a10;
+  --secondary:#1b231f; --secondary-foreground:#dfe8da;
+  --muted:#1b231f; --muted-foreground:#8b978f;
+  --accent:#1f2b24; --accent-foreground:#cfe3c6;
+  --destructive:#f07a64; --border:#243029; --input:#2a372f; --ring:#7fa07a;
+  --cta:#ec7d4f; --cta-foreground:#1b0b03; --reward:#f2c867; --reward-soft:rgba(242,200,103,.1); --sky:#8fb8d4; --sidebar:#101613; --radius:0.9rem;
+  --vb-light:#dfe2d4; --vb-dark:#7d977b; --vb-hl:rgba(242,200,103,.5); --vb-arrow:rgba(181,211,168,.95); --vb-arrow-alt:rgba(236,125,79,.95);
+}
+@theme inline{
+  --color-background:var(--background); --color-foreground:var(--foreground);
+  --color-card:var(--card); --color-card-foreground:var(--card-foreground);
+  --color-primary:var(--primary); --color-primary-foreground:var(--primary-foreground);
+  --color-secondary:var(--secondary); --color-secondary-foreground:var(--secondary-foreground);
+  --color-muted:var(--muted); --color-muted-foreground:var(--muted-foreground);
+  --color-accent:var(--accent); --color-accent-foreground:var(--accent-foreground);
+  --color-destructive:var(--destructive); --color-border:var(--border); --color-input:var(--input); --color-ring:var(--ring);
+  --color-cta:var(--cta); --color-cta-foreground:var(--cta-foreground); --color-reward:var(--reward); --color-reward-soft:var(--reward-soft); --color-sky:var(--sky); --color-sidebar:var(--sidebar);
+  --radius-sm:calc(var(--radius) - 6px); --radius-md:calc(var(--radius) - 3px); --radius-lg:var(--radius); --radius-xl:calc(var(--radius) + 6px);
+  --font-sans:'Inter',system-ui,sans-serif; --font-display:'Bricolage Grotesque',system-ui,sans-serif; --font-mono:'JetBrains Mono',monospace;
+}
+@layer base{
+  *{@apply border-border outline-ring/50}
+  body{@apply bg-background text-foreground font-sans antialiased}
+  [data-lucide]{@apply size-4 shrink-0}
+}
+@layer components{
+  .btn{@apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all h-9 px-4 cursor-pointer outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50}
+  .btn-default{@apply bg-primary text-primary-foreground hover:bg-primary/90}
+  .btn-cta{@apply bg-cta text-cta-foreground font-semibold hover:brightness-110 h-11 px-6 text-[15px] rounded-lg shadow-[0_8px_24px_-10px_var(--cta)]}
+  .btn-outline{@apply border bg-card hover:bg-accent hover:text-accent-foreground}
+  .btn-ghost{@apply hover:bg-accent hover:text-accent-foreground}
+  .btn-icon{@apply size-9 px-0}
+  .card{@apply bg-card text-card-foreground rounded-xl border}
+  .badge{@apply inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-medium whitespace-nowrap}
+  .nav-item{@apply flex items-center gap-3 rounded-md px-2.5 h-9 text-sm font-medium text-foreground/65 hover:bg-accent hover:text-accent-foreground transition-colors}
+  .nav-item[aria-current]{@apply bg-accent text-accent-foreground}
+  .label{@apply text-xs font-medium text-muted-foreground}
+  .kbd{@apply inline-flex h-5 items-center rounded border bg-muted px-1.5 font-mono text-[10px] text-muted-foreground}
+}
+</style>
+</head>
+<body class="h-dvh overflow-hidden">
+<!-- soft dusk glow borrowed from Nocturne -->
+<div class="pointer-events-none fixed inset-0 bg-[radial-gradient(45%_40%_at_30%_0%,rgba(181,211,168,.08),transparent_70%),radial-gradient(35%_35%_at_85%_10%,rgba(236,125,79,.06),transparent_70%)]"></div>
+<div class="relative grid h-dvh grid-cols-[240px_minmax(0,1fr)_360px] max-[1280px]:grid-cols-[240px_minmax(0,1fr)] max-[900px]:grid-cols-1">
+
+  <aside class="flex min-h-0 flex-col border-r bg-sidebar/80 max-[900px]:hidden">
+    <div class="flex items-center gap-2.5 p-4">
+      <div class="grid size-9 place-items-center rounded-lg bg-primary text-primary-foreground"><i data-lucide="crown" class="size-5"></i></div>
+      <div class="leading-tight"><div class="font-display text-[17px] font-bold tracking-tight">Chess King</div><div class="text-xs text-muted-foreground">Evening practice</div></div>
+    </div>
+    <div class="px-3"><button class="btn btn-outline w-full justify-start font-normal text-muted-foreground"><i data-lucide="search"></i>Search…<span class="kbd ml-auto">⌘K</span></button></div>
+    <nav class="flex-1 space-y-5 overflow-auto px-3 py-4" aria-label="Main">
+      <div class="space-y-0.5">
+        <a class="nav-item" aria-current="page" href="#"><i data-lucide="moon-star"></i>Tonight</a>
+        <a class="nav-item" href="#"><i data-lucide="swords"></i>Play</a>
+        <a class="nav-item" href="#"><i data-lucide="puzzle"></i>Puzzles</a>
+        <a class="nav-item" href="#"><i data-lucide="sprout"></i>Learn</a>
+        <a class="nav-item" href="#"><i data-lucide="rotate-ccw"></i>Mistake bank<span class="ml-auto rounded-full bg-cta px-1.5 text-[11px] font-semibold text-cta-foreground">7</span></a>
+      </div>
+      <div class="space-y-0.5">
+        <div class="label px-2.5 pb-1">Study</div>
+        <a class="nav-item" href="#"><i data-lucide="library"></i>My games</a>
+        <a class="nav-item" href="#"><i data-lucide="microscope"></i>Analysis</a>
+        <a class="nav-item" href="#"><i data-lucide="book-open"></i>Openings</a>
+      </div>
+      <div class="space-y-0.5">
+        <div class="label px-2.5 pb-1">You</div>
+        <a class="nav-item" href="#"><i data-lucide="users"></i>Friends<span class="ml-auto size-2 rounded-full bg-cta"></span></a>
+        <a class="nav-item" href="#"><i data-lucide="leaf"></i>Growth</a>
+        <a class="nav-item" href="#"><i data-lucide="settings"></i>Settings</a>
+      </div>
+    </nav>
+    <div class="p-3">
+      <div class="flex items-center gap-2.5 rounded-md p-1.5 hover:bg-accent">
+        <div class="grid size-8 place-items-center rounded-full bg-accent text-xs font-semibold text-accent-foreground">SK</div>
+        <div class="min-w-0 flex-1 leading-tight"><div class="truncate text-sm font-medium">Shudipto</div><div class="text-xs text-muted-foreground">Data stays in this browser</div></div>
+        <i data-lucide="chevrons-up-down" class="text-muted-foreground"></i>
+      </div>
+    </div>
+  </aside>
+
+  <main class="min-h-0 overflow-auto">
+    <header class="sticky top-0 z-10 flex h-14 items-center gap-3 border-b bg-background/70 px-6 backdrop-blur">
+      <nav class="text-sm text-muted-foreground">Home <span class="mx-1.5">/</span><span class="font-medium text-foreground">Tonight</span></nav>
+      <div class="ml-auto flex items-center gap-2">
+        <span class="badge border-reward/30 bg-reward-soft text-reward"><i data-lucide="flame" class="size-3.5"></i>12 days</span>
+        <button class="btn btn-ghost btn-icon" aria-label="Toggle theme"><i data-lucide="sun"></i></button>
+      </div>
+    </header>
+
+    <div class="mx-auto max-w-[1100px] space-y-6 p-6 lg:p-8">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 class="font-display text-3xl font-bold tracking-tight">Evening, Shudipto</h1>
+          <p class="mt-1 text-muted-foreground">How much time do you have tonight?</p>
+        </div>
+        <div class="inline-flex rounded-lg border bg-card p-1" role="radiogroup" aria-label="Session length">
+          <button class="rounded-md px-4 py-1.5 text-sm text-muted-foreground hover:text-foreground">5 min</button>
+          <button class="rounded-md bg-primary px-4 py-1.5 text-sm font-semibold text-primary-foreground" aria-checked="true">15 min</button>
+          <button class="rounded-md px-4 py-1.5 text-sm text-muted-foreground hover:text-foreground">30 min</button>
+        </div>
+      </div>
+
+      <!-- Session planner hero -->
+      <section class="card overflow-hidden">
+        <div class="grid items-stretch md:grid-cols-[minmax(0,1fr)_300px]">
+          <div class="p-7">
+            <div class="label flex items-center gap-2"><i data-lucide="sparkles" class="size-3.5 text-primary"></i>Your 15-minute session, planned by Sage</div>
+            <h2 class="mt-3 font-display text-[34px] font-bold leading-[1.05] tracking-tight">Fix, drill, then learn<br><span class="text-muted-foreground">the fork that keeps beating you.</span></h2>
+
+            <!-- timeline bar -->
+            <div class="mt-6 flex h-3 gap-1 overflow-hidden rounded-full" aria-hidden="true">
+              <span class="w-[27%] rounded-full bg-cta"></span><span class="w-[40%] rounded-full bg-primary/70"></span><span class="w-[33%] rounded-full bg-sky/60"></span>
+            </div>
+            <ol class="mt-4 grid gap-3 sm:grid-cols-3 text-sm">
+              <li class="rounded-lg border bg-muted/40 p-3"><div class="flex items-center gap-2 text-xs text-cta"><span class="size-2 rounded-full bg-cta"></span>4 min · now</div><div class="mt-1 font-medium">Review 5 mistakes</div><div class="text-xs text-muted-foreground">Due today from your games</div></li>
+              <li class="rounded-lg border p-3"><div class="flex items-center gap-2 text-xs text-primary"><span class="size-2 rounded-full bg-primary/70"></span>6 min</div><div class="mt-1 font-medium">8 fork puzzles</div><div class="text-xs text-muted-foreground">Adaptive, ~75% success</div></li>
+              <li class="rounded-lg border p-3"><div class="flex items-center gap-2 text-xs text-sky"><span class="size-2 rounded-full bg-sky/60"></span>5 min</div><div class="mt-1 font-medium">Lesson: Royal fork</div><div class="text-xs text-muted-foreground">Unit 3 · lesson 4</div></li>
+            </ol>
+            <div class="mt-6 flex flex-wrap items-center gap-3">
+              <button class="btn btn-cta"><i data-lucide="play" class="size-[18px]"></i>Start session</button>
+              <button class="btn btn-ghost h-11 text-muted-foreground"><i data-lucide="shuffle"></i>Change plan</button>
+            </div>
+          </div>
+          <div class="flex flex-col justify-center gap-3 border-l bg-muted/30 p-6 max-md:border-l-0 max-md:border-t">
+            <div class="label">First up</div>
+            <div class="overflow-hidden rounded-lg ring-1 ring-white/10"><div class="vb" data-id="h" data-set="staunty" data-fen="r4rk1/pp3ppp/2p5/6n1/3P4/2P5/PP3P1P/R3Q1K1 b - - 0 17" data-hl="g5"></div></div>
+            <p class="text-sm"><span class="font-medium">Black to play.</span> <span class="text-muted-foreground">What did this knight see on move 17?</span></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid gap-4 lg:grid-cols-5">
+        <!-- habit heatmap -->
+        <div class="card p-5 lg:col-span-3">
+          <div class="flex items-center justify-between"><div><h3 class="font-semibold">Your practice rhythm</h3><p class="text-sm text-muted-foreground">Last 4 weeks · 12-day streak, 1 freeze saved</p></div><span class="badge text-muted-foreground">Goal 2/3 today</span></div>
+          <div class="mt-5 grid grid-cols-[auto_repeat(7,minmax(0,1fr))] gap-1.5 text-[10px] text-muted-foreground" aria-label="Practice heatmap">
+            <span></span><span class="text-center">M</span><span class="text-center">T</span><span class="text-center">W</span><span class="text-center">T</span><span class="text-center">F</span><span class="text-center">S</span><span class="text-center">S</span>
+            <span class="pr-1">W1</span><i class="h-7 rounded bg-primary/20"></i><i class="h-7 rounded bg-primary/50"></i><i class="h-7 rounded bg-muted"></i><i class="h-7 rounded bg-primary/30"></i><i class="h-7 rounded bg-muted"></i><i class="h-7 rounded bg-primary/70"></i><i class="h-7 rounded bg-primary/40"></i>
+            <span class="pr-1">W2</span><i class="h-7 rounded bg-primary/40"></i><i class="h-7 rounded bg-primary/60"></i><i class="h-7 rounded bg-primary/30"></i><i class="h-7 rounded bg-primary/50"></i><i class="h-7 rounded bg-primary/40"></i><i class="h-7 rounded bg-primary/80"></i><i class="h-7 rounded bg-primary/60"></i>
+            <span class="pr-1">W3</span><i class="h-7 rounded bg-primary/60"></i><i class="h-7 rounded bg-primary/70"></i><i class="h-7 rounded bg-sky/40 ring-1 ring-sky/50" title="Freeze used"></i><i class="h-7 rounded bg-primary/60"></i><i class="h-7 rounded bg-primary/50"></i><i class="h-7 rounded bg-primary/90"></i><i class="h-7 rounded bg-primary/70"></i>
+            <span class="pr-1">W4</span><i class="h-7 rounded bg-primary/80"></i><i class="h-7 rounded bg-primary/70"></i><i class="h-7 rounded bg-primary/60"></i><i class="h-7 rounded bg-primary"></i><i class="h-7 rounded bg-primary/80"></i><i class="h-7 rounded ring-2 ring-reward"></i><i class="h-7 rounded bg-muted/50"></i>
+          </div>
+          <div class="mt-3 flex items-center gap-2 text-[11px] text-muted-foreground">Less<i class="size-3 rounded-sm bg-muted"></i><i class="size-3 rounded-sm bg-primary/30"></i><i class="size-3 rounded-sm bg-primary/60"></i><i class="size-3 rounded-sm bg-primary"></i>More<span class="ml-3 inline-flex items-center gap-1"><i class="size-3 rounded-sm bg-sky/40 ring-1 ring-sky/50"></i>Freeze</span></div>
+        </div>
+        <!-- growth -->
+        <div class="card p-5 lg:col-span-2">
+          <div class="flex items-center justify-between"><h3 class="font-semibold">Growth</h3><span class="badge border-transparent bg-accent text-accent-foreground">+64 · 30d</span></div>
+          <div class="mt-3 flex items-baseline gap-2"><span class="font-display text-4xl font-bold tabular-nums">1482</span><span class="text-sm text-muted-foreground">puzzle rating</span></div>
+          <svg class="mt-3 h-24 w-full" viewBox="0 0 300 96" preserveAspectRatio="none" aria-label="Rating rising over 30 days">
+            <defs><linearGradient id="gd" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#b5d3a8" stop-opacity=".25"/><stop offset="1" stop-color="#b5d3a8" stop-opacity="0"/></linearGradient></defs>
+            <path d="M0,80 C40,76 55,84 85,66 S140,68 165,52 S215,54 240,36 S285,22 300,16 L300,96 L0,96Z" fill="url(#gd)"/>
+            <path d="M0,80 C40,76 55,84 85,66 S140,68 165,52 S215,54 240,36 S285,22 300,16" fill="none" stroke="#b5d3a8" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
+          </svg>
+          <p class="mt-2 text-xs text-muted-foreground">You vs you, a month ago: stronger at <span class="text-foreground">forks</span> and <span class="text-foreground">pins</span>.</p>
+        </div>
+      </section>
+
+      <!-- waiting for you -->
+      <section class="card">
+        <div class="p-5 pb-2"><h3 class="font-semibold">Waiting for you</h3></div>
+        <div class="divide-y">
+          <a href="#" class="flex items-center gap-4 px-5 py-3.5 hover:bg-muted/40"><span class="grid size-9 place-items-center rounded-lg bg-cta/15 text-cta"><i data-lucide="send"></i></span><div class="min-w-0 flex-1"><div class="text-sm font-medium">Your move vs Rafi</div><div class="text-xs text-muted-foreground">Sicilian Najdorf · move 14 · correspondence, no clock</div></div><span class="badge border-cta/40 text-cta">Your move</span><i data-lucide="chevron-right" class="text-muted-foreground"></i></a>
+          <a href="#" class="flex items-center gap-4 px-5 py-3.5 hover:bg-muted/40"><span class="grid size-9 place-items-center rounded-lg bg-accent text-primary"><i data-lucide="swords"></i></span><div class="min-w-0 flex-1"><div class="text-sm font-medium">Review: won vs Stockfish 1200</div><div class="text-xs text-muted-foreground">Italian Game · 84% accuracy · 1 blunder to understand</div></div><span class="badge text-muted-foreground">2h ago</span><i data-lucide="chevron-right" class="text-muted-foreground"></i></a>
+          <a href="#" class="flex items-center gap-4 px-5 py-3.5 hover:bg-muted/40"><span class="grid size-9 place-items-center rounded-lg bg-sky/15 text-sky"><i data-lucide="book-open"></i></span><div class="min-w-0 flex-1"><div class="text-sm font-medium">Caro-Kann repertoire · 3 lines due</div><div class="text-xs text-muted-foreground">Spaced repetition · next batch in 2 days</div></div><span class="badge text-muted-foreground">3 due</span><i data-lucide="chevron-right" class="text-muted-foreground"></i></a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <aside class="flex min-h-0 flex-col border-l bg-card/70 backdrop-blur max-[1280px]:hidden" aria-label="AI coach Sage">
+    <div class="flex items-center gap-3 border-b p-4">
+      <div class="relative size-10 rounded-xl bg-[conic-gradient(from_210deg,#b5d3a8,#8fb8d4,#ec7d4f,#b5d3a8)] p-[2px]"><div class="grid size-full place-items-center rounded-[10px] bg-card text-primary"><i data-lucide="brain" class="size-5"></i></div></div>
+      <div class="min-w-0 flex-1 leading-tight"><div class="font-display text-base font-bold">Sage</div><div class="flex items-center gap-1.5 text-xs text-muted-foreground"><span class="size-1.5 rounded-full bg-primary"></span>Gemini 2.5 Flash · your key</div></div>
+      <button class="btn btn-ghost btn-icon" aria-label="New chat"><i data-lucide="square-pen"></i></button>
+      <button class="btn btn-ghost btn-icon" aria-label="Close"><i data-lucide="panel-right-close"></i></button>
+    </div>
+    <div class="flex gap-1 border-b px-4 pt-2 text-sm" role="tablist">
+      <button class="border-b-2 border-primary px-2 pb-2 font-medium" role="tab" aria-selected="true">Chat</button>
+      <button class="border-b-2 border-transparent px-2 pb-2 text-muted-foreground hover:text-foreground" role="tab">Insights</button>
+      <button class="border-b-2 border-transparent px-2 pb-2 text-muted-foreground hover:text-foreground" role="tab">Plan</button>
+    </div>
+    <div class="min-h-0 flex-1 space-y-4 overflow-auto p-4" aria-live="polite">
+      <div class="flex items-center gap-2 rounded-md border border-dashed px-3 py-2 text-xs text-muted-foreground"><i data-lucide="scan-eye" class="size-3.5"></i>Sees: last 9 games · tonight's plan</div>
+      <div class="space-y-3 rounded-xl rounded-tl-sm border bg-muted/50 p-3.5 text-sm leading-relaxed">
+        <p>I built tonight's 15 minutes around one pattern: <b class="text-primary">knight forks</b>. Four of your five losses this week started with one.</p>
+        <div class="overflow-hidden rounded-lg border bg-background p-1.5"><div class="vb rounded" data-id="c" data-set="staunty" data-fen="r4rk1/pp3ppp/2p5/6n1/3P4/2P5/PP3P1P/R3Q1K1 b - - 0 17" data-arrows="g5f3,f3g1:alt,f3e1:alt"></div>
+          <p class="px-1.5 pb-1 pt-2 text-xs text-muted-foreground"><span class="rounded bg-muted px-1 font-mono text-foreground">…Nf3+</span> hits king and queen together</p></div>
+        <div class="flex flex-wrap gap-2"><button class="btn h-8 bg-primary px-3 text-xs text-primary-foreground"><i data-lucide="play" class="size-3.5"></i>Start with this</button><button class="btn btn-outline h-8 px-3 text-xs">Why after castling?</button></div>
+      </div>
+      <div class="ml-auto w-fit max-w-[85%] rounded-xl rounded-tr-sm bg-accent px-3.5 py-2.5 text-sm text-accent-foreground">Make it 5 minutes, I'm tired.</div>
+      <div class="rounded-xl rounded-tl-sm border bg-muted/50 p-3.5 text-sm leading-relaxed">Done. Just the <b class="text-primary">5 mistakes</b> tonight; that keeps your streak and the forks come back tomorrow. Rest counts too.</div>
+    </div>
+    <div class="space-y-2.5 border-t p-4">
+      <div class="flex gap-1.5 overflow-x-auto [scrollbar-width:none]">
+        <button class="badge h-7 rounded-full px-3 text-muted-foreground hover:bg-accent hover:text-foreground">Shorter session</button>
+        <button class="badge h-7 rounded-full px-3 text-muted-foreground hover:bg-accent hover:text-foreground">My biggest weakness</button>
+        <button class="badge h-7 rounded-full px-3 text-muted-foreground hover:bg-accent hover:text-foreground">Plan my week</button>
+      </div>
+      <div class="rounded-lg border bg-background focus-within:ring-[3px] focus-within:ring-ring/40">
+        <textarea rows="2" class="block w-full resize-none bg-transparent px-3 pt-2.5 text-sm outline-none placeholder:text-muted-foreground" placeholder="Ask Sage anything…"></textarea>
+        <div class="flex items-center gap-1 p-1.5">
+          <button class="btn btn-ghost h-7 px-2 text-xs text-primary"><i data-lucide="eye-off" class="size-3.5"></i>No spoilers</button>
+          <button class="btn btn-ghost h-7 px-2 text-xs text-muted-foreground"><i data-lucide="cpu" class="size-3.5"></i>Engine</button>
+          <button class="btn btn-default ml-auto size-8 px-0" aria-label="Send"><i data-lucide="arrow-up"></i></button>
+        </div>
+      </div>
+      <p class="text-center text-[11px] text-muted-foreground">Key encrypted in this browser · 1.2k tokens today</p>
+    </div>
+  </aside>
+</div>
+<script>addEventListener('load',()=>lucide.createIcons())</script>
+</body>
+</html>

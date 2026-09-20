@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session complete · Chess King</title>
+<script src="assets/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="assets/board.js" defer></script>
+<script src="assets/shell.js" defer></script>
+<style>
+  /* keep ranks equal height when a rank is empty */
+  .vb { grid-template-rows: repeat(8, 1fr); }
+  /* the one celebration: the daily goal ring draws itself closed, then the check pops in */
+  @keyframes ring-draw { from { stroke-dashoffset: 264; } to { stroke-dashoffset: 0; } }
+  @keyframes pop { 0% { transform: scale(.6); opacity: 0; } 70% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); } }
+  .goal-ring { stroke-dasharray: 264; animation: ring-draw 1.1s cubic-bezier(.3,.7,.2,1) .2s both; }
+  .goal-check { animation: pop .45s cubic-bezier(.2,.8,.2,1) 1.2s both; }
+</style>
+</head>
+<body data-nav="puzzles"
+      data-chat-context="this session · 10 puzzles + 5 mistake reviews · 4:12"
+      data-chat-attach="This session"
+      data-chat-quick="What did I get better at?|Why did I miss puzzle 3?|What should tomorrow be?">
+
+<template id="chat-seed">
+  <div data-divider>Session ended · 8:06 PM</div>
+  <div data-sage data-time="8:06 PM" data-replies="What's tomorrow?|Show puzzle 3 again" data-cta="0">
+    <div class="bubble">That was a good one. <b>All 5 mistakes fixed</b>, including the Qe1 fork from Tuesday, first try.</div>
+    <div class="bubble">Your best moment: <span class="san">Nc7+</span> in 11 seconds, no hints after the first. Two weeks ago you needed hint 3 on that pattern.</div>
+    <div class="bubble">One thing to keep: you paused before every capture. That habit is worth more than any single puzzle.</div>
+  </div>
+</template>
+
+<main>
+  <div class="mx-auto w-full max-w-[860px] p-6 lg:p-8">
+    <!-- hero -->
+    <section class="card overflow-hidden" aria-labelledby="done-h">
+      <div class="grid items-center gap-6 bg-accent/50 p-6 sm:grid-cols-[132px_minmax(0,1fr)] lg:p-8">
+        <div class="relative mx-auto size-[132px]" role="img" aria-label="Daily goal complete: 15 of 15 minutes">
+          <svg viewBox="0 0 100 100" class="size-full -rotate-90" aria-hidden="true">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="var(--card)" stroke-width="9"/>
+            <circle class="goal-ring" cx="50" cy="50" r="42" fill="none" stroke="var(--primary)" stroke-width="9" stroke-linecap="round"/>
+          </svg>
+          <div class="goal-check absolute inset-0 grid place-items-center">
+            <div class="text-center leading-tight"><i data-lucide="check" class="mx-auto !size-8 text-primary"></i><div class="mt-0.5 text-[11px] font-semibold text-primary">Goal done</div></div>
+          </div>
+        </div>
+        <div class="text-center sm:text-left">
+          <p class="label">Saturday session · 4:12</p>
+          <h1 id="done-h" class="page-title mt-1">Nicely done, Shudipto</h1>
+          <p class="mt-1 text-sm text-muted-foreground">Today's goal is complete. Everything else from here is a bonus.</p>
+          <div class="mt-4 inline-flex items-center gap-3 rounded-xl bg-reward-soft px-3.5 py-2 text-reward-ink">
+            <i data-lucide="flame" class="size-5"></i>
+            <span class="font-display text-lg font-bold tabular-nums">12 <i data-lucide="arrow-right" class="inline size-4 align-[-2px]"></i> 13 days</span>
+            <span class="text-xs">Your sapling is 2 days from blooming</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- stats -->
+      <dl class="grid grid-cols-2 border-t md:grid-cols-4">
+        <div class="border-b p-5 md:border-r md:border-b-0"><dt class="label">Puzzle rating</dt><dd class="mt-1 font-display text-3xl font-bold text-success tabular-nums">+18</dd><dd class="text-xs text-muted-foreground">1482 → 1500, a new best</dd></div>
+        <div class="border-b border-l p-5 md:border-r md:border-b-0 md:border-l-0"><dt class="label">Mistakes fixed</dt><dd class="mt-1 font-display text-3xl font-bold tabular-nums">5<span class="text-lg text-muted-foreground"> of 5</span></dd><dd class="text-xs text-muted-foreground">all first try</dd></div>
+        <div class="p-5 md:border-r"><dt class="label">Accuracy</dt><dd class="mt-1 font-display text-3xl font-bold tabular-nums">80%</dd><dd class="text-xs text-muted-foreground">12 of 15 · right in the zone</dd></div>
+        <div class="border-l p-5 md:border-l-0"><dt class="label">Time</dt><dd class="mt-1 font-display text-3xl font-bold tabular-nums">4:12</dd><dd class="text-xs text-muted-foreground">1 hint used</dd></div>
+      </dl>
+    </section>
+
+    <div class="mt-4 grid gap-4 min-[1500px]:grid-cols-[minmax(0,1fr)_260px]">
+      <!-- best moment -->
+      <section class="card p-5" aria-labelledby="best-h">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 id="best-h" class="flex items-center gap-2 font-display text-lg font-bold"><i data-lucide="sparkles" class="text-reward-ink"></i>Best moment</h2>
+          <span class="badge badge-soft">Puzzle 4 · Fork · 11s</span>
+        </div>
+        <div class="mt-4 grid items-start gap-5 sm:grid-cols-[minmax(0,240px)_minmax(0,1fr)]">
+          <div class="overflow-hidden rounded-xl ring-1 ring-border">
+            <div class="vb" id="best-board" data-fen="r3kb1r/ppNn1ppp/2p1pn2/8/3P4/5N2/PPP2PPP/R1B1KB1R b KQkq - 1 9" data-hl="b5,c7" data-check="e8" data-arrows="c7e8:alt,c7a8:alt" aria-label="Replay of your best move"></div>
+          </div>
+          <div>
+            <div class="seg w-full text-xs" role="tablist" aria-label="Replay steps">
+              <button class="flex-1" data-step="0">Start</button>
+              <button class="is-active flex-1" data-step="1">Nc7+</button>
+              <button class="flex-1" data-step="2">…Kd8</button>
+              <button class="flex-1" data-step="3">Nxa8</button>
+            </div>
+            <p class="mt-3 text-sm leading-relaxed" id="best-note">The knight checks the king <b class="font-semibold">and</b> hits the rook. Black can only deal with one.</p>
+            <p class="mt-3 text-xs text-muted-foreground">You found it after hint 1. Two weeks ago this pattern took you all three hints.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- scheduled next -->
+      <section class="card flex flex-col p-5" aria-labelledby="next-h">
+        <h2 id="next-h" class="font-display text-lg font-bold">Coming back</h2>
+        <ul class="mt-3 grid gap-2.5 text-sm sm:grid-cols-3 min-[1500px]:grid-cols-1">
+          <li class="flex items-center gap-3"><span class="grid size-8 place-items-center rounded-lg bg-sky text-sky-ink"><i data-lucide="calendar-clock"></i></span><span class="flex-1"><b class="font-semibold">3</b> come back in 2 days</span></li>
+          <li class="flex items-center gap-3"><span class="grid size-8 place-items-center rounded-lg bg-lilac text-lilac-ink"><i data-lucide="calendar-range"></i></span><span class="flex-1"><b class="font-semibold">2</b> come back in 7 days</span></li>
+          <li class="flex items-center gap-3"><span class="grid size-8 place-items-center rounded-lg bg-accent text-primary"><i data-lucide="badge-check"></i></span><span class="flex-1"><b class="font-semibold">1</b> moved to Mastered</span></li>
+        </ul>
+        <p class="mt-4 rounded-lg bg-muted/60 p-3 text-xs text-muted-foreground">Tomorrow: 3 reviews and a short lesson on the royal fork. About 12 minutes.</p>
+      </section>
+    </div>
+
+    <!-- next step -->
+    <section class="card mt-4 flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:text-left" aria-labelledby="more-h">
+      <div class="flex-1">
+        <h2 id="more-h" class="font-display text-lg font-bold">Still in the flow?</h2>
+        <p class="text-sm text-muted-foreground">Forks are still your weakest theme. A short set now makes tomorrow easier.</p>
+      </div>
+      <div class="flex flex-col items-center gap-2 sm:flex-row">
+        <a href="index.html" class="btn btn-ghost h-11 text-muted-foreground">Done for today</a>
+        <a href="puzzle.html" class="btn btn-cta"><i data-lucide="play" class="size-[18px]"></i>One more: 8 fork puzzles · 6 min</a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+  // Best-moment replay: step through the solution on the mini board.
+  document.addEventListener('DOMContentLoaded', () => {
+    const board = document.getElementById('best-board'), note = document.getElementById('best-note');
+    const steps = [
+      { fen: 'r3kb1r/pp1n1ppp/2p1pn2/1N6/3P4/5N2/PPP2PPP/R1B1KB1R w KQkq - 0 9', hl: 'c7,c6', check: '', arrows: '', note: 'Black has just kicked your knight with <span class="san">…c6</span>. White to play.' },
+      { fen: 'r3kb1r/ppNn1ppp/2p1pn2/8/3P4/5N2/PPP2PPP/R1B1KB1R b KQkq - 1 9', hl: 'b5,c7', check: 'e8', arrows: 'c7e8:alt,c7a8:alt', note: 'The knight checks the king <b class="font-semibold">and</b> hits the rook. Black can only deal with one.' },
+      { fen: 'r2k1b1r/ppNn1ppp/2p1pn2/8/3P4/5N2/PPP2PPP/R1B1KB1R w KQ - 2 10', hl: 'e8,d8', check: '', arrows: 'c7a8', note: 'The king has to move. The rook on a8 is left alone.' },
+      { fen: 'N2k1b1r/pp1n1ppp/2p1pn2/8/3P4/5N2/PPP2PPP/R1B1KB1R b KQ - 0 10', hl: 'c7,a8', check: '', arrows: '', note: 'A whole rook for free. That is the fork paying off.' },
+    ];
+    document.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => {
+      const s = steps[+b.dataset.step];
+      Object.assign(board.dataset, { fen: s.fen, hl: s.hl, check: s.check, arrows: s.arrows });
+      window.VB.render(board); note.innerHTML = s.note;
+    }));
+  });
+</script>
+</body>
+</html>

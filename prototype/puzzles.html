@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Puzzles · Chess King</title>
+<script src="assets/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="assets/board.js" defer></script>
+<script src="assets/shell.js" defer></script>
+<style>
+  /* keep ranks equal height when a rank is empty */
+  .vb { grid-template-rows: repeat(8, 1fr); }
+</style>
+</head>
+<body data-nav="puzzles"
+      data-chat-context="puzzle rating 1482 · theme mastery · last 30 days"
+      data-chat-attach="Puzzle stats"
+      data-chat-quick="Why forks today?|What's my weakest theme?|How does adaptive work?">
+
+<template id="chat-seed">
+  <div data-divider>Today, 7:51 PM</div>
+  <div data-me data-time="7:51 PM">Why is today's focus forks again? I did forks on Friday.</div>
+  <div data-sage data-time="7:51 PM" data-replies="Start adaptive puzzles|Show me the Tuesday game" data-cta="0">
+    <div class="bubble">Because they still cost you games. <b>Knight forks started 4 of your 5 losses</b> this week, and your fork mastery is 41%, the lowest of your themes.</div>
+    <div class="bubble">Friday helped: you solved 7 of 10, up from 5 of 10. One more short set and the pattern starts to feel automatic.</div>
+  </div>
+  <div data-me data-time="7:52 PM">Will they all be forks?</div>
+  <div data-sage data-time="7:52 PM">About half. The rest are mixed, so you have to <b>spot</b> the fork, not just expect it. That's what happens in real games.</div>
+</template>
+
+<main>
+  <div class="page">
+    <header class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="label">Puzzles</p>
+        <h1 class="page-title mt-1">Sharpen your eye</h1>
+        <p class="mt-1 text-sm text-muted-foreground">Short sets, tuned to you. Play the move, don't just read it.</p>
+      </div>
+      <div class="flex items-center gap-2 text-sm">
+        <span class="badge badge-reward"><i data-lucide="flame" class="size-3.5"></i>12-day streak</span>
+        <span class="badge text-muted-foreground"><i data-lucide="target" class="size-3.5"></i>Today 4 of 10</span>
+      </div>
+    </header>
+
+    <!-- hero -->
+    <section class="@container card mt-6 overflow-hidden border-cta/30" aria-labelledby="hero-h">
+      <div class="grid gap-6 p-6 @[640px]:grid-cols-[minmax(0,1fr)_220px] lg:p-7">
+        <div>
+          <span class="badge border-transparent bg-cta-soft text-cta"><i data-lucide="crosshair" class="size-3.5"></i>Today's focus: forks</span>
+          <h2 id="hero-h" class="mt-3 font-display text-[30px] font-bold leading-[1.05] tracking-tight">Continue adaptive puzzles</h2>
+          <p class="mt-2 max-w-[46ch] text-sm text-muted-foreground">Picked from your weakest theme. Difficulty is tuned so you solve about 75%: hard enough to grow, easy enough to enjoy.</p>
+          <dl class="mt-5 flex flex-wrap gap-x-8 gap-y-3">
+            <div><dt class="label">Puzzle rating</dt><dd class="font-display text-2xl font-bold tabular-nums">1482</dd></div>
+            <div><dt class="label">Solve rate, last 50</dt><dd class="font-display text-2xl font-bold tabular-nums">74%</dd></div>
+            <div><dt class="label">This set</dt><dd class="font-display text-2xl font-bold tabular-nums">4<span class="text-base font-semibold text-muted-foreground"> of 10</span></dd></div>
+          </dl>
+          <div class="mt-5 flex flex-wrap items-center gap-3">
+            <a href="puzzle.html" class="btn btn-cta"><i data-lucide="play" class="size-[18px]"></i>Continue adaptive puzzles</a>
+            <button class="btn btn-ghost h-11 text-muted-foreground" data-ask="Why did you pick forks as today's focus?"><i data-lucide="message-circle"></i>Why forks?</button>
+          </div>
+          <div class="mt-5 flex items-center gap-1.5" aria-label="Set progress: 2 solved, 1 missed, puzzle 4 next, 6 to go">
+            <span class="h-1.5 w-7 rounded-full bg-primary"></span><span class="h-1.5 w-7 rounded-full bg-primary"></span><span class="h-1.5 w-7 rounded-full bg-q-mistake"></span><span class="h-1.5 w-7 rounded-full bg-cta ring-2 ring-cta/25"></span><span class="h-1.5 w-7 rounded-full bg-muted"></span><span class="h-1.5 w-7 rounded-full bg-muted"></span><span class="h-1.5 w-7 rounded-full bg-muted"></span><span class="h-1.5 w-7 rounded-full bg-muted"></span><span class="h-1.5 w-7 rounded-full bg-muted"></span><span class="h-1.5 w-7 rounded-full bg-muted"></span>
+          </div>
+        </div>
+        <figure class="hidden max-w-[260px] @[640px]:block">
+          <div class="overflow-hidden rounded-xl ring-1 ring-border"><div class="vb" data-fen="r3kb1r/pp1n1ppp/2p1pn2/1N6/3P4/5N2/PPP2PPP/R1B1KB1R w KQkq - 0 9" data-hl="c7,c6" aria-label="Next puzzle preview"></div></div>
+          <figcaption class="mt-2 text-xs text-muted-foreground"><b class="font-medium text-foreground">Up next · White to play.</b> Rating hidden until solved.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- modes -->
+    <section class="@container mt-8" aria-labelledby="modes-h">
+      <h2 id="modes-h" class="font-display text-xl font-bold">Ways to train</h2>
+      <div class="mt-4 grid gap-4 @[480px]:grid-cols-2 @[640px]:grid-cols-4">
+        <a href="puzzle.html" class="card card-hover flex flex-col p-5">
+          <span class="grid size-10 place-items-center rounded-xl bg-accent text-primary"><i data-lucide="sliders-horizontal" class="size-5"></i></span>
+          <h3 class="mt-3 text-lg font-bold">Adaptive</h3>
+          <p class="mt-1 text-sm text-muted-foreground">Sets of 10, tuned to a 75% solve rate. No clock.</p>
+          <span class="mt-auto pt-4 text-xs font-medium text-primary">4 of 10 · resume</span>
+        </a>
+        <a href="puzzle-rush.html#start" class="card card-hover flex flex-col p-5">
+          <span class="grid size-10 place-items-center rounded-xl bg-cta-soft text-cta"><i data-lucide="timer" class="size-5"></i></span>
+          <h3 class="mt-3 text-lg font-bold">Puzzle Rush</h3>
+          <p class="mt-1 text-sm text-muted-foreground">3 or 5 minutes. Solve as many as you can. Three strikes.</p>
+          <span class="mt-auto pt-4 text-xs text-muted-foreground">Your best: <span class="font-medium text-foreground">23</span></span>
+        </a>
+        <a href="puzzle-rush.html#start" class="card card-hover flex flex-col p-5">
+          <span class="grid size-10 place-items-center rounded-xl bg-lilac text-lilac-ink"><i data-lucide="heart-pulse" class="size-5"></i></span>
+          <h3 class="mt-3 text-lg font-bold">Survival</h3>
+          <p class="mt-1 text-sm text-muted-foreground">No clock. Puzzles get harder until three misses.</p>
+          <span class="mt-auto pt-4 text-xs text-muted-foreground">Your best: <span class="font-medium text-foreground">31 in a row</span></span>
+        </a>
+        <a href="vision.html" class="card card-hover flex flex-col p-5">
+          <span class="grid size-10 place-items-center rounded-xl bg-sky text-sky-ink"><i data-lucide="scan-eye" class="size-5"></i></span>
+          <h3 class="mt-3 text-lg font-bold">Board vision</h3>
+          <p class="mt-1 text-sm text-muted-foreground">Name squares, find checks, trace knight routes. 1 minute each.</p>
+          <span class="mt-auto pt-4 text-xs text-muted-foreground">Name the square: <span class="font-medium text-foreground">best 19</span></span>
+        </a>
+      </div>
+
+      <!-- daily puzzle, solved -->
+      <article class="card mt-4 grid items-center gap-5 bg-accent/50 p-5 sm:grid-cols-[132px_minmax(0,1fr)_auto]" aria-labelledby="daily-h">
+        <div class="w-[132px] overflow-hidden rounded-lg ring-1 ring-border"><div class="vb" data-fen="6k1/pp3ppp/8/3r4/8/1Q6/PP3PPP/4R1K1 w - - 0 1" data-arrows="e1e8" aria-label="Daily puzzle: Re8 mate"></div></div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2"><span class="badge badge-soft"><i data-lucide="check" class="size-3.5"></i>Solved</span><span class="label">Daily puzzle · 19 Sept</span></div>
+          <h3 id="daily-h" class="mt-1.5 text-lg font-bold">Back-rank mate in one</h3>
+          <p class="mt-0.5 text-sm text-muted-foreground">You found <span class="san">Re8#</span> in 8 seconds, first try. A new one arrives tomorrow morning.</p>
+        </div>
+        <div class="flex gap-2 sm:flex-col">
+          <span class="badge justify-center text-muted-foreground">+6 rating</span>
+          <button class="btn btn-outline btn-sm" data-ask="Why was Re8 mate in today's daily puzzle? Walk me through it."><i data-lucide="message-circle"></i>Ask Sage why</button>
+        </div>
+      </article>
+    </section>
+
+    <!-- themes -->
+    <section class="@container mt-8" aria-labelledby="themes-h">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h2 id="themes-h" class="font-display text-xl font-bold">Themes</h2>
+        <span class="text-xs text-muted-foreground">Mastery from your last 30 days · tap to practise one theme</span>
+      </div>
+      <div class="mt-4 grid gap-3 @[480px]:grid-cols-2 @[640px]:grid-cols-4">
+        <a href="puzzle.html" class="card card-hover border-cta/30 p-4">
+          <div class="flex items-center gap-2"><span class="flex items-center gap-2 text-sm font-semibold"><i data-lucide="git-fork" class="text-cta"></i>Forks</span></div>
+          <div class="mt-3 flex items-center gap-3"><div class="progress"><span class="w-[41%] !bg-cta"></span></div><span class="text-xs font-medium tabular-nums">41%</span></div>
+          <p class="mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs text-muted-foreground"><span>62 solved</span><span class="badge border-transparent bg-cta-soft text-cta">Needs love</span></p>
+        </a>
+        <a href="puzzle.html" class="card card-hover p-4">
+          <div class="flex items-center gap-2"><span class="flex items-center gap-2 text-sm font-semibold"><i data-lucide="pin" class="text-primary"></i>Pins</span></div>
+          <div class="mt-3 flex items-center gap-3"><div class="progress"><span class="w-[68%]"></span></div><span class="text-xs font-medium tabular-nums">68%</span></div>
+          <p class="mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs text-muted-foreground"><span>88 solved</span><span class="text-success">+9% this month</span></p>
+        </a>
+        <a href="puzzle.html" class="card card-hover border-cta/30 p-4">
+          <div class="flex items-center gap-2"><span class="flex items-center gap-2 text-sm font-semibold"><i data-lucide="move-diagonal" class="text-cta"></i>Skewers</span></div>
+          <div class="mt-3 flex items-center gap-3"><div class="progress"><span class="w-[47%] !bg-cta"></span></div><span class="text-xs font-medium tabular-nums">47%</span></div>
+          <p class="mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs text-muted-foreground"><span>24 solved</span><span class="badge border-transparent bg-cta-soft text-cta">Needs love</span></p>
+        </a>
+        <a href="puzzle.html" class="card card-hover p-4">
+          <div class="flex items-center gap-2"><span class="flex items-center gap-2 text-sm font-semibold"><i data-lucide="panel-top" class="text-primary"></i>Back rank</span></div>
+          <div class="mt-3 flex items-center gap-3"><div class="progress"><span class="w-[84%]"></span></div><span class="text-xs font-medium tabular-nums">84%</span></div>
+          <p class="mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs text-muted-foreground"><span>51 solved</span><span class="text-success">Strong</span></p>
+        </a>
+        <a href="puzzle.html" class="card card-hover p-4">
+          <div class="flex items-center gap-2"><span class="flex items-center gap-2 text-sm font-semibold"><i data-lucide="scan-line" class="text-primary"></i>Discovered attack</span></div>
+          <div class="mt-3 flex items-center gap-3"><div class="progress"><span class="w-[59%]"></span></div><span class="text-xs font-medium tabular-nums">59%</span></div>
+          <p class="mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs text-muted-foreground"><span>33 solved</span></p>
+        </a>
+        <a href="puzzle.html" class="card card-hover p-4">
+          <div class="flex items-center gap-2"><span class="flex items-center gap-2 text-sm font-semibold"><i data-lucide="shuffle" class="text-primary"></i>Deflection</span></div>
+          <div class="mt-3 flex items-center gap-3"><div class="progress"><span class="w-[55%]"></span></div><span class="text-xs font-medium tabular-nums">55%</span></div>
+          <p class="mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs text-muted-foreground"><span>19 solved</span></p>
+        </a>
+        <a href="puzzle.html" class="card card-hover p-4">
+          <div class="flex items-center gap-2"><span class="flex items-center gap-2 text-sm font-semibold"><i data-lucide="crown" class="text-primary"></i>Mate in 2</span></div>
+          <div class="mt-3 flex items-center gap-3"><div class="progress"><span class="w-[72%]"></span></div><span class="text-xs font-medium tabular-nums">72%</span></div>
+          <p class="mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs text-muted-foreground"><span>40 solved</span><span class="text-success">+12% this month</span></p>
+        </a>
+        <a href="endgames.html" class="card card-hover p-4">
+          <div class="flex items-center gap-2"><span class="flex items-center gap-2 text-sm font-semibold"><i data-lucide="flag-triangle-right" class="text-primary"></i>Endgame technique</span></div>
+          <div class="mt-3 flex items-center gap-3"><div class="progress"><span class="w-[52%]"></span></div><span class="text-xs font-medium tabular-nums">52%</span></div>
+          <p class="mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs text-muted-foreground"><span>17 solved</span></p>
+        </a>
+      </div>
+    </section>
+
+    <!-- personal bests -->
+    <section class="card mt-8 p-5" aria-labelledby="pb-h">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div><h2 id="pb-h" class="font-display text-lg font-bold">Your personal bests</h2><p class="text-sm text-muted-foreground">Only you vs. you. No leaderboards here.</p></div>
+        <a href="progress.html" class="btn btn-ghost btn-sm text-muted-foreground">See all growth<i data-lucide="chevron-right"></i></a>
+      </div>
+      <dl class="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div class="rounded-xl bg-muted/60 p-4"><dt class="label">Highest rating</dt><dd class="mt-1 font-display text-2xl font-bold tabular-nums">1496</dd><dd class="text-xs text-muted-foreground">14 Sept · 14 away</dd></div>
+        <div class="rounded-xl bg-muted/60 p-4"><dt class="label">Rush · 3 min</dt><dd class="mt-1 font-display text-2xl font-bold tabular-nums">23</dd><dd class="text-xs text-muted-foreground">up from 15 in August</dd></div>
+        <div class="rounded-xl bg-muted/60 p-4"><dt class="label">Survival</dt><dd class="mt-1 font-display text-2xl font-bold tabular-nums">31</dd><dd class="text-xs text-muted-foreground">in a row</dd></div>
+        <div class="rounded-xl bg-reward-soft p-4"><dt class="label text-reward-ink">Solve streak</dt><dd class="mt-1 font-display text-2xl font-bold tabular-nums text-reward-ink">14</dd><dd class="text-xs text-reward-ink/80">first-try solves in a row</dd></div>
+      </dl>
+    </section>
+  </div>
+</main>
+</body>
+</html>

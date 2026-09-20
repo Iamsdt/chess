@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Settings · Chess King</title>
+<script src="assets/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="assets/board.js" defer></script>
+<script src="assets/shell.js" defer></script>
+<style>
+  /* swatches read the board tokens from their own data-board scope; green = theme defaults */
+  .sw-green { --vb-light:#f5eedf; --vb-dark:#a3b89b; }
+  .dark .sw-green { --vb-light:#dfe2d4; --vb-dark:#7d977b; }
+  .sw { background: conic-gradient(var(--vb-dark) 0 25%, var(--vb-light) 0 50%, var(--vb-dark) 0 75%, var(--vb-light) 0) 0 0 / 50% 50%; }
+  .sub-link[aria-current] { background: var(--card); color: var(--foreground); box-shadow: 0 0 0 1px var(--border); }
+  section[id] { scroll-margin-top: 24px; }
+</style>
+</head>
+<body data-nav="settings"
+      data-chat-context="your settings · Gemini key connected · 184k tokens this month"
+      data-chat-quick="Which model should I pick?|Is my key safe?|Make Sage more direct">
+
+<template id="chat-seed">
+  <div data-divider>Today, 6:15 PM</div>
+  <div data-me data-time="6:15 PM">Is my API key safe in here?</div>
+  <div data-sage data-time="6:15 PM">
+    <div class="bubble">Short version: <b>it never leaves this browser except to go straight to Google</b>. There's no Chess King server in between.</div>
+    <div class="bubble">It's encrypted with a key the page can use but can't read or export. Backups skip it, so a shared backup file can't leak it.</div>
+  </div>
+  <div data-me data-time="6:16 PM">What would it cost me?</div>
+  <div data-sage data-time="6:16 PM" data-replies="Show my usage|Switch to a cheaper model">About <b>6 cents so far this month</b> on Gemini 2.5 Flash. A heavy month of reviews is usually under a dollar.</div>
+</template>
+
+<main>
+  <div class="page @container">
+    <header>
+      <p class="label">Everything saves automatically, on this device only</p>
+      <h1 class="page-title mt-1">Settings</h1>
+    </header>
+
+    <div class="mt-6 grid gap-6 @[780px]:grid-cols-[176px_minmax(0,1fr)]">
+      <!-- sub nav -->
+      <nav aria-label="Settings sections" class="@[780px]:sticky @[780px]:top-6 @[780px]:self-start">
+        <ul class="flex gap-1 overflow-x-auto pb-1 [scrollbar-width:none] @[780px]:flex-col @[780px]:overflow-visible">
+          <li><a href="#profile" class="sub-link nav-item h-9 shrink-0 whitespace-nowrap" aria-current="true"><i data-lucide="user-round"></i>Profile</a></li>
+          <li><a href="#board" class="sub-link nav-item h-9 shrink-0 whitespace-nowrap"><i data-lucide="palette"></i>Board &amp; pieces</a></li>
+          <li><a href="#coach" class="sub-link nav-item h-9 shrink-0 whitespace-nowrap"><i data-lucide="brain"></i>AI coach</a></li>
+          <li><a href="#sound" class="sub-link nav-item h-9 shrink-0 whitespace-nowrap"><i data-lucide="volume-2"></i>Sound</a></li>
+          <li><a href="#data" class="sub-link nav-item h-9 shrink-0 whitespace-nowrap"><i data-lucide="database"></i>Data</a></li>
+          <li><a href="#about" class="sub-link nav-item h-9 shrink-0 whitespace-nowrap"><i data-lucide="info"></i>About</a></li>
+        </ul>
+      </nav>
+
+      <div class="min-w-0 space-y-6">
+        <!-- PROFILE -->
+        <section id="profile" class="card" aria-labelledby="profile-h">
+          <div class="border-b px-6 py-4"><h2 id="profile-h" class="text-lg font-bold">Profile</h2><p class="help">A local profile. No account, no email.</p></div>
+          <div class="grid gap-5 p-6 sm:grid-cols-2">
+            <div class="space-y-1.5">
+              <label for="name" class="field-label">Display name</label>
+              <input id="name" class="input" value="Shudipto" autocomplete="nickname">
+              <p class="help">Shown to friends when you share a link.</p>
+            </div>
+            <div class="space-y-1.5">
+              <label for="level" class="field-label">Your level</label>
+              <select id="level" class="input">
+                <option>I know the rules</option>
+                <option selected>Club player · around 1200</option>
+                <option>Strong · 1600+</option>
+              </select>
+              <p class="help">Sets puzzle and sparring starting points. They adapt anyway.</p>
+            </div>
+            <div class="space-y-1.5">
+              <span class="field-label block" id="goal-l">Daily goal</span>
+              <div class="seg" role="group" aria-labelledby="goal-l"><button>5 min</button><button class="is-active">15 min</button><button>30 min</button></div>
+              <p class="help">Small and steady beats long and rare.</p>
+            </div>
+            <div class="space-y-1.5">
+              <label for="remind" class="field-label">Daily reminder</label>
+              <div class="flex items-center gap-3"><input id="remind" type="time" class="input w-36" value="20:00"><label class="switch" aria-label="Reminder on"><input type="checkbox" checked><span></span></label></div>
+              <p class="help">A browser notification. You learn best around 8pm.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- BOARD -->
+        <section id="board" class="card" aria-labelledby="board-h">
+          <div class="border-b px-6 py-4"><h2 id="board-h" class="text-lg font-bold">Board &amp; pieces</h2><p class="help">Changes apply everywhere, right away.</p></div>
+          <div class="grid gap-6 p-6 @[640px]:grid-cols-[minmax(0,1fr)_200px] @[1000px]:grid-cols-[minmax(0,1fr)_260px]">
+            <div class="min-w-0 space-y-6">
+              <div>
+                <span class="field-label block" id="app-l">Appearance</span>
+                <div class="seg mt-2" role="group" aria-labelledby="app-l" id="theme-seg">
+                  <button data-theme="light"><i data-lucide="sun" class="mr-1.5 inline size-3.5 align-[-2px]"></i>Light</button><button data-theme="dark"><i data-lucide="moon" class="mr-1.5 inline size-3.5 align-[-2px]"></i>Dark</button>
+                </div>
+              </div>
+              <div>
+                <span class="field-label block" id="bt-l">Board colours</span>
+                <div class="mt-2 flex flex-wrap gap-3" role="radiogroup" aria-labelledby="bt-l" id="board-swatches">
+                  <button role="radio" data-board-name="" class="group flex flex-col items-center gap-1.5 text-xs font-medium"><span class="sw sw-green block size-14 rounded-xl ring-1 ring-border transition group-aria-checked:ring-[3px] group-aria-checked:ring-primary"></span>Green</button>
+                  <button role="radio" data-board-name="walnut" class="group flex flex-col items-center gap-1.5 text-xs font-medium"><span data-board="walnut" class="sw block size-14 rounded-xl ring-1 ring-border transition group-aria-checked:ring-[3px] group-aria-checked:ring-primary"></span>Walnut</button>
+                  <button role="radio" data-board-name="slate" class="group flex flex-col items-center gap-1.5 text-xs font-medium"><span data-board="slate" class="sw block size-14 rounded-xl ring-1 ring-border transition group-aria-checked:ring-[3px] group-aria-checked:ring-primary"></span>Slate</button>
+                  <button role="radio" data-board-name="dusk" class="group flex flex-col items-center gap-1.5 text-xs font-medium"><span data-board="dusk" class="sw block size-14 rounded-xl ring-1 ring-border transition group-aria-checked:ring-[3px] group-aria-checked:ring-primary"></span>Dusk</button>
+                  <button role="radio" data-board-name="sand" class="group flex flex-col items-center gap-1.5 text-xs font-medium"><span data-board="sand" class="sw block size-14 rounded-xl ring-1 ring-border transition group-aria-checked:ring-[3px] group-aria-checked:ring-primary"></span>Sand</button>
+                </div>
+              </div>
+              <div>
+                <span class="field-label block" id="ps-l">Piece set</span>
+                <div class="mt-2 grid grid-cols-2 gap-2 @[1000px]:grid-cols-4" role="radiogroup" aria-labelledby="ps-l" id="piece-sets">
+                  <button role="radio" data-set-name="california" class="option flex-col gap-1 p-3 aria-checked:border-primary aria-checked:bg-accent/50 aria-checked:ring-2 aria-checked:ring-primary/20"><span class="flex"><img src="assets/pieces/california/wN.svg" alt="" class="size-9"><img src="assets/pieces/california/bQ.svg" alt="" class="-ml-2 size-9"></span><span class="text-xs font-medium">California</span></button>
+                  <button role="radio" data-set-name="staunty" class="option flex-col gap-1 p-3 aria-checked:border-primary aria-checked:bg-accent/50 aria-checked:ring-2 aria-checked:ring-primary/20"><span class="flex"><img src="assets/pieces/staunty/wN.svg" alt="" class="size-9"><img src="assets/pieces/staunty/bQ.svg" alt="" class="-ml-2 size-9"></span><span class="text-xs font-medium">Staunty</span></button>
+                  <button role="radio" data-set-name="maestro" class="option flex-col gap-1 p-3 aria-checked:border-primary aria-checked:bg-accent/50 aria-checked:ring-2 aria-checked:ring-primary/20"><span class="flex"><img src="assets/pieces/maestro/wN.svg" alt="" class="size-9"><img src="assets/pieces/maestro/bQ.svg" alt="" class="-ml-2 size-9"></span><span class="text-xs font-medium">Maestro</span></button>
+                  <button role="radio" data-set-name="alpha" class="option flex-col gap-1 p-3 aria-checked:border-primary aria-checked:bg-accent/50 aria-checked:ring-2 aria-checked:ring-primary/20"><span class="flex"><img src="assets/pieces/alpha/wN.svg" alt="" class="size-9"><img src="assets/pieces/alpha/bQ.svg" alt="" class="-ml-2 size-9"></span><span class="text-xs font-medium">Alpha</span></button>
+                </div>
+              </div>
+              <div class="divide-y rounded-xl border">
+                <label class="flex items-center gap-3 p-3 text-sm"><span class="flex-1"><span class="block font-medium">Coordinates</span><span class="help">a–h and 1–8 on the board edge</span></span><span class="switch"><input type="checkbox" id="opt-coords" checked><span></span></span></label>
+                <label class="flex items-center gap-3 p-3 text-sm"><span class="flex-1"><span class="block font-medium">Highlight last move</span><span class="help">Tint the from and to squares</span></span><span class="switch"><input type="checkbox" id="opt-hl" checked><span></span></span></label>
+                <div class="flex flex-wrap items-center gap-3 p-3 text-sm"><span class="flex-1"><span class="block font-medium" id="anim-l">Move animation</span><span class="help">How fast pieces slide</span></span><div class="seg" role="group" aria-labelledby="anim-l"><button>Off</button><button class="is-active">Normal</button><button>Slow</button></div></div>
+                <label class="flex items-center gap-3 p-3 text-sm"><span class="flex-1"><span class="block font-medium">Premoves</span><span class="help">Queue a move during your opponent's turn</span></span><span class="switch"><input type="checkbox"><span></span></span></label>
+                <label class="flex items-center gap-3 p-3 text-sm"><span class="flex-1"><span class="block font-medium">Always ask on promotion</span><span class="help">Off promotes to a queen automatically</span></span><span class="switch"><input type="checkbox" checked><span></span></span></label>
+              </div>
+            </div>
+            <figure class="self-start @[640px]:sticky @[640px]:top-6 @max-[640px]:-order-1">
+              <div class="mx-auto max-w-[300px] overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.45)] ring-1 ring-border">
+                <div class="vb" id="preview" data-coords data-fen="r1bq1rk1/ppp2ppp/2np1n2/2b1p3/2B1P3/2PP1N2/PP3PPP/RNBQ1RK1 w - - 2 7" data-hl="e8,g8" aria-label="Preview board: Italian Game after 6...O-O"></div>
+              </div>
+              <figcaption class="mt-2 text-center text-xs text-muted-foreground">Live preview · Italian Game, move 7</figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <!-- COACH -->
+        <section id="coach" class="card" aria-labelledby="coach-h">
+          <div class="flex flex-wrap items-center gap-3 border-b px-6 py-4">
+            <span class="sage-av size-9 rounded-xl"><i data-lucide="brain" class="size-4"></i></span>
+            <div class="flex-1"><h2 id="coach-h" class="text-lg font-bold">AI coach · Sage</h2><p class="help">Bring your own key. No key? Everything else works.</p></div>
+            <span class="badge badge-soft"><span class="size-1.5 rounded-full bg-success"></span>Connected</span>
+          </div>
+          <div class="space-y-6 p-6">
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div class="space-y-1.5">
+                <label for="provider" class="field-label">Provider</label>
+                <select id="provider" class="input"><option selected>Google Gemini</option><option>OpenAI</option><option>Anthropic</option></select>
+              </div>
+              <div class="space-y-1.5">
+                <label for="model" class="field-label">Model</label>
+                <select id="model" class="input"><option selected>Gemini 2.5 Flash · fast, cheap</option><option>Gemini 2.5 Pro · deeper reviews</option></select>
+              </div>
+              <div class="space-y-1.5 sm:col-span-2">
+                <label for="apikey" class="field-label">API key</label>
+                <div class="flex flex-wrap gap-2">
+                  <div class="relative min-w-0 flex-1 basis-60">
+                    <i data-lucide="lock" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></i>
+                    <input id="apikey" type="password" class="input pl-9 pr-11 font-mono" value="AIzaSyC7k2-Qm9vT4xLp0eRb8nWd3HfJ6uYs1Ao" autocomplete="off" spellcheck="false">
+                    <button type="button" id="reveal" class="btn btn-ghost btn-icon btn-sm absolute right-1 top-1/2 -translate-y-1/2" aria-label="Show key" aria-pressed="false"><i data-lucide="eye"></i></button>
+                  </div>
+                  <button class="btn btn-outline" data-toast="Key works · Gemini 2.5 Flash" data-toast-icon="check-circle-2"><i data-lucide="plug-zap"></i>Test key</button>
+                  <button class="btn btn-destructive" data-open="remove-key"><i data-lucide="trash-2"></i>Remove key</button>
+                </div>
+                <p class="help">Get a free key at aistudio.google.com. Added 3 Sep · last used 6 min ago.</p>
+              </div>
+            </div>
+
+            <!-- security explainer -->
+            <div class="rounded-2xl bg-accent/60 p-5">
+              <h3 class="flex items-center gap-2 text-base font-bold"><i data-lucide="shield-check" class="text-primary"></i>How your key is protected</h3>
+              <ul class="mt-3 grid gap-3 text-sm sm:grid-cols-2">
+                <li class="flex gap-2.5"><i data-lucide="key-round" class="mt-0.5 text-primary"></i><span><b class="font-semibold">Encrypted at rest.</b> <span class="text-muted-foreground">AES-GCM via Web Crypto, with a non-extractable key kept in IndexedDB. The page can use it but can never read it out.</span></span></li>
+                <li class="flex gap-2.5"><i data-lucide="send" class="mt-0.5 text-primary"></i><span><b class="font-semibold">Sent only to your provider.</b> <span class="text-muted-foreground">Straight from your browser to Google. No Chess King server, no proxy.</span></span></li>
+                <li class="flex gap-2.5"><i data-lucide="archive-x" class="mt-0.5 text-primary"></i><span><b class="font-semibold">Never in backups.</b> <span class="text-muted-foreground">Exports skip it, so sharing a backup file can't leak it.</span></span></li>
+                <li class="flex gap-2.5"><i data-lucide="alert-circle" class="mt-0.5 text-reward-ink"></i><span><b class="font-semibold">The honest limit.</b> <span class="text-muted-foreground">No browser storage can stop malicious code running inside the page. We reduce that risk with a strict Content Security Policy and no third-party scripts.</span></span></li>
+              </ul>
+              <label class="mt-4 flex items-center gap-3 rounded-xl border bg-card p-3 text-sm">
+                <i data-lucide="lock-keyhole"></i>
+                <span class="flex-1"><span class="block font-medium">Passphrase lock</span><span class="help">Adds a passphrase (PBKDF2) on top. You unlock once per session.</span></span>
+                <span class="switch"><input type="checkbox"><span></span></span>
+              </label>
+            </div>
+
+            <div class="grid gap-6 @[900px]:grid-cols-2">
+              <div>
+                <span class="field-label block" id="tone-l">Sage's tone</span>
+                <div class="mt-2 space-y-2" data-options role="radiogroup" aria-labelledby="tone-l">
+                  <button class="option is-active p-3"><span class="grid size-8 place-items-center rounded-lg bg-accent text-primary"><i data-lucide="smile"></i></span><span class="flex-1"><span class="block text-sm font-medium">Friendly coach</span><span class="help">Warm, encouraging, plain words</span></span></button>
+                  <button class="option p-3"><span class="grid size-8 place-items-center rounded-lg bg-cta-soft text-cta"><i data-lucide="zap"></i></span><span class="flex-1"><span class="block text-sm font-medium">Blunt GM</span><span class="help">Short and direct. No sugar.</span></span></button>
+                  <button class="option p-3"><span class="grid size-8 place-items-center rounded-lg bg-lilac text-lilac-ink"><i data-lucide="help-circle"></i></span><span class="flex-1"><span class="block text-sm font-medium">Socratic</span><span class="help">Answers with questions, so you find it</span></span></button>
+                </div>
+              </div>
+              <div class="space-y-4">
+                <label class="flex items-center gap-3 rounded-xl border p-3 text-sm"><i data-lucide="eye-off" class="text-primary"></i><span class="flex-1"><span class="block font-medium">Spoiler guard</span><span class="help">On puzzles and lessons Sage nudges, never tells</span></span><span class="switch"><input type="checkbox" checked><span></span></span></label>
+                <label class="flex items-center gap-3 rounded-xl border p-3 text-sm"><i data-lucide="cpu"></i><span class="flex-1"><span class="block font-medium">Let Sage read engine lines</span><span class="help">Better explanations after a game</span></span><span class="switch"><input type="checkbox" checked><span></span></span></label>
+                <div class="rounded-xl border p-4">
+                  <div class="flex items-center justify-between text-sm"><span class="font-medium">September usage</span><span class="text-muted-foreground">≈ <b class="font-semibold text-foreground">$0.06</b></span></div>
+                  <div class="progress mt-2"><span class="w-[37%]"></span></div>
+                  <div class="mt-1.5 flex justify-between text-xs text-muted-foreground"><span>184k of 500k tokens</span><span>Soft cap · you set it</span></div>
+                  <p class="mt-2 text-xs text-muted-foreground">Estimated from your provider's public prices. Billing happens on your provider account.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SOUND -->
+        <section id="sound" class="card" aria-labelledby="sound-h">
+          <div class="border-b px-6 py-4"><h2 id="sound-h" class="text-lg font-bold">Sound</h2></div>
+          <div class="divide-y px-6">
+            <label class="flex items-center gap-3 py-3 text-sm"><span class="flex-1 font-medium">Move sounds</span><span class="switch"><input type="checkbox" checked><span></span></span></label>
+            <div class="flex flex-wrap items-center gap-3 py-3 text-sm"><label for="vol" class="flex-1 font-medium">Volume</label><input id="vol" type="range" min="0" max="100" value="60" class="w-48 accent-[var(--primary)]"></div>
+            <div class="flex flex-wrap items-center gap-3 py-3 text-sm"><span class="flex-1 font-medium" id="snd-l">Sound style</span><div class="seg" role="group" aria-labelledby="snd-l"><button class="is-active">Wood</button><button>Soft</button><button>Minimal</button></div></div>
+            <label class="flex items-center gap-3 py-3 text-sm"><span class="flex-1"><span class="block font-medium">Low-time warning</span><span class="help">A gentle tick under 20 seconds</span></span><span class="switch"><input type="checkbox" checked><span></span></span></label>
+            <label class="flex items-center gap-3 py-3 text-sm"><span class="flex-1"><span class="block font-medium">Celebration sounds</span><span class="help">When a puzzle streak or lesson ends</span></span><span class="switch"><input type="checkbox"><span></span></span></label>
+          </div>
+        </section>
+
+        <!-- DATA -->
+        <section id="data" class="card" aria-labelledby="data-h">
+          <div class="border-b px-6 py-4"><h2 id="data-h" class="text-lg font-bold">Your data</h2><p class="help">It all lives in this browser. Back it up now and then.</p></div>
+          <div class="space-y-5 p-6">
+            <div>
+              <div class="flex items-center justify-between text-sm"><span class="font-medium">Storage used</span><span class="text-muted-foreground"><b class="font-semibold text-foreground">4.2 MB</b> in IndexedDB</span></div>
+              <div class="mt-2 flex h-2.5 overflow-hidden rounded-full bg-muted" role="img" aria-label="Games 2.6 MB, puzzles 0.9 MB, lessons and repertoire 0.4 MB, chats 0.3 MB">
+                <span class="w-[62%] bg-primary"></span><span class="w-[21%] bg-sky-ink"></span><span class="w-[10%] bg-reward"></span><span class="w-[7%] bg-lilac-ink"></span>
+              </div>
+              <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                <span class="flex items-center gap-1.5"><span class="size-2 rounded-full bg-primary"></span>Games · 142</span>
+                <span class="flex items-center gap-1.5"><span class="size-2 rounded-full bg-sky-ink"></span>Puzzles</span>
+                <span class="flex items-center gap-1.5"><span class="size-2 rounded-full bg-reward"></span>Lessons &amp; repertoire</span>
+                <span class="flex items-center gap-1.5"><span class="size-2 rounded-full bg-lilac-ink"></span>Sage chats</span>
+              </div>
+            </div>
+            <div class="grid gap-2 sm:grid-cols-3">
+              <button class="btn btn-outline h-auto flex-col items-start gap-0.5 whitespace-normal p-3 text-left" data-toast="Backup saved · chess-king-2026-09-19.json" data-toast-icon="download"><span class="flex items-center gap-2 font-medium"><i data-lucide="download"></i>Export backup</span><span class="text-xs font-normal text-muted-foreground">Everything except your API key (.json)</span></button>
+              <button class="btn btn-outline h-auto flex-col items-start gap-0.5 whitespace-normal p-3 text-left" data-toast="Choose a backup file to import" data-toast-icon="upload"><span class="flex items-center gap-2 font-medium"><i data-lucide="upload"></i>Import backup</span><span class="text-xs font-normal text-muted-foreground">Merges with what's here</span></button>
+              <button class="btn btn-outline h-auto flex-col items-start gap-0.5 whitespace-normal p-3 text-left" data-toast="142 games exported · my-games.pgn" data-toast-icon="file-down"><span class="flex items-center gap-2 font-medium"><i data-lucide="file-down"></i>Export all PGN</span><span class="text-xs font-normal text-muted-foreground">142 games, with Sage's notes</span></button>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 rounded-xl border border-destructive/30 p-4">
+              <div class="flex-1"><div class="text-sm font-medium">Clear all data</div><p class="help">Games, progress, garden and key. This can't be undone.</p></div>
+              <button class="btn btn-destructive" data-open="clear-data"><i data-lucide="trash-2"></i>Clear all data</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ABOUT -->
+        <section id="about" class="card bg-accent/40" aria-labelledby="about-h">
+          <div class="flex flex-wrap items-start gap-4 p-6">
+            <span class="grid size-12 -rotate-6 place-items-center rounded-2xl bg-primary text-reward shadow-sm"><i data-lucide="crown" class="size-6"></i></span>
+            <div class="min-w-0 flex-1">
+              <h2 id="about-h" class="text-lg font-bold">Chess King <span class="ml-1 align-middle font-mono text-xs font-medium text-muted-foreground">v0.9.2</span></h2>
+              <p class="mt-1 text-sm">No accounts. No tracking. Your data stays in this browser.</p>
+              <p class="mt-1 text-sm text-muted-foreground">Free and open source under the MIT licence. Stockfish 17 runs on your device.</p>
+              <div class="mt-4 flex flex-wrap gap-2">
+                <a href="https://github.com/" class="btn btn-outline btn-sm" target="_blank" rel="noopener"><i data-lucide="github"></i>Source on GitHub</a>
+                <button class="btn btn-ghost btn-sm" data-toast="Up to date · v0.9.2" data-toast-icon="refresh-cw"><i data-lucide="refresh-cw"></i>Check for updates</button>
+                <a href="onboarding.html" class="btn btn-ghost btn-sm"><i data-lucide="rotate-ccw"></i>Replay first-run setup</a>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</main>
+
+<dialog class="modal" id="remove-key" aria-labelledby="rk-h">
+  <div class="p-6">
+    <h2 id="rk-h" class="text-xl font-bold">Remove your Gemini key?</h2>
+    <p class="mt-2 text-sm text-muted-foreground">Sage goes quiet until you add a key again. Your games, puzzles and progress stay exactly as they are.</p>
+    <div class="mt-6 flex justify-end gap-2">
+      <button class="btn btn-outline" data-close>Keep key</button>
+      <button class="btn btn-destructive" data-close data-toast="Key removed from this browser" data-toast-icon="trash-2">Remove key</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="modal" id="clear-data" aria-labelledby="cd-h">
+  <div class="p-6">
+    <span class="grid size-11 place-items-center rounded-xl bg-destructive-soft text-destructive"><i data-lucide="alert-triangle" class="size-5"></i></span>
+    <h2 id="cd-h" class="mt-4 text-xl font-bold">Clear everything on this device?</h2>
+    <p class="mt-2 text-sm text-muted-foreground">142 games, your Mistake Bank, your garden and your key will be deleted. There's no server copy, so this can't be undone.</p>
+    <button class="btn btn-outline btn-sm mt-4" data-toast="Backup saved · chess-king-2026-09-19.json" data-toast-icon="download"><i data-lucide="download"></i>Export a backup first</button>
+    <div class="mt-6 flex justify-end gap-2">
+      <button class="btn btn-outline" data-close>Cancel</button>
+      <button class="btn btn-destructive" data-close data-toast="All data cleared" data-toast-icon="trash-2">Clear all data</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  (function () {
+    const root = document.documentElement;
+    const get = k => { try { return localStorage.getItem(k); } catch { return null; } };
+    const set = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} };
+    const rerender = () => window.VB && VB.renderAll();
+
+    // board colours
+    const swatches = [...document.querySelectorAll('[data-board-name]')];
+    const markBoard = () => { const cur = root.dataset.board || ''; swatches.forEach(b => b.setAttribute('aria-checked', String(b.dataset.boardName === cur))); };
+    swatches.forEach(b => b.addEventListener('click', () => {
+      const n = b.dataset.boardName;
+      if (n) { root.dataset.board = n; set('ck-board', n); } else { root.removeAttribute('data-board'); set('ck-board', null); }
+      markBoard();
+    }));
+    markBoard();
+
+    // piece sets
+    const sets = [...document.querySelectorAll('[data-set-name]')];
+    const markSet = () => { const cur = get('ck-set') || 'california'; sets.forEach(b => b.setAttribute('aria-checked', String(b.dataset.setName === cur))); };
+    sets.forEach(b => b.addEventListener('click', () => { set('ck-set', b.dataset.setName); markSet(); rerender(); }));
+    markSet();
+
+    // light / dark
+    const themeBtns = [...document.querySelectorAll('#theme-seg [data-theme]')];
+    const markTheme = () => { const d = root.classList.contains('dark'); themeBtns.forEach(b => b.classList.toggle('is-active', (b.dataset.theme === 'dark') === d)); };
+    themeBtns.forEach(b => b.addEventListener('click', () => { const d = b.dataset.theme === 'dark'; root.classList.toggle('dark', d); set('ck-theme', d ? 'dark' : 'light'); setTimeout(markTheme); }));
+    markTheme();
+    new MutationObserver(markTheme).observe(root, { attributes: true, attributeFilter: ['class'] });
+
+    // preview toggles
+    const pv = document.getElementById('preview');
+    document.getElementById('opt-coords').addEventListener('change', e => { pv.toggleAttribute('data-coords', e.target.checked); rerender(); });
+    document.getElementById('opt-hl').addEventListener('change', e => { pv.dataset.hl = e.target.checked ? 'e8,g8' : ''; rerender(); });
+
+    // show / hide key
+    const key = document.getElementById('apikey'), rev = document.getElementById('reveal');
+    rev.addEventListener('click', () => {
+      const show = key.type === 'password';
+      key.type = show ? 'text' : 'password';
+      rev.setAttribute('aria-pressed', String(show));
+      rev.setAttribute('aria-label', show ? 'Hide key' : 'Show key');
+      rev.innerHTML = `<i data-lucide="${show ? 'eye-off' : 'eye'}"></i>`;
+      window.lucide && lucide.createIcons();
+    });
+
+    // sub-nav follows scroll
+    const links = [...document.querySelectorAll('.sub-link')];
+    const io = new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting) links.forEach(l => l.toggleAttribute('aria-current', l.hash === '#' + e.target.id));
+    }), { rootMargin: '-10% 0px -70% 0px' });
+    document.querySelectorAll('main section[id]').forEach(s => io.observe(s));
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mistake Bank · Chess King</title>
+<script src="assets/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="assets/board.js" defer></script>
+<script src="assets/shell.js" defer></script>
+<style>
+  /* keep ranks equal height when a rank is empty */
+  .vb { grid-template-rows: repeat(8, 1fr); }
+</style>
+</head>
+<body data-nav="mistakes"
+      data-chat-context="your Mistake Bank · 57 positions from your own games · 7 due"
+      data-chat-attach="Mistake Bank"
+      data-chat-quick="What pattern links these?|Which one should I fix first?|How does the schedule work?">
+
+<template id="chat-seed">
+  <div data-divider>Today, 7:58 PM</div>
+  <div data-me data-time="7:58 PM">Is there a pattern behind the 7 due today?</div>
+  <div data-sage data-time="7:58 PM" data-replies="Start the review|Show only forks" data-cta="0">
+    <div class="bubble">Yes, and it's one habit. In <b>5 of the 7</b> you made a natural move without asking what your opponent could do next.</div>
+    <div class="chat-card">
+      <div class="vb" data-fen="r4rk1/pp3ppp/2p5/6n1/3P4/2P5/PP2QP1P/R5K1 w - - 0 17" data-hl="e2" data-dots="e1"></div>
+      <div class="flex items-center justify-between gap-2 px-3 py-2 text-xs"><span>Move 17 · you played <span class="san">Qe1</span></span><span class="text-muted-foreground">Forks</span></div>
+    </div>
+    <div class="bubble">Here, e1 looked safe. But it put your queen a knight-jump from your king. A two-second <b>"what can a knight hit?"</b> check would catch most of these.</div>
+  </div>
+</template>
+
+<main>
+  <div class="page">
+    <header class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="label">Mistake Bank</p>
+        <h1 class="page-title mt-1">Ideas you missed, coming back</h1>
+        <p class="mt-1 max-w-[60ch] text-sm text-muted-foreground">Every position here is from your own games. Recall one and it returns later: 1 day, 3, 7, 21. Until it's yours.</p>
+      </div>
+      <button class="btn btn-outline btn-sm" data-toast="Import runs after every game automatically" data-toast-icon="download"><i data-lucide="download"></i>Import a game</button>
+    </header>
+
+    <!-- hero -->
+    <section class="@container card mt-6 overflow-hidden border-cta/30" aria-labelledby="due-h">
+      <div class="grid gap-6 p-6 lg:p-7 @[720px]:grid-cols-[minmax(0,1fr)_minmax(0,300px)]">
+        <div>
+          <span class="badge border-transparent bg-cta-soft text-cta"><i data-lucide="calendar-check" class="size-3.5"></i>Due today</span>
+          <h2 id="due-h" class="mt-3 font-display text-[40px] font-bold leading-none tracking-tight">7 <span class="text-[30px]">due today</span></h2>
+          <p class="mt-2 text-sm text-muted-foreground">5 from this week, 2 you've seen before. You play the move; the answer never shows first.</p>
+          <div class="mt-5 flex flex-wrap items-center gap-3">
+            <a href="puzzle.html" class="btn btn-cta"><i data-lucide="play" class="size-[18px]"></i>Start review · ~4 min</a>
+            <button class="btn btn-ghost h-11 text-muted-foreground" data-toast="Moved to tomorrow. Your streak is safe.">Not today</button>
+          </div>
+        </div>
+        <!-- schedule strip -->
+        <div>
+          <p class="label">Coming up</p>
+          <ol class="mt-2 grid grid-cols-4 gap-2 text-center">
+            <li class="rounded-xl border-2 border-cta/40 bg-cta-soft p-2.5"><div class="font-display text-2xl font-bold text-cta">7</div><div class="text-[11px] font-medium text-cta">Today</div></li>
+            <li class="rounded-xl bg-muted/70 p-2.5"><div class="font-display text-2xl font-bold">3</div><div class="text-[11px] text-muted-foreground">Tomorrow</div></li>
+            <li class="rounded-xl bg-muted/70 p-2.5"><div class="font-display text-2xl font-bold">5</div><div class="text-[11px] text-muted-foreground">In 3 days</div></li>
+            <li class="rounded-xl bg-muted/70 p-2.5"><div class="font-display text-2xl font-bold">12</div><div class="text-[11px] text-muted-foreground">This week</div></li>
+          </ol>
+          <p class="mt-2 text-xs text-muted-foreground">Small and steady beats cramming. We never schedule more than 10 a day.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- mastery pipeline -->
+    <section class="card mt-4 p-5" aria-labelledby="pipe-h">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h2 id="pipe-h" class="font-display text-lg font-bold">From missed to mastered</h2>
+        <span class="text-xs text-muted-foreground">57 positions · 3 more mastered this week</span>
+      </div>
+      <ol class="mt-4 grid grid-cols-2 gap-2 md:grid-cols-4">
+        <li class="relative rounded-xl bg-lilac/70 p-4">
+          <div class="flex items-center gap-2 text-xs font-semibold text-lilac-ink"><i data-lucide="sparkle" class="size-3.5"></i>New</div>
+          <div class="mt-1 font-display text-3xl font-bold tabular-nums">7</div>
+          <div class="text-xs text-muted-foreground">Not tried yet</div>
+          <i data-lucide="chevron-right" class="absolute -right-2.5 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-card text-muted-foreground ring-1 ring-border md:block"></i>
+        </li>
+        <li class="relative rounded-xl bg-cta-soft p-4">
+          <div class="flex items-center gap-2 text-xs font-semibold text-cta"><i data-lucide="sprout" class="size-3.5"></i>Learning</div>
+          <div class="mt-1 font-display text-3xl font-bold tabular-nums">9</div>
+          <div class="text-xs text-muted-foreground">Back in 1 to 3 days</div>
+          <i data-lucide="chevron-right" class="absolute -right-2.5 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-card text-muted-foreground ring-1 ring-border md:block"></i>
+        </li>
+        <li class="relative rounded-xl bg-sky/70 p-4">
+          <div class="flex items-center gap-2 text-xs font-semibold text-sky-ink"><i data-lucide="repeat" class="size-3.5"></i>Reviewing</div>
+          <div class="mt-1 font-display text-3xl font-bold tabular-nums">13</div>
+          <div class="text-xs text-muted-foreground">Back in 7 to 21 days</div>
+          <i data-lucide="chevron-right" class="absolute -right-2.5 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-card text-muted-foreground ring-1 ring-border md:block"></i>
+        </li>
+        <li class="rounded-xl bg-accent p-4">
+          <div class="flex items-center gap-2 text-xs font-semibold text-primary"><i data-lucide="badge-check" class="size-3.5"></i>Mastered</div>
+          <div class="mt-1 font-display text-3xl font-bold tabular-nums">28</div>
+          <div class="text-xs text-muted-foreground">Recalled 3 times in a row</div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- list -->
+    <section class="mt-8" aria-labelledby="list-h">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h2 id="list-h" class="font-display text-xl font-bold">Your positions</h2>
+        <div class="seg text-xs"><button class="is-active">Due first</button><button>Newest</button><button>By game</button></div>
+      </div>
+      <div class="mt-3 flex flex-wrap gap-2" data-chips role="group" aria-label="Filter by theme">
+        <button class="badge is-active cursor-pointer px-3 py-1 [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">All · 57</button>
+        <button class="badge cursor-pointer px-3 py-1 hover:bg-accent [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">Forks · 14</button>
+        <button class="badge cursor-pointer px-3 py-1 hover:bg-accent [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">Back rank · 6</button>
+        <button class="badge cursor-pointer px-3 py-1 hover:bg-accent [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">Pins · 9</button>
+        <button class="badge cursor-pointer px-3 py-1 hover:bg-accent [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">Discovered attack · 5</button>
+        <button class="badge cursor-pointer px-3 py-1 hover:bg-accent [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">Mate patterns · 8</button>
+        <button class="badge cursor-pointer px-3 py-1 hover:bg-accent [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">Endgame · 7</button>
+        <button class="badge cursor-pointer px-3 py-1 hover:bg-accent [&.is-active]:border-primary [&.is-active]:bg-primary [&.is-active]:text-primary-foreground">Hanging pieces · 8</button>
+      </div>
+
+      <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <!-- 1 -->
+        <article class="card flex flex-col overflow-hidden">
+          <a href="puzzle.html" class="block bg-muted/40 p-3" aria-label="Try this position: vs Stockfish 1200, move 17"><div class="overflow-hidden rounded-lg ring-1 ring-border"><div class="vb" data-fen="r4rk1/pp3ppp/2p5/6n1/3P4/2P5/PP2QP1P/R5K1 w - - 0 17" aria-label="White to move"></div></div></a>
+          <div class="flex flex-1 flex-col p-4">
+            <div class="flex items-center justify-between gap-2"><span class="badge border-transparent bg-lilac text-lilac-ink">Forks</span><span class="badge border-transparent bg-cta-soft text-cta"><i data-lucide="clock" class="size-3"></i>Due today</span></div>
+            <p class="mt-2 text-xs text-muted-foreground">vs Stockfish 1200 · move 17 · you're White</p>
+            <p class="mt-2 flex items-center gap-2 whitespace-nowrap text-sm"><span class="text-muted-foreground">What you played</span><span class="san">17.Qe1</span><span class="q q-blunder">??</span></p>
+            <button class="group mt-2 w-full rounded-lg border border-dashed p-2.5 text-left text-sm" onclick="this.classList.add('is-open')" aria-label="Reveal the better idea (try it first)">
+              <span class="flex items-center gap-1.5 text-xs font-medium text-primary group-[.is-open]:hidden"><i data-lucide="eye-off" class="size-3.5"></i>Reveal after you try</span>
+              <span class="hidden group-[.is-open]:block">Your queen and king were a knight-jump apart. <span class="san">17.Qg4</span> keeps the queen safe and hits the knight.</span>
+            </button>
+            <div class="mt-auto flex items-center justify-between pt-4 text-xs text-muted-foreground">
+              <span class="flex items-center gap-1" role="img" aria-label="Recall streak 0 of 3"><span class="size-2 rounded-full bg-muted-foreground/25"></span><span class="size-2 rounded-full bg-muted-foreground/25"></span><span class="size-2 rounded-full bg-muted-foreground/25"></span><span class="ml-1">New</span></span>
+              <a href="puzzle.html" class="font-medium text-primary hover:underline">Try it</a>
+            </div>
+          </div>
+        </article>
+        <!-- 2 -->
+        <article class="card flex flex-col overflow-hidden">
+          <a href="puzzle.html" class="block bg-muted/40 p-3" aria-label="Try this position: vs Rafi, move 24"><div class="overflow-hidden rounded-lg ring-1 ring-border"><div class="vb" data-fen="6k1/5ppp/p1r5/8/8/1P6/P4PPP/3R2K1 w - - 0 24" aria-label="White to move"></div></div></a>
+          <div class="flex flex-1 flex-col p-4">
+            <div class="flex items-center justify-between gap-2"><span class="badge badge-soft">Back rank</span><span class="badge border-transparent bg-cta-soft text-cta"><i data-lucide="clock" class="size-3"></i>Due today</span></div>
+            <p class="mt-2 text-xs text-muted-foreground">vs Rafi · move 24 · you're White</p>
+            <p class="mt-2 flex items-center gap-2 whitespace-nowrap text-sm"><span class="text-muted-foreground">What you played</span><span class="san">24.Kf1</span><span class="q q-miss">×</span></p>
+            <button class="group mt-2 w-full rounded-lg border border-dashed p-2.5 text-left text-sm" onclick="this.classList.add('is-open')" aria-label="Reveal the better idea (try it first)">
+              <span class="flex items-center gap-1.5 text-xs font-medium text-primary group-[.is-open]:hidden"><i data-lucide="eye-off" class="size-3.5"></i>Reveal after you try</span>
+              <span class="hidden group-[.is-open]:block">Black's king has no escape square. <span class="san">24.Rd8#</span> ends it right away.</span>
+            </button>
+            <div class="mt-auto flex items-center justify-between pt-4 text-xs text-muted-foreground">
+              <span class="flex items-center gap-1" role="img" aria-label="Recall streak 1 of 3"><span class="size-2 rounded-full bg-primary"></span><span class="size-2 rounded-full bg-muted-foreground/25"></span><span class="size-2 rounded-full bg-muted-foreground/25"></span><span class="ml-1">Learning</span></span>
+              <a href="puzzle.html" class="font-medium text-primary hover:underline">Try it</a>
+            </div>
+          </div>
+        </article>
+        <!-- 3 -->
+        <article class="card flex flex-col overflow-hidden">
+          <a href="puzzle.html" class="block bg-muted/40 p-3" aria-label="Try this position: vs Stockfish 1000, move 4"><div class="overflow-hidden rounded-lg ring-1 ring-border"><div class="vb" data-orient="b" data-fen="rn1qkbnr/ppp2ppp/3p4/4p3/2B1P1b1/2N2N2/PPPP1PPP/R1BQK2R b KQkq - 3 4" aria-label="Black to move"></div></div></a>
+          <div class="flex flex-1 flex-col p-4">
+            <div class="flex items-center justify-between gap-2"><span class="badge border-transparent bg-sky text-sky-ink">Pins</span><span class="badge border-transparent bg-cta-soft text-cta"><i data-lucide="clock" class="size-3"></i>Due today</span></div>
+            <p class="mt-2 text-xs text-muted-foreground">vs Stockfish 1000 · move 4 · you're Black</p>
+            <p class="mt-2 flex items-center gap-2 whitespace-nowrap text-sm"><span class="text-muted-foreground">What you played</span><span class="san">4…g6</span><span class="q q-mistake">?</span></p>
+            <button class="group mt-2 w-full rounded-lg border border-dashed p-2.5 text-left text-sm" onclick="this.classList.add('is-open')" aria-label="Reveal the better idea (try it first)">
+              <span class="flex items-center gap-1.5 text-xs font-medium text-primary group-[.is-open]:hidden"><i data-lucide="eye-off" class="size-3.5"></i>Reveal after you try</span>
+              <span class="hidden group-[.is-open]:block">The pin on f3 isn't real: <span class="san">5.Nxe5!</span> wins a pawn, and <span class="san">…Bxd1</span> runs into Légal's mate. <span class="san">4…Nf6</span> develops first.</span>
+            </button>
+            <div class="mt-auto flex items-center justify-between pt-4 text-xs text-muted-foreground">
+              <span class="flex items-center gap-1" role="img" aria-label="Recall streak 2 of 3"><span class="size-2 rounded-full bg-primary"></span><span class="size-2 rounded-full bg-primary"></span><span class="size-2 rounded-full bg-muted-foreground/25"></span><span class="ml-1">Reviewing</span></span>
+              <a href="puzzle.html" class="font-medium text-primary hover:underline">Try it</a>
+            </div>
+          </div>
+        </article>
+        <!-- 4 -->
+        <article class="card flex flex-col overflow-hidden">
+          <a href="puzzle.html" class="block bg-muted/40 p-3" aria-label="Try this position: vs Stockfish 1100, move 4"><div class="overflow-hidden rounded-lg ring-1 ring-border"><div class="vb" data-orient="b" data-fen="rnbqkb1r/pppp1ppp/8/4N3/4n3/8/PPPPQPPP/RNB1KB1R b KQkq - 1 4" aria-label="Black to move"></div></div></a>
+          <div class="flex flex-1 flex-col p-4">
+            <div class="flex items-center justify-between gap-2"><span class="badge border-transparent bg-lilac text-lilac-ink">Discovered attack</span><span class="badge text-muted-foreground">Tomorrow</span></div>
+            <p class="mt-2 text-xs text-muted-foreground">vs Stockfish 1100 · move 4 · you're Black</p>
+            <p class="mt-2 flex items-center gap-2 whitespace-nowrap text-sm"><span class="text-muted-foreground">What you played</span><span class="san">4…Nf6</span><span class="q q-blunder">??</span></p>
+            <button class="group mt-2 w-full rounded-lg border border-dashed p-2.5 text-left text-sm" onclick="this.classList.add('is-open')" aria-label="Reveal the better idea (try it first)">
+              <span class="flex items-center gap-1.5 text-xs font-medium text-primary group-[.is-open]:hidden"><i data-lucide="eye-off" class="size-3.5"></i>Reveal after you try</span>
+              <span class="hidden group-[.is-open]:block">The queen on e2 was lined up with your king. <span class="san">5.Nc6+</span> uncovers check and hits your queen. Block the file first: <span class="san">4…Qe7</span>.</span>
+            </button>
+            <div class="mt-auto flex items-center justify-between pt-4 text-xs text-muted-foreground">
+              <span class="flex items-center gap-1" role="img" aria-label="Recall streak 1 of 3"><span class="size-2 rounded-full bg-primary"></span><span class="size-2 rounded-full bg-muted-foreground/25"></span><span class="size-2 rounded-full bg-muted-foreground/25"></span><span class="ml-1">Next in 1 day</span></span>
+              <a href="puzzle.html" class="font-medium text-primary hover:underline">Try it</a>
+            </div>
+          </div>
+        </article>
+        <!-- 5 -->
+        <article class="card flex flex-col overflow-hidden">
+          <a href="puzzle.html" class="block bg-muted/40 p-3" aria-label="Try this position: vs Stockfish 1300, move 31"><div class="overflow-hidden rounded-lg ring-1 ring-border"><div class="vb" data-fen="r6k/6pp/7N/8/8/1Q6/4q1PP/6K1 w - - 0 31" aria-label="White to move"></div></div></a>
+          <div class="flex flex-1 flex-col p-4">
+            <div class="flex items-center justify-between gap-2"><span class="badge badge-reward">Mate in 2</span><span class="badge text-muted-foreground">In 3 days</span></div>
+            <p class="mt-2 text-xs text-muted-foreground">vs Stockfish 1300 · move 31 · you're White</p>
+            <p class="mt-2 flex items-center gap-2 whitespace-nowrap text-sm"><span class="text-muted-foreground">What you played</span><span class="san">31.Nf7+</span><span class="q q-inaccuracy">?!</span></p>
+            <button class="group mt-2 w-full rounded-lg border border-dashed p-2.5 text-left text-sm" onclick="this.classList.add('is-open')" aria-label="Reveal the better idea (try it first)">
+              <span class="flex items-center gap-1.5 text-xs font-medium text-primary group-[.is-open]:hidden"><i data-lucide="eye-off" class="size-3.5"></i>Reveal after you try</span>
+              <span class="hidden group-[.is-open]:block">Smothered mate: <span class="san">31.Qg8+!</span> <span class="san">Rxg8</span> <span class="san">32.Nf7#</span>. The king's own pieces become the walls.</span>
+            </button>
+            <div class="mt-auto flex items-center justify-between pt-4 text-xs text-muted-foreground">
+              <span class="flex items-center gap-1" role="img" aria-label="Recall streak 2 of 3"><span class="size-2 rounded-full bg-primary"></span><span class="size-2 rounded-full bg-primary"></span><span class="size-2 rounded-full bg-muted-foreground/25"></span><span class="ml-1">Next in 3 days</span></span>
+              <a href="puzzle.html" class="font-medium text-primary hover:underline">Try it</a>
+            </div>
+          </div>
+        </article>
+        <!-- 6 -->
+        <article class="card flex flex-col overflow-hidden">
+          <a href="puzzle.html" class="block bg-muted/40 p-3" aria-label="Try this position: vs Stockfish 1100, move 48"><div class="overflow-hidden rounded-lg ring-1 ring-border"><div class="vb" data-fen="4k3/8/8/4K3/4P3/8/8/8 w - - 0 48" aria-label="White to move"></div></div></a>
+          <div class="flex flex-1 flex-col p-4">
+            <div class="flex items-center justify-between gap-2"><span class="badge badge-soft">Endgame</span><span class="badge text-muted-foreground">In 7 days</span></div>
+            <p class="mt-2 text-xs text-muted-foreground">vs Stockfish 1100 · move 48 · you're White</p>
+            <p class="mt-2 flex items-center gap-2 whitespace-nowrap text-sm"><span class="text-muted-foreground">What you played</span><span class="san">48.Kf5</span><span class="q q-miss">×</span></p>
+            <button class="group mt-2 w-full rounded-lg border border-dashed p-2.5 text-left text-sm" onclick="this.classList.add('is-open')" aria-label="Reveal the better idea (try it first)">
+              <span class="flex items-center gap-1.5 text-xs font-medium text-primary group-[.is-open]:hidden"><i data-lucide="eye-off" class="size-3.5"></i>Reveal after you try</span>
+              <span class="hidden group-[.is-open]:block">King in front of the pawn: <span class="san">48.Ke6</span> reaches the sixth rank and wins. After <span class="san">Kf5</span>, <span class="san">…Kf7</span> takes the opposition and it's a draw.</span>
+            </button>
+            <div class="mt-auto flex items-center justify-between pt-4 text-xs text-muted-foreground">
+              <span class="flex items-center gap-1" role="img" aria-label="Recall streak 2 of 3"><span class="size-2 rounded-full bg-primary"></span><span class="size-2 rounded-full bg-primary"></span><span class="size-2 rounded-full bg-muted-foreground/25"></span><span class="ml-1">Next in 7 days</span></span>
+              <a href="puzzle.html" class="font-medium text-primary hover:underline">Try it</a>
+            </div>
+          </div>
+        </article>
+      </div>
+      <div class="mt-5 flex justify-center"><button class="btn btn-outline btn-sm" data-toast="Showing 6 of 57 in this prototype" data-toast-icon="list">Show more</button></div>
+    </section>
+  </div>
+</main>
+</body>
+</html>

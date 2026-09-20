@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shared challenge · Chess King</title>
+<script src="assets/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="assets/board.js" defer></script>
+<script src="assets/shell.js" defer></script>
+</head>
+<body data-nav="friends"
+      data-chat-context="Rafi's challenge · White to play and win · no spoilers"
+      data-chat-attach="Rafi's puzzle"
+      data-chat-quick="Give me a nudge|What should I look at first?|How do share links work?">
+
+<template id="chat-seed">
+  <div data-divider>Just now</div>
+  <div data-sage data-time="8:20 PM">Rafi sent you a puzzle. I'm on <b>no spoilers</b>, so I'll only nudge.</div>
+  <div data-sage data-time="8:20 PM" data-replies="Nudge me|I'll try alone" data-cta="1">First look: Black's king has almost no squares. <b>Which of your pieces can give check?</b> Checks first, even the scary ones.</div>
+</template>
+
+<main>
+  <div class="page">
+    <p class="flex items-center gap-2 text-xs text-muted-foreground"><i data-lucide="link" class="size-3.5"></i>Opened from a link · nothing to sign up for</p>
+
+    <div class="mt-3 tabs overflow-x-auto [scrollbar-width:none]" role="tablist" aria-label="Share types">
+      <button class="tab is-active whitespace-nowrap" role="tab" data-tab="puzzle" data-group="share">Puzzle challenge</button>
+      <button class="tab whitespace-nowrap" role="tab" data-tab="position" data-group="share">Position</button>
+      <button class="tab whitespace-nowrap" role="tab" data-tab="game" data-group="share">Annotated game</button>
+      <button class="tab whitespace-nowrap" role="tab" data-tab="corr" data-group="share">Correspondence move</button>
+    </div>
+
+    <!-- PUZZLE -->
+    <section data-panel="puzzle" data-group="share" class="mt-6" aria-labelledby="pz-h">
+      <div class="card overflow-hidden">
+        <div class="grid gap-8 p-6 md:grid-cols-[minmax(0,380px)_minmax(0,1fr)] md:p-8">
+          <figure>
+            <div class="overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.45)] ring-1 ring-border">
+              <div class="vb" data-coords data-fen="r4r1k/pp1b2pp/1qnp4/2p1p1N1/2Q1P3/2PP4/PP4PP/R1B1R2K w - - 0 18" aria-label="Puzzle: White to play and win"></div>
+            </div>
+            <figcaption class="mt-2 flex items-center gap-2 text-xs text-muted-foreground"><span class="size-3 rounded-full border bg-white"></span><b class="font-medium text-foreground">White to play.</b> Mate is in there somewhere.</figcaption>
+          </figure>
+          <div class="flex flex-col">
+            <div class="flex items-center gap-3">
+              <span class="avatar size-10 bg-[#e9a15a] text-[#3b1d00]">RA</span>
+              <div class="leading-tight"><div class="text-sm font-semibold">Rafi challenged you</div><div class="text-xs text-muted-foreground">He solved it in 1:12 · rated about 1550</div></div>
+            </div>
+            <h1 id="pz-h" class="mt-5 text-[34px] font-bold leading-[1.05] tracking-tight">White to play and win</h1>
+            <p class="mt-2 text-sm text-muted-foreground">"Found this in my club game last night. Bet you can't see it in under a minute." <span class="text-foreground">— Rafi</span></p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="badge"><i data-lucide="timer" class="size-3.5"></i>Beat 1:12</span>
+              <span class="badge"><i data-lucide="footprints" class="size-3.5"></i>4 moves deep</span>
+              <span class="badge badge-reward"><i data-lucide="eye-off" class="size-3.5"></i>Theme hidden</span>
+            </div>
+            <div class="mt-6 flex flex-wrap items-center gap-3">
+              <a href="puzzle.html" class="btn btn-cta"><i data-lucide="play" class="size-[18px]"></i>Solve it</a>
+              <a href="analysis.html" class="btn btn-outline btn-lg"><i data-lucide="microscope"></i>Open in analysis</a>
+            </div>
+            <p class="mt-3 text-xs text-muted-foreground">Solve it and you get a link back to send Rafi with your time.</p>
+
+            <div class="mt-auto pt-8">
+              <div class="rounded-2xl bg-accent/60 p-4">
+                <h2 class="flex items-center gap-2 text-sm font-bold"><i data-lucide="shield-check" class="text-primary"></i>The whole puzzle lives inside the link</h2>
+                <p class="mt-1.5 break-all rounded-lg bg-card px-3 py-2 font-mono text-[11.5px] leading-relaxed text-muted-foreground ring-1 ring-border">chessking.app/s<span class="font-semibold text-primary">#p=r4r1k/pp1b2pp/1qnp4/2p1p1N1/2Q1P3/2PP4/PP4PP/R1B1R2K_w&amp;by=Rafi&amp;t=72</span></p>
+                <p class="mt-2 text-xs text-muted-foreground">Everything after the <span class="san">#</span> is the position, who sent it and their time. Browsers never send that part to a server, so nothing is stored anywhere.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- POSITION -->
+    <section data-panel="position" data-group="share" class="mt-6" hidden aria-labelledby="pos-h">
+      <div class="card grid gap-8 p-6 md:grid-cols-[minmax(0,340px)_minmax(0,1fr)] md:p-8">
+        <div class="overflow-hidden rounded-xl ring-1 ring-border"><div class="vb" data-coords data-fen="r1bq1rk1/pp1nbppp/2p1p3/3n2B1/2BP4/2N1PN2/PP3PPP/2RQK2R w K - 1 10" data-hl="f6,d5" aria-label="Queen's Gambit Declined, White to move"></div></div>
+        <div>
+          <div class="flex items-center gap-3"><span class="avatar size-10 bg-sky text-sky-ink">MN</span><div class="leading-tight"><div class="text-sm font-semibold">Mina shared a position</div><div class="text-xs text-muted-foreground">Queen's Gambit Declined · move 10</div></div></div>
+          <h2 id="pos-h" class="mt-5 text-2xl font-bold">"Trade on e7, or keep the bishop?"</h2>
+          <p class="mt-2 text-sm text-muted-foreground">A shared position is a question, not a quiz. Open it, try ideas, and send your answer back as a new link.</p>
+          <div class="mt-5 flex flex-wrap gap-2">
+            <a href="analysis.html" class="btn btn-default"><i data-lucide="microscope"></i>Open in analysis</a>
+            <button class="btn btn-outline" data-ask="Help me think about Mina's question: trade on e7 or keep the bishop?"><i data-lucide="message-circle"></i>Think it through with Sage</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ANNOTATED GAME -->
+    <section data-panel="game" data-group="share" class="mt-6" hidden aria-labelledby="game-h">
+      <div class="card grid gap-8 p-6 md:grid-cols-[minmax(0,340px)_minmax(0,1fr)] md:p-8">
+        <div class="overflow-hidden rounded-xl ring-1 ring-border"><div class="vb" data-coords data-fen="r1bq1rk1/ppp2ppp/2np1n2/2b1p3/2B1P3/2PP1N2/PP3PPP/RNBQ1RK1 w - - 2 7" data-arrows="a2a4,b1d2:ai" aria-label="Italian Game after 6...O-O, with two plan arrows"></div></div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-3"><span class="avatar size-10 bg-lilac text-lilac-ink">TO</span><div class="leading-tight"><div class="text-sm font-semibold">Tomás shared an annotated game</div><div class="text-xs text-muted-foreground">Tomás vs Stockfish 1400 · 1–0 · 41 moves</div></div></div>
+          <h2 id="game-h" class="mt-5 text-2xl font-bold">My first win with the slow Italian</h2>
+          <ol class="mt-4 space-y-2 text-sm">
+            <li class="flex gap-3 rounded-lg bg-muted/50 p-3"><span class="san h-fit">7.a4</span><span class="text-muted-foreground">"Grab space before Black plays …a6 and …Ba7." <span class="text-foreground">Tomás</span></span></li>
+            <li class="flex gap-3 rounded-lg bg-lilac/60 p-3"><span class="san h-fit">8.Nbd2</span><span class="text-muted-foreground">"The knight heads for f1 and g3, the classic tour." <span class="text-lilac-ink">Sage</span></span></li>
+          </ol>
+          <a href="analysis.html" class="btn btn-default mt-5"><i data-lucide="play"></i>Step through the game</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- CORRESPONDENCE -->
+    <section data-panel="corr" data-group="share" class="mt-6" hidden aria-labelledby="corr-h">
+      <div class="card grid gap-8 p-6 md:grid-cols-[minmax(0,340px)_minmax(0,1fr)] md:p-8">
+        <div class="overflow-hidden rounded-xl ring-1 ring-border"><div class="vb" data-coords data-fen="rnb1kb1r/1p3ppp/pq1ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8" data-hl="d8,b6" aria-label="Najdorf Poisoned Pawn, White to move after 7...Qb6"></div></div>
+        <div>
+          <div class="flex items-center gap-3"><span class="avatar size-10 bg-[#e9a15a] text-[#3b1d00]">RA</span><div class="leading-tight"><div class="text-sm font-semibold">Rafi played <span class="san">7…Qb6</span></div><div class="text-xs text-muted-foreground">Sicilian Najdorf · correspondence · 2h ago</div></div></div>
+          <h2 id="corr-h" class="mt-5 text-2xl font-bold">Your move. Then send the link back.</h2>
+          <ol class="mt-4 space-y-2 text-sm text-muted-foreground">
+            <li class="flex gap-2"><i data-lucide="move" class="mt-0.5 text-primary"></i>Play your move on the board.</li>
+            <li class="flex gap-2"><i data-lucide="link" class="mt-0.5 text-primary"></i>We make a new link with the whole game inside.</li>
+            <li class="flex gap-2"><i data-lucide="send" class="mt-0.5 text-primary"></i>Send it to Rafi however you chat.</li>
+          </ol>
+          <a href="live.html" class="btn btn-default mt-5"><i data-lucide="swords"></i>Make my move</a>
+        </div>
+      </div>
+    </section>
+
+    <p class="mt-6 text-center text-xs text-muted-foreground">New here? Chess King is a free, open-source place to learn chess. <a href="onboarding.html" class="font-medium text-primary hover:underline">Set up in under a minute</a></p>
+  </div>
+</main>
+</body>
+</html>

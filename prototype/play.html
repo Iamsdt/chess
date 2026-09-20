@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sparring · Chess King</title>
+<script src="assets/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="assets/board.js" defer></script>
+<script src="assets/shell.js" defer></script>
+<style>
+  /* Board pages: the board is sized by viewport height so the whole game fits without scrolling */
+  .board-size { width: min(100%, calc(100dvh - 56px - 48px - 104px)); }
+</style>
+</head>
+<body data-nav="play" data-layout="board"
+      data-chat-context="live game · move 7 · you're White · eval hidden"
+      data-chat-attach="Current position"
+      data-chat-quick="What's the plan here?|Is my position OK?|What does Black want?">
+
+<template id="chat-seed">
+  <div data-divider>Game started · 8:02 PM</div>
+  <div data-sage data-time="8:02 PM">I'll stay quiet while you play. Training wheels are on: I'll only speak up if you're about to <b>hang a piece</b>.</div>
+  <div data-sage data-time="8:06 PM" data-replies="Show the knight tour|What does Black want?">
+    <div class="bubble"><span class="q q-book mr-1 align-[-4px]">B</span>Still in book: the <b>Giuoco Pianissimo</b>. Slow and strategic.</div>
+    <div class="bubble">Typical White plan: <span class="san">a4</span>, <span class="san">Re1</span>, then the knight tour <span class="san">Nbd2–f1–g3</span>.</div>
+  </div>
+</template>
+
+<main>
+  <!-- game header -->
+  <header class="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur lg:px-6">
+    <a href="play-setup.html" class="btn btn-ghost btn-sm"><i data-lucide="arrow-left"></i>Setup</a>
+    <div class="mx-1 h-5 w-px bg-border"></div>
+    <h1 class="flex items-center gap-2 text-base font-bold"><i data-lucide="swords" class="text-cta"></i>Sparring vs Stockfish 1200</h1>
+    <span class="badge max-sm:hidden">10 + 5</span>
+    <span class="badge badge-soft max-md:hidden"><i data-lucide="shield-check" class="size-3.5"></i>Training wheels</span>
+    <div class="ml-auto flex items-center gap-1">
+      <button class="btn btn-ghost btn-sm" data-toast="Board flipped" data-toast-icon="arrow-up-down"><i data-lucide="arrow-up-down"></i><span class="max-sm:hidden">Flip</span></button>
+      <a href="settings.html#board" class="btn btn-ghost btn-icon btn-sm" title="Board & pieces" aria-label="Board and piece settings"><i data-lucide="palette"></i></a>
+    </div>
+  </header>
+
+  <div class="grid gap-5 p-4 lg:p-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+    <!-- board column -->
+    <section class="flex justify-center" aria-label="Game board">
+      <div class="board-size space-y-2.5">
+        <div class="flex items-center gap-3">
+          <span class="avatar size-9 rounded-xl bg-[#3b4a44] text-[#cfe0d6]"><i data-lucide="cpu" class="size-4"></i></span>
+          <div class="leading-tight"><div class="text-sm font-semibold">Stockfish <span class="font-normal text-muted-foreground">1200</span></div><div class="text-xs text-muted-foreground">Solid personality</div></div>
+          <div class="clock">9:12</div>
+        </div>
+        <div class="overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.45)] ring-1 ring-border">
+          <div class="vb" data-interactive data-coords
+               data-fen="r1bq1rk1/ppp2ppp/2np1n2/2b1p3/2B1P3/2PP1N2/PP3PPP/RNBQ1RK1 w - - 1 7"
+               data-hl="e8,g8" aria-label="Game board, White to move"></div>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="avatar size-9 rounded-xl bg-primary text-primary-foreground">SK</span>
+          <div class="leading-tight"><div class="text-sm font-semibold">You <span class="font-normal text-muted-foreground">1180</span></div><div class="text-xs text-success">Your move</div></div>
+          <div class="clock is-running" data-tick="524">8:44</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- side panel -->
+    <aside class="card flex min-h-0 flex-col overflow-hidden xl:max-h-[calc(100dvh-56px-48px)]" aria-label="Game panel">
+      <div class="flex items-center gap-2 border-b px-4 py-3">
+        <span class="q q-book">B</span>
+        <div class="min-w-0 leading-tight"><div class="truncate text-sm font-semibold">Italian Game</div><div class="text-xs text-muted-foreground">Giuoco Pianissimo · C54</div></div>
+      </div>
+      <div class="tabs px-3 pt-2">
+        <button class="tab is-active" data-tab="moves" data-group="side">Moves</button>
+        <button class="tab" data-tab="opts" data-group="side">Options</button>
+      </div>
+
+      <div class="min-h-0 flex-1 overflow-auto p-2" data-panel="moves" data-group="side">
+        <ol class="text-sm">
+          <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">1.</span><span class="mv">e4</span><span class="mv">e5</span></li>
+          <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">2.</span><span class="mv">Nf3</span><span class="mv">Nc6</span></li>
+          <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">3.</span><span class="mv">Bc4</span><span class="mv">Bc5</span></li>
+          <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">4.</span><span class="mv">c3</span><span class="mv">Nf6</span></li>
+          <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">5.</span><span class="mv">d3</span><span class="mv">d6</span></li>
+          <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">6.</span><span class="mv">O-O</span><span class="mv is-current">O-O</span></li>
+          <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">7.</span><span class="px-1.5 font-mono text-muted-foreground">…</span><span></span></li>
+        </ol>
+      </div>
+
+      <div class="min-h-0 flex-1 space-y-2 overflow-auto p-4" data-panel="opts" data-group="side" hidden>
+        <label class="flex items-center gap-3 rounded-lg bg-muted/50 p-3 text-sm"><i data-lucide="shield-check" class="text-primary"></i><span class="flex-1"><span class="block font-medium">Training wheels</span><span class="text-xs text-muted-foreground">Warn me before I hang a piece</span></span><span class="switch"><input type="checkbox" checked><span></span></span></label>
+        <label class="flex items-center gap-3 rounded-lg bg-muted/50 p-3 text-sm"><i data-lucide="gauge"></i><span class="flex-1"><span class="block font-medium">Show evaluation</span><span class="text-xs text-muted-foreground">Off helps you think for yourself</span></span><span class="switch"><input type="checkbox"><span></span></span></label>
+        <label class="flex items-center gap-3 rounded-lg bg-muted/50 p-3 text-sm"><i data-lucide="volume-2"></i><span class="flex-1 font-medium">Move sounds</span><span class="switch"><input type="checkbox" checked><span></span></span></label>
+        <p class="flex gap-2 rounded-lg border border-dashed p-3 text-xs text-muted-foreground"><i data-lucide="info" class="mt-px size-3.5"></i>After the game it's analyzed automatically, and your mistakes go to the Mistake Bank.</p>
+      </div>
+
+      <div class="space-y-2 border-t p-3">
+        <div class="grid grid-cols-4 gap-1">
+          <button class="btn btn-ghost btn-sm" aria-label="First move"><i data-lucide="chevrons-left"></i></button>
+          <button class="btn btn-ghost btn-sm" aria-label="Previous move"><i data-lucide="chevron-left"></i></button>
+          <button class="btn btn-ghost btn-sm" aria-label="Next move"><i data-lucide="chevron-right"></i></button>
+          <button class="btn btn-ghost btn-sm" aria-label="Last move"><i data-lucide="chevrons-right"></i></button>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button class="btn btn-outline btn-sm" data-toast="Took back your last move" data-toast-icon="undo-2"><i data-lucide="undo-2"></i>Take back</button>
+          <button class="btn btn-sm border border-cta/30 bg-cta-soft text-cta hover:bg-cta hover:text-white" data-ask="Give me a hint, but don't tell me the move"><i data-lucide="lightbulb"></i>Hint</button>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button class="btn btn-ghost btn-sm text-muted-foreground" data-open="resign"><i data-lucide="flag"></i>Resign</button>
+          <a href="review.html" class="btn btn-ghost btn-sm text-muted-foreground"><i data-lucide="flag-triangle-right"></i>End &amp; review</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<dialog class="modal" id="resign" aria-labelledby="resign-h">
+  <div class="p-6">
+    <h2 id="resign-h" class="text-xl font-bold">Resign this game?</h2>
+    <p class="mt-2 text-sm text-muted-foreground">The position is about equal (+0.3). At this level most games are decided by one blunder, so it's worth playing on.</p>
+    <div class="mt-6 flex justify-end gap-2">
+      <button class="btn btn-outline" data-close>Keep playing</button>
+      <a href="review.html" class="btn btn-destructive">Resign &amp; review</a>
+    </div>
+  </div>
+</dialog>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Welcome · Chess King</title>
+<script src="assets/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="assets/board.js" defer></script>
+<script src="assets/shell.js" defer></script>
+<style>
+  .sw-green { --vb-light:#f5eedf; --vb-dark:#a3b89b; }
+  .dark .sw-green { --vb-light:#dfe2d4; --vb-dark:#7d977b; }
+  .sw { background: conic-gradient(var(--vb-dark) 0 25%, var(--vb-light) 0 50%, var(--vb-dark) 0 75%, var(--vb-light) 0) 0 0 / 50% 50%; }
+</style>
+</head>
+<body data-chat="none">
+
+<main class="min-h-full bg-background">
+  <div class="mx-auto flex min-h-dvh w-full max-w-[680px] flex-col px-4 py-8 sm:py-12">
+    <header class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <span class="grid size-9 -rotate-6 place-items-center rounded-xl bg-primary text-reward shadow-sm"><i data-lucide="crown" class="size-5"></i></span>
+        <span class="font-display text-lg font-bold tracking-tight">Chess King</span>
+      </div>
+      <button class="btn btn-ghost btn-icon btn-sm" data-action="theme" aria-label="Toggle dark mode"><i data-lucide="moon"></i></button>
+    </header>
+
+    <div class="mt-8 text-center">
+      <h1 class="text-[34px] font-bold leading-tight tracking-tight">Let's set you up</h1>
+      <p class="mt-1 text-sm text-muted-foreground">Four quick questions. You'll be playing in under a minute.</p>
+    </div>
+
+    <!-- stepper -->
+    <ol class="mt-6 grid grid-cols-4 gap-2" aria-label="Setup steps" id="stepper">
+      <li><button data-tab="s1" data-group="ob" data-step="1" class="is-active group w-full text-left" aria-label="Step 1: Your level"><span class="block h-1.5 rounded-full bg-primary"></span><span class="mt-2 block text-xs font-medium">Level</span></button></li>
+      <li><button data-tab="s2" data-group="ob" data-step="2" class="group w-full text-left" aria-label="Step 2: Goals"><span class="block h-1.5 rounded-full bg-muted"></span><span class="mt-2 block text-xs font-medium text-muted-foreground">Goals</span></button></li>
+      <li><button data-tab="s3" data-group="ob" data-step="3" class="group w-full text-left" aria-label="Step 3: Daily time"><span class="block h-1.5 rounded-full bg-muted"></span><span class="mt-2 block text-xs font-medium text-muted-foreground">Time &amp; board</span></button></li>
+      <li><button data-tab="s4" data-group="ob" data-step="4" class="group w-full text-left" aria-label="Step 4: AI coach"><span class="block h-1.5 rounded-full bg-muted"></span><span class="mt-2 block text-xs font-medium text-muted-foreground">Coach</span></button></li>
+    </ol>
+
+    <div class="card mt-5 p-6 sm:p-8">
+      <!-- STEP 1 -->
+      <section data-panel="s1" data-group="ob" aria-labelledby="s1-h" class="rise">
+        <p class="eyebrow">Step 1 of 4</p>
+        <h2 id="s1-h" class="mt-1 text-2xl font-bold">How well do you know chess?</h2>
+        <p class="mt-1 text-sm text-muted-foreground">A rough guess is fine. Everything adapts as you play.</p>
+        <div class="mt-5 grid gap-2 sm:grid-cols-2" data-options role="radiogroup" aria-labelledby="s1-h">
+          <button class="option"><span class="grid size-10 place-items-center rounded-xl bg-accent text-primary"><i data-lucide="sprout" class="size-5"></i></span><span><span class="block text-sm font-semibold">Never played</span><span class="help">Start from how the pieces move</span></span></button>
+          <button class="option is-active"><span class="grid size-10 place-items-center rounded-xl bg-sky text-sky-ink"><i data-lucide="book-open" class="size-5"></i></span><span><span class="block text-sm font-semibold">I know the rules</span><span class="help">Casual games with friends</span></span></button>
+          <button class="option"><span class="grid size-10 place-items-center rounded-xl bg-reward-soft text-reward-ink"><i data-lucide="swords" class="size-5"></i></span><span><span class="block text-sm font-semibold">Club player</span><span class="help">Around 1200 online</span></span></button>
+          <button class="option"><span class="grid size-10 place-items-center rounded-xl bg-lilac text-lilac-ink"><i data-lucide="crown" class="size-5"></i></span><span><span class="block text-sm font-semibold">Strong</span><span class="help">1600 and up</span></span></button>
+        </div>
+        <label class="mt-4 flex items-center gap-3 rounded-xl border border-dashed p-3 text-sm">
+          <i data-lucide="puzzle" class="text-primary"></i>
+          <span class="flex-1"><span class="block font-medium">Not sure? Take a 5-puzzle placement</span><span class="help">About 2 minutes. We'll pick your level from it.</span></span>
+          <span class="switch"><input type="checkbox"><span></span></span>
+        </label>
+        <div class="mt-7 flex items-center justify-end gap-3">
+          <button class="btn btn-cta" data-tab="s2" data-group="ob">Continue<i data-lucide="arrow-right" class="size-[18px]"></i></button>
+        </div>
+      </section>
+
+      <!-- STEP 2 -->
+      <section data-panel="s2" data-group="ob" hidden aria-labelledby="s2-h" class="rise">
+        <p class="eyebrow">Step 2 of 4</p>
+        <h2 id="s2-h" class="mt-1 text-2xl font-bold">What would you like to get better at?</h2>
+        <p class="mt-1 text-sm text-muted-foreground">Pick as many as you like. Sage builds your weekly plan around them.</p>
+        <div class="mt-5 flex flex-wrap gap-2" role="group" aria-labelledby="s2-h">
+          <button data-toggle class="is-active inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2.5 text-sm font-medium transition hover:border-ring/60 [&.is-active]:border-primary [&.is-active]:bg-accent [&.is-active]:text-accent-foreground"><i data-lucide="zap"></i>Tactics</button>
+          <button data-toggle class="inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2.5 text-sm font-medium transition hover:border-ring/60 [&.is-active]:border-primary [&.is-active]:bg-accent [&.is-active]:text-accent-foreground"><i data-lucide="book-open"></i>Openings</button>
+          <button data-toggle class="inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2.5 text-sm font-medium transition hover:border-ring/60 [&.is-active]:border-primary [&.is-active]:bg-accent [&.is-active]:text-accent-foreground"><i data-lucide="castle"></i>Endgames</button>
+          <button data-toggle class="is-active inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2.5 text-sm font-medium transition hover:border-ring/60 [&.is-active]:border-primary [&.is-active]:bg-accent [&.is-active]:text-accent-foreground"><i data-lucide="users"></i>Beat my friends</button>
+          <button data-toggle class="is-active inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2.5 text-sm font-medium transition hover:border-ring/60 [&.is-active]:border-primary [&.is-active]:bg-accent [&.is-active]:text-accent-foreground"><i data-lucide="shield-check"></i>Stop blundering</button>
+        </div>
+        <p class="mt-4 flex gap-2 rounded-xl bg-accent/60 p-3 text-xs text-muted-foreground"><i data-lucide="sparkles" class="mt-px size-3.5 text-primary"></i>Good picks. Most players improve fastest by blundering less, so that comes first.</p>
+        <div class="mt-7 flex items-center justify-between gap-3">
+          <button class="btn btn-ghost" data-tab="s1" data-group="ob"><i data-lucide="arrow-left"></i>Back</button>
+          <button class="btn btn-cta" data-tab="s3" data-group="ob">Continue<i data-lucide="arrow-right" class="size-[18px]"></i></button>
+        </div>
+      </section>
+
+      <!-- STEP 3 -->
+      <section data-panel="s3" data-group="ob" hidden aria-labelledby="s3-h" class="rise">
+        <p class="eyebrow">Step 3 of 4</p>
+        <h2 id="s3-h" class="mt-1 text-2xl font-bold">How much time a day?</h2>
+        <p class="mt-1 text-sm text-muted-foreground">Small and steady beats long and rare. You can change it any time.</p>
+        <div class="mt-5 grid grid-cols-3 gap-2" data-options role="radiogroup" aria-labelledby="s3-h">
+          <button class="option flex-col gap-0.5 p-4 text-center"><span class="font-display text-2xl font-bold">5</span><span class="help">min · a quick habit</span></button>
+          <button class="option is-active flex-col gap-0.5 p-4 text-center"><span class="font-display text-2xl font-bold">15</span><span class="help">min · recommended</span></button>
+          <button class="option flex-col gap-0.5 p-4 text-center"><span class="font-display text-2xl font-bold">30</span><span class="help">min · serious</span></button>
+        </div>
+        <div class="mt-6 grid items-center gap-5 sm:grid-cols-[minmax(0,1fr)_200px]">
+          <div>
+            <span class="field-label block" id="ob-board-l">Pick a board you like</span>
+            <div class="mt-2 flex flex-wrap gap-2.5" role="radiogroup" aria-labelledby="ob-board-l">
+              <button role="radio" data-board-name="" class="group flex flex-col items-center gap-1 text-[11px] font-medium"><span class="sw sw-green block size-11 rounded-lg ring-1 ring-border group-aria-checked:ring-[3px] group-aria-checked:ring-primary"></span>Green</button>
+              <button role="radio" data-board-name="walnut" class="group flex flex-col items-center gap-1 text-[11px] font-medium"><span data-board="walnut" class="sw block size-11 rounded-lg ring-1 ring-border group-aria-checked:ring-[3px] group-aria-checked:ring-primary"></span>Walnut</button>
+              <button role="radio" data-board-name="slate" class="group flex flex-col items-center gap-1 text-[11px] font-medium"><span data-board="slate" class="sw block size-11 rounded-lg ring-1 ring-border group-aria-checked:ring-[3px] group-aria-checked:ring-primary"></span>Slate</button>
+              <button role="radio" data-board-name="dusk" class="group flex flex-col items-center gap-1 text-[11px] font-medium"><span data-board="dusk" class="sw block size-11 rounded-lg ring-1 ring-border group-aria-checked:ring-[3px] group-aria-checked:ring-primary"></span>Dusk</button>
+              <button role="radio" data-board-name="sand" class="group flex flex-col items-center gap-1 text-[11px] font-medium"><span data-board="sand" class="sw block size-11 rounded-lg ring-1 ring-border group-aria-checked:ring-[3px] group-aria-checked:ring-primary"></span>Sand</button>
+            </div>
+            <p class="help mt-2">Pieces and more in Settings later.</p>
+          </div>
+          <div class="mx-auto w-full max-w-[200px] overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.45)] ring-1 ring-border"><div class="vb" data-fen="rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2" data-hl="g1,f3" aria-label="Board preview after 1.e4 e5 2.Nf3"></div></div>
+        </div>
+        <div class="mt-7 flex items-center justify-between gap-3">
+          <button class="btn btn-ghost" data-tab="s2" data-group="ob"><i data-lucide="arrow-left"></i>Back</button>
+          <button class="btn btn-cta" data-tab="s4" data-group="ob">Continue<i data-lucide="arrow-right" class="size-[18px]"></i></button>
+        </div>
+      </section>
+
+      <!-- STEP 4 -->
+      <section data-panel="s4" data-group="ob" hidden aria-labelledby="s4-h" class="rise">
+        <p class="eyebrow">Step 4 of 4 · optional</p>
+        <div class="mt-1 flex items-start gap-3">
+          <span class="sage-av size-11 rounded-2xl"><i data-lucide="brain" class="size-5"></i></span>
+          <div><h2 id="s4-h" class="text-2xl font-bold">Want Sage, your AI coach?</h2><p class="mt-1 text-sm text-muted-foreground">Sage explains your mistakes in plain words. It runs on your own key from Gemini, OpenAI or Anthropic.</p></div>
+        </div>
+
+        <a href="index.html" class="mt-5 flex items-center gap-3 rounded-2xl border-2 border-primary/30 bg-accent/60 p-4 transition hover:border-primary">
+          <span class="grid size-10 place-items-center rounded-xl bg-card text-primary ring-1 ring-border"><i data-lucide="skip-forward" class="size-5"></i></span>
+          <span class="flex-1"><span class="block text-base font-semibold">Skip — everything works without it</span><span class="help">Games, puzzles, lessons, Stockfish review. Add a key later in Settings.</span></span>
+          <i data-lucide="arrow-right" class="text-primary"></i>
+        </a>
+
+        <div class="my-5 flex items-center gap-3 text-xs text-muted-foreground"><span class="h-px flex-1 bg-border"></span>or add a key now<span class="h-px flex-1 bg-border"></span></div>
+
+        <div class="grid gap-3 sm:grid-cols-[160px_minmax(0,1fr)]">
+          <div class="space-y-1.5"><label for="ob-prov" class="field-label">Provider</label><select id="ob-prov" class="input"><option>Google Gemini</option><option>OpenAI</option><option>Anthropic</option></select></div>
+          <div class="space-y-1.5"><label for="ob-key" class="field-label">API key</label><input id="ob-key" type="password" class="input font-mono" placeholder="Paste your key" autocomplete="off" spellcheck="false"></div>
+        </div>
+        <p class="mt-2 flex gap-2 text-xs text-muted-foreground"><i data-lucide="lock" class="mt-px size-3.5 text-primary"></i>Encrypted in this browser and sent only to your provider. Gemini has a free tier.</p>
+
+        <div class="mt-7 flex flex-wrap items-center justify-between gap-3">
+          <button class="btn btn-ghost" data-tab="s3" data-group="ob"><i data-lucide="arrow-left"></i>Back</button>
+          <a href="index.html" class="btn btn-cta"><i data-lucide="play" class="size-[18px]"></i>Start playing</a>
+        </div>
+      </section>
+    </div>
+
+    <p class="mt-6 text-center text-xs text-muted-foreground">No account. No tracking. Your data stays in this browser.</p>
+  </div>
+</main>
+
+<script>
+  (function () {
+    const root = document.documentElement;
+    // stepper reflects the current step, whichever button moved it
+    const steps = [...document.querySelectorAll('#stepper [data-step]')];
+    document.addEventListener('click', e => {
+      const t = e.target.closest('[data-tab][data-group="ob"]'); if (!t) return;
+      const n = +t.dataset.tab.slice(1);
+      steps.forEach(s => {
+        const i = +s.dataset.step, bar = s.children[0], lbl = s.children[1];
+        s.classList.toggle('is-active', i === n);
+        s.setAttribute('aria-current', i === n ? 'step' : 'false');
+        bar.className = 'block h-1.5 rounded-full ' + (i <= n ? 'bg-primary' : 'bg-muted');
+        lbl.className = 'mt-2 block text-xs font-medium ' + (i <= n ? '' : 'text-muted-foreground');
+      });
+    });
+    // board swatches switch live
+    const sw = [...document.querySelectorAll('[data-board-name]')];
+    const mark = () => { const c = root.dataset.board || ''; sw.forEach(b => b.setAttribute('aria-checked', String(b.dataset.boardName === c))); };
+    sw.forEach(b => b.addEventListener('click', () => {
+      const n = b.dataset.boardName;
+      try { n ? localStorage.setItem('ck-board', n) : localStorage.removeItem('ck-board'); } catch {}
+      n ? (root.dataset.board = n) : root.removeAttribute('data-board');
+      mark();
+    }));
+    mark();
+  })();
+</script>
+</body>
+</html>

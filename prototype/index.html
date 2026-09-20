@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Today · Chess King</title>
+<script src="assets/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="assets/board.js" defer></script>
+<script src="assets/shell.js" defer></script>
+</head>
+<body data-nav="home"
+      data-chat-context="your last 9 games · today's path"
+      data-chat-attach="Today's plan"
+      data-chat-quick="What should I work on?|Plan my week|Explain simply">
+
+<template id="chat-seed">
+  <div data-divider>Today, 7:42 PM</div>
+  <div data-sage data-time="7:42 PM">Evening! You're one step from finishing today. Want to look at the position you're about to review first?</div>
+  <div data-me data-time="7:43 PM">Yes. Why do I keep losing to knight tricks?</div>
+  <div data-sage data-time="7:43 PM" data-replies="Yes, 8 fork puzzles|Why after castling?" data-cta="0">
+    <div class="bubble">It's one pattern: after you castle, your <b>queen often sits a knight-jump away from your king</b>. Here's the game from Tuesday:</div>
+    <div class="chat-card">
+      <div class="vb" data-fen="r4rk1/pp3ppp/2p5/6n1/3P4/2P5/PP3P1P/R3Q1K1 b - - 0 17" data-arrows="g5f3,f3g1:alt,f3e1:alt"></div>
+      <div class="flex items-center justify-between gap-2 px-3 py-2 text-xs"><span><span class="san">…Nf3+</span> forks king &amp; queen</span><a href="analysis.html" class="font-medium text-primary hover:underline">Open board</a></div>
+    </div>
+    <div class="bubble">A quick check before every move: <b>"Can any knight hit two things?"</b> Want to practise it?</div>
+  </div>
+  <div data-me data-time="7:44 PM">Is the Italian still a good opening for me?</div>
+  <div data-sage data-time="7:44 PM">Yes. You play it <b>6% more accurately</b> than anything else. One idea to add: <span class="san">a4</span> when Black plays …a6.</div>
+</template>
+
+<main>
+    <div class="mx-auto max-w-[1060px] p-6 lg:p-8">
+      <header class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p class="label">Saturday, 19 September</p>
+          <h1 class="mt-1 font-display text-[34px] font-bold tracking-tight">Good evening, Shudipto</h1>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="btn btn-outline h-10 rounded-full font-normal text-muted-foreground" data-toast="Search opens here (⌘K)" data-toast-icon="search"><i data-lucide="search"></i>Search<span class="ml-4 font-mono text-[10px]">⌘K</span></button>
+          <button class="btn btn-outline btn-icon size-10 rounded-full" aria-label="Toggle dark mode" data-action="theme"><i data-lucide="moon"></i></button>
+        </div>
+      </header>
+
+      <div class="mt-7 grid gap-6 min-[1500px]:grid-cols-[minmax(0,1fr)_290px]">
+        <!-- Today's path -->
+        <section aria-labelledby="path-h">
+          <div class="flex items-center justify-between">
+            <h2 id="path-h" class="font-display text-xl font-bold">Today's path</h2>
+            <div class="flex items-center gap-2 text-sm text-muted-foreground"><span class="font-medium text-foreground">2 of 3</span> done · about 4 min left</div>
+          </div>
+          <ol class="relative mt-4 space-y-3 before:absolute before:bottom-6 before:left-[19px] before:top-6 before:w-0.5 before:rounded before:bg-[repeating-linear-gradient(to_bottom,var(--border)_0_6px,transparent_6px_12px)]">
+            <li class="relative flex items-center gap-4 pl-0">
+              <span class="z-10 grid size-10 place-items-center rounded-full bg-primary text-primary-foreground"><i data-lucide="check"></i></span>
+              <div class="card flex flex-1 items-center gap-3 px-4 py-3 opacity-80"><div class="flex-1"><div class="text-sm font-medium">Daily puzzle</div><div class="text-xs text-muted-foreground">Back-rank mate · solved in 8s</div></div><span class="badge text-muted-foreground">+6</span></div>
+            </li>
+            <li class="relative flex items-center gap-4">
+              <span class="z-10 grid size-10 place-items-center rounded-full bg-primary text-primary-foreground"><i data-lucide="check"></i></span>
+              <div class="card flex flex-1 items-center gap-3 px-4 py-3 opacity-80"><div class="flex-1"><div class="text-sm font-medium">Lesson · Double attacks II</div><div class="text-xs text-muted-foreground">6 min · 7 of 7 steps</div></div><span class="badge text-muted-foreground">Done</span></div>
+            </li>
+            <li class="relative flex items-start gap-4">
+              <span class="z-10 mt-5 grid size-10 place-items-center rounded-full border-[2.5px] border-cta bg-card font-display font-bold text-cta shadow-[0_0_0_6px_rgba(224,103,60,.12)]">3</span>
+              <div class="@container card min-w-0 flex-1 overflow-hidden border-cta/30">
+                <div class="grid gap-6 p-6 @[540px]:grid-cols-[minmax(0,1fr)_200px]">
+                  <div>
+                    <span class="badge border-transparent bg-reward-soft text-[#8a6310]"><i data-lucide="sparkles" class="size-3.5"></i>Last step today</span>
+                    <h3 class="mt-3 font-display text-[30px] font-bold leading-[1.05] tracking-tight">Give five mistakes a second chance</h3>
+                    <p class="mt-2 text-sm text-muted-foreground">From this week's games. Recall them now and they come back in 3 days, then 7, until they're yours.</p>
+                    <div class="mt-5 flex flex-wrap items-center gap-3">
+                      <a href="mistakes.html" class="btn btn-cta"><i data-lucide="play" class="size-[18px]"></i>Start · 4 min</a>
+                      <button class="btn btn-ghost h-11 text-muted-foreground" data-toast="Moved to tomorrow. Your streak is safe.">Skip for today</button>
+                    </div>
+                    <div class="mt-5 flex items-center gap-1.5" aria-label="5 positions">
+                      <span class="h-1.5 w-8 rounded-full bg-cta"></span><span class="h-1.5 w-8 rounded-full bg-muted"></span><span class="h-1.5 w-8 rounded-full bg-muted"></span><span class="h-1.5 w-8 rounded-full bg-muted"></span><span class="h-1.5 w-8 rounded-full bg-muted"></span>
+                    </div>
+                  </div>
+                  <figure class="max-w-[260px]">
+                    <div class="overflow-hidden rounded-xl ring-1 ring-border"><div class="vb" data-fen="r4rk1/pp3ppp/2p5/6n1/3P4/2P5/PP3P1P/R3Q1K1 b - - 0 17" data-hl="g5"></div></div>
+                    <figcaption class="mt-2 text-xs text-muted-foreground"><b class="font-medium text-foreground">Black to play.</b> What did the knight see?</figcaption>
+                  </figure>
+                </div>
+              </div>
+            </li>
+            <li class="relative flex items-center gap-4">
+              <span class="z-10 grid size-10 place-items-center rounded-full border bg-card text-muted-foreground"><i data-lucide="plus"></i></span>
+              <div class="flex flex-1 items-center justify-between rounded-xl border border-dashed px-4 py-3 text-sm text-muted-foreground"><span>Got more time? <span class="text-foreground">8 fork puzzles</span> or a <span class="text-foreground">game vs Stockfish 1200</span></span><a href="puzzles.html" class="btn btn-ghost h-8 px-3 text-xs">Add</a></div>
+            </li>
+          </ol>
+        </section>
+
+        <!-- right column -->
+        <div class="grid gap-4 sm:grid-cols-2 min-[1500px]:grid-cols-1 content-start">
+          <div class="card p-5">
+            <div class="flex items-center justify-between"><span class="label">This week</span><span class="text-xs text-muted-foreground">Goal 5 of 7 days</span></div>
+            <div class="mt-3 grid grid-cols-7 gap-1.5 text-center text-[11px] text-muted-foreground">
+              <div><div class="mx-auto grid size-8 place-items-center rounded-full bg-reward text-[#5a3f00]"><i data-lucide="flame" class="size-3.5"></i></div>M</div>
+              <div><div class="mx-auto grid size-8 place-items-center rounded-full bg-reward text-[#5a3f00]"><i data-lucide="flame" class="size-3.5"></i></div>T</div>
+              <div><div class="mx-auto grid size-8 place-items-center rounded-full bg-sky text-[#2d5a78]"><i data-lucide="snowflake" class="size-3.5"></i></div>W</div>
+              <div><div class="mx-auto grid size-8 place-items-center rounded-full bg-reward text-[#5a3f00]"><i data-lucide="flame" class="size-3.5"></i></div>T</div>
+              <div><div class="mx-auto grid size-8 place-items-center rounded-full bg-reward text-[#5a3f00]"><i data-lucide="flame" class="size-3.5"></i></div>F</div>
+              <div><div class="mx-auto grid size-8 place-items-center rounded-full border-2 border-dashed border-reward text-[10px] font-semibold text-[#8a6310]">2/3</div>S</div>
+              <div><div class="mx-auto size-8 rounded-full bg-muted"></div>S</div>
+            </div>
+          </div>
+          <div class="card p-5">
+            <div class="flex items-center justify-between"><span class="label">Puzzle rating</span><span class="badge border-transparent bg-accent text-accent-foreground">+64</span></div>
+            <div class="mt-1 font-display text-4xl font-bold tabular-nums">1482</div>
+            <svg class="mt-2 h-14 w-full" viewBox="0 0 240 56" preserveAspectRatio="none" aria-label="Rating trend up"><path d="M0,46 C30,44 40,50 70,38 S110,40 130,30 S175,30 195,20 S225,12 240,8" fill="none" stroke="#5f8b6c" stroke-width="2.5" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>
+            <p class="text-xs text-muted-foreground">Better than you were 30 days ago at <span class="text-foreground">forks</span> and <span class="text-foreground">pins</span>.</p>
+          </div>
+          <a href="live.html" class="card block bg-lilac/60 p-5 transition hover:-translate-y-0.5">
+            <div class="flex items-center gap-3"><span class="grid size-9 place-items-center rounded-full bg-[#e9a15a] text-xs font-bold text-[#3b1d00]">RA</span><div class="flex-1"><div class="text-sm font-medium">Rafi played …Qb6</div><div class="text-xs text-muted-foreground">Najdorf · your move · no clock</div></div><i data-lucide="chevron-right" class="text-muted-foreground"></i></div>
+          </a>
+          <a href="lesson.html" class="card block bg-accent/60 p-5 transition hover:-translate-y-0.5">
+            <div class="label">Up next in your course</div>
+            <div class="mt-1 font-display text-lg font-bold">The royal fork</div>
+            <div class="mt-3 flex items-center gap-3"><div class="h-2 flex-1 overflow-hidden rounded-full bg-card"><div class="h-full w-[38%] rounded-full bg-primary"></div></div><span class="text-xs font-medium">38%</span></div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Sage's insights + weekly plan (moved out of the chat panel) -->
+      <section class="mt-8" aria-labelledby="ins-h">
+        <div class="flex items-center justify-between">
+          <h2 id="ins-h" class="flex items-center gap-2 font-display text-xl font-bold"><span class="grid size-7 place-items-center rounded-lg bg-primary text-reward"><i data-lucide="brain" class="size-3.5"></i></span>Sage noticed this week</h2>
+          <span class="text-xs text-muted-foreground">From your last 9 games · updated 2h ago</span>
+        </div>
+        <div class="mt-4 grid gap-4 md:grid-cols-3">
+          <article class="card flex flex-col border-cta/25 bg-[#fdf0ea] p-5">
+            <div class="flex items-center gap-2 text-xs font-semibold text-cta"><i data-lucide="alert-triangle" class="size-3.5"></i>Pattern</div>
+            <h3 class="mt-1.5 font-display text-lg font-bold leading-snug">Knight forks started 4 of your 5 losses</h3>
+            <p class="mt-1 text-sm text-muted-foreground">Usually 2–4 moves after castling, with your queen a knight-jump from your king.</p>
+            <div class="mt-auto flex flex-wrap gap-2 pt-4"><a href="puzzle.html" class="btn h-8 bg-cta px-3 text-xs text-white"><i data-lucide="target" class="size-3.5"></i>8 fork puzzles</a><button class="btn btn-outline h-8 px-3 text-xs" data-ask="Why do knight forks keep happening after I castle?"><i data-lucide="message-circle" class="size-3.5"></i>Ask Sage</button></div>
+          </article>
+          <article class="card flex flex-col bg-accent/50 p-5">
+            <div class="flex items-center gap-2 text-xs font-semibold text-primary"><i data-lucide="trending-up" class="size-3.5"></i>Strength</div>
+            <h3 class="mt-1.5 font-display text-lg font-bold leading-snug">Your Italian Game is working</h3>
+            <p class="mt-1 text-sm text-muted-foreground">84.6% accuracy vs 78.2% elsewhere. Next idea: <span class="rounded bg-card px-1 font-mono text-xs text-foreground">a4</span> against …a6.</p>
+            <div class="mt-auto pt-4"><a href="openings.html" class="btn btn-outline h-8 px-3 text-xs"><i data-lucide="book-open" class="size-3.5"></i>Open repertoire</a></div>
+          </article>
+          <article class="card flex flex-col bg-sky/50 p-5">
+            <div class="flex items-center gap-2 text-xs font-semibold text-[#2d5a78]"><i data-lucide="clock" class="size-3.5"></i>Habit</div>
+            <h3 class="mt-1.5 font-display text-lg font-bold leading-snug">You learn best around 8pm</h3>
+            <p class="mt-1 text-sm text-muted-foreground">Puzzle success is 11% higher in evening sessions.</p>
+            <div class="mt-auto pt-4"><button class="btn btn-outline h-8 px-3 text-xs" data-toast="Reminder set for 8:00 PM" data-toast-icon="bell"><i data-lucide="bell" class="size-3.5"></i>Remind me at 8pm</button></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="card mt-6 p-5" aria-labelledby="plan-h">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div><h2 id="plan-h" class="font-display text-lg font-bold">This week's plan</h2><p class="text-sm text-muted-foreground">Built by Sage around your weak spots · 15 min a day</p></div>
+          <button class="btn btn-outline h-8 px-3 text-xs" data-ask="Can we adjust this week's plan? I want more endgames."><i data-lucide="pencil" class="size-3.5"></i>Adjust</button>
+        </div>
+        <div class="mt-4 grid grid-cols-7 gap-2 text-xs max-md:grid-cols-4">
+          <div class="rounded-lg bg-muted/60 p-2.5 opacity-60"><div class="font-semibold">Mon</div><div class="mt-1 text-muted-foreground">Forks I</div></div>
+          <div class="rounded-lg bg-muted/60 p-2.5 opacity-60"><div class="font-semibold">Tue</div><div class="mt-1 text-muted-foreground">Sparring 1200</div></div>
+          <div class="rounded-lg bg-muted/60 p-2.5 opacity-60"><div class="font-semibold">Wed</div><div class="mt-1 text-muted-foreground">Rest (freeze)</div></div>
+          <div class="rounded-lg bg-muted/60 p-2.5 opacity-60"><div class="font-semibold">Thu</div><div class="mt-1 text-muted-foreground">Caro-Kann drill</div></div>
+          <div class="rounded-lg bg-muted/60 p-2.5 opacity-60"><div class="font-semibold">Fri</div><div class="mt-1 text-muted-foreground">Forks II</div></div>
+          <div class="rounded-lg border-2 border-cta/40 bg-card p-2.5"><div class="font-semibold text-cta">Sat · today</div><div class="mt-1">Mistake review</div></div>
+          <div class="rounded-lg border border-dashed p-2.5"><div class="font-semibold">Sun</div><div class="mt-1 text-muted-foreground">Endgame: K+R vs K</div></div>
+        </div>
+      </section>
+    </div>
+</main>
+</body>
+</html>

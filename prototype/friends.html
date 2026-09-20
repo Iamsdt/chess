@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Friends · Chess King</title>
+<script src="assets/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="assets/board.js" defer></script>
+<script src="assets/shell.js" defer></script>
+</head>
+<body data-nav="friends"
+      data-chat-context="your games with friends · 1 open invite · 1 correspondence game"
+      data-chat-quick="How do links work?|Help me prep for Rafi|Is the relay private?">
+
+<template id="chat-seed">
+  <div data-divider>Yesterday, 9:12 PM</div>
+  <div data-me data-time="9:12 PM">Rafi keeps beating me with the Najdorf. Any tips before our next game?</div>
+  <div data-sage data-time="9:13 PM">
+    <div class="bubble">You've played him 6 times. In 4 of them he got <b>…b5 in early</b> and your bishop on c4 got kicked around.</div>
+    <div class="bubble">Against the Najdorf, try <span class="san">Bg5</span> lines instead of <span class="san">Bc4</span>. You like sharp play, and it keeps your bishop out of his pawns' way.</div>
+  </div>
+  <div data-sage data-time="9:14 PM" data-replies="Drill the Bg5 lines|Not now" data-cta="0">One note: I stay paused while you two play. After the game, you both get it in Review, and I'm all yours.</div>
+</template>
+
+<main>
+  <div class="page">
+    <header>
+      <p class="label">No accounts. Just links.</p>
+      <h1 class="page-title mt-1">Friends</h1>
+    </header>
+
+    <!-- hero -->
+    <section class="card mt-6 overflow-hidden" aria-labelledby="invite-h">
+      <div class="grid gap-6 p-6 md:grid-cols-[minmax(0,1fr)_220px] md:p-8">
+        <div>
+          <span class="badge border-transparent bg-lilac text-lilac-ink"><i data-lucide="link" class="size-3.5"></i>Play anyone, anywhere</span>
+          <h2 id="invite-h" class="mt-3 text-[30px] font-bold leading-[1.05]">Send a link. Play a friend.</h2>
+          <p class="mt-2 max-w-[46ch] text-sm text-muted-foreground">They open it and you're playing. No sign-up for either of you, and it works across any network.</p>
+          <div class="mt-5 flex flex-wrap items-center gap-3">
+            <button class="btn btn-cta" data-open="invite"><i data-lucide="user-plus" class="size-[18px]"></i>Invite a friend</button>
+            <a href="#how" class="btn btn-ghost h-11 text-muted-foreground"><i data-lucide="help-circle"></i>How it works</a>
+          </div>
+        </div>
+        <div class="relative hidden h-[200px] self-center md:block" aria-hidden="true">
+          <div class="absolute right-2 top-0 w-36 rotate-6 overflow-hidden rounded-xl shadow-lg ring-1 ring-border"><div class="vb" data-fen="rnb1kb1r/1p3ppp/pq1ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8"></div></div>
+          <div class="absolute left-0 top-12 w-36 -rotate-3 overflow-hidden rounded-xl shadow-xl ring-1 ring-border"><div class="vb" data-fen="r4r1k/pp1b2pp/1qnp4/2p1p1N1/2Q1P3/2PP4/PP4PP/R1B1R2K w - - 0 18"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- active games -->
+    <section class="@container mt-8" aria-labelledby="active-h">
+      <div class="flex items-baseline justify-between"><h2 id="active-h" class="text-xl font-bold">Active games</h2><span class="text-xs text-muted-foreground">2 open</span></div>
+      <div class="mt-4 grid gap-3 @[760px]:grid-cols-2">
+        <a href="live.html" class="card card-hover flex items-center gap-4 border-cta/30 p-4">
+          <div class="w-20 shrink-0 overflow-hidden rounded-lg ring-1 ring-border"><div class="vb" data-fen="rnb1kb1r/1p3ppp/pq1ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8" data-hl="d8,b6"></div></div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2"><span class="avatar size-6 bg-[#e9a15a] text-[10px] text-[#3b1d00]">RA</span><span class="text-sm font-semibold">Your move vs Rafi</span><span class="badge badge-cta ml-auto">Your move</span></div>
+            <p class="mt-1 text-xs text-muted-foreground">Najdorf, Poisoned Pawn · he played <span class="san">…Qb6</span> 2h ago</p>
+            <p class="mt-1 flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">Correspondence · move 8 <span class="inline-flex items-center gap-1.5 text-success"><span class="size-1.5 rounded-full bg-success"></span>Rafi is online now</span></p>
+          </div>
+        </a>
+        <div class="card flex items-center gap-4 p-4">
+          <span class="grid size-20 shrink-0 place-items-center rounded-lg border border-dashed bg-muted/40 text-muted-foreground"><i data-lucide="hourglass" class="size-6"></i></span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2"><span class="text-sm font-semibold">Invite waiting</span><span class="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground"><span class="size-2 animate-pulse rounded-full bg-reward"></span>Waiting</span></div>
+            <p class="mt-1 truncate font-mono text-xs text-muted-foreground">chessking.app/play/k7x9q</p>
+            <p class="mt-1 text-xs text-muted-foreground">10 + 5 · you're White · sent 12 min ago</p>
+            <div class="mt-2 flex gap-1.5">
+              <button class="btn btn-outline btn-sm" data-toast="Link copied" data-toast-icon="copy"><i data-lucide="copy"></i>Copy</button>
+              <button class="btn btn-ghost btn-sm text-muted-foreground" data-toast="Invite cancelled" data-toast-icon="x">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- share links -->
+    <section class="@container mt-8" aria-labelledby="share-h">
+      <div class="flex items-baseline justify-between"><h2 id="share-h" class="text-xl font-bold">Share a link</h2><span class="text-xs text-muted-foreground">Everything lives inside the link</span></div>
+      <div class="mt-4 grid gap-3 @[640px]:grid-cols-3">
+        <article class="card flex flex-col p-5">
+          <span class="grid size-10 place-items-center rounded-xl bg-sky text-sky-ink"><i data-lucide="layout-grid"></i></span>
+          <h3 class="mt-3 text-base font-bold">A position</h3>
+          <p class="mt-1 text-sm text-muted-foreground">"What would you play here?" From any board, one tap.</p>
+          <div class="mt-auto pt-4"><button class="btn btn-outline btn-sm" data-toast="Position link copied" data-toast-icon="copy"><i data-lucide="copy"></i>Copy last position</button></div>
+        </article>
+        <article class="card flex flex-col bg-reward-soft/60 p-5">
+          <span class="grid size-10 place-items-center rounded-xl bg-reward text-[#5a3f00]"><i data-lucide="zap"></i></span>
+          <h3 class="mt-3 text-base font-bold">A challenge</h3>
+          <p class="mt-1 text-sm text-muted-foreground">"Beat my Puzzle Rush: 23." Or send a puzzle you solved.</p>
+          <div class="mt-auto flex flex-wrap gap-2 pt-4"><button class="btn btn-outline btn-sm" data-toast="Challenge link copied · Puzzle Rush 23" data-toast-icon="copy"><i data-lucide="copy"></i>Copy challenge</button><a href="share.html" class="btn btn-ghost btn-sm">Preview</a></div>
+        </article>
+        <article class="card flex flex-col p-5">
+          <span class="grid size-10 place-items-center rounded-xl bg-lilac text-lilac-ink"><i data-lucide="message-square-text"></i></span>
+          <h3 class="mt-3 text-base font-bold">An annotated game</h3>
+          <p class="mt-1 text-sm text-muted-foreground">Your game with your notes and Sage's, as a link anyone can step through.</p>
+          <div class="mt-auto flex flex-wrap gap-2 pt-4"><a href="games.html" class="btn btn-outline btn-sm"><i data-lucide="library"></i>Pick a game</a><a href="share.html" class="btn btn-ghost btn-sm">Preview</a></div>
+        </article>
+      </div>
+    </section>
+
+    <div class="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+      <!-- how correspondence works -->
+      <section id="how" class="card scroll-mt-6 bg-accent/50 p-6" aria-labelledby="how-h">
+        <h2 id="how-h" class="text-lg font-bold">Correspondence, by link</h2>
+        <p class="mt-1 text-sm text-muted-foreground">For friends who can't play at the same time.</p>
+        <ol class="mt-4 space-y-3 text-sm">
+          <li class="flex gap-3"><span class="grid size-7 shrink-0 place-items-center rounded-full bg-card font-display text-xs font-bold ring-1 ring-border">1</span><span>Make your move. Chess King turns the whole game into a link.</span></li>
+          <li class="flex gap-3"><span class="grid size-7 shrink-0 place-items-center rounded-full bg-card font-display text-xs font-bold ring-1 ring-border">2</span><span>Send it any way you like: WhatsApp, email, a text.</span></li>
+          <li class="flex gap-3"><span class="grid size-7 shrink-0 place-items-center rounded-full bg-card font-display text-xs font-bold ring-1 ring-border">3</span><span>Your friend opens it, plays a move and sends a new link back. Take a day if you like.</span></li>
+        </ol>
+        <p class="mt-4 flex gap-2 rounded-xl bg-card p-3 text-xs text-muted-foreground"><i data-lucide="shield-check" class="mt-px size-3.5 text-primary"></i>Live games go through a tiny relay that only passes moves along. Nothing is stored, and there's nobody to sign up with.</p>
+      </section>
+
+      <!-- recent friends -->
+      <section class="card p-6" aria-labelledby="rf-h">
+        <div class="flex items-center justify-between"><h2 id="rf-h" class="text-lg font-bold">Recent friends</h2><span class="help">Saved on this device</span></div>
+        <ul class="mt-3 divide-y text-sm">
+          <li class="flex items-center gap-3 py-2.5"><span class="avatar bg-[#e9a15a] text-[#3b1d00]">RA</span><span class="flex-1"><span class="block font-medium">Rafi</span><span class="text-xs text-muted-foreground">6 games · 2 wins, 1 draw, 3 losses</span></span><button class="btn btn-ghost btn-icon btn-sm" data-open="invite" aria-label="Invite Rafi"><i data-lucide="swords"></i></button></li>
+          <li class="flex items-center gap-3 py-2.5"><span class="avatar bg-sky text-sky-ink">MN</span><span class="flex-1"><span class="block font-medium">Mina</span><span class="text-xs text-muted-foreground">2 games · last played 3 weeks ago</span></span><button class="btn btn-ghost btn-icon btn-sm" data-open="invite" aria-label="Invite Mina"><i data-lucide="swords"></i></button></li>
+          <li class="flex items-center gap-3 py-2.5"><span class="avatar bg-lilac text-lilac-ink">TO</span><span class="flex-1"><span class="block font-medium">Tomás</span><span class="text-xs text-muted-foreground">Sent you a puzzle · 5 days ago</span></span><button class="btn btn-ghost btn-icon btn-sm" data-open="invite" aria-label="Invite Tomás"><i data-lucide="swords"></i></button></li>
+        </ul>
+        <p class="mt-3 text-xs text-muted-foreground">Just names you've played. No contacts, no profiles, no feed.</p>
+      </section>
+    </div>
+  </div>
+</main>
+
+<dialog class="modal w-[min(560px,calc(100vw-32px))]" id="invite" aria-labelledby="inv-h">
+  <div class="flex items-start justify-between border-b px-6 py-4">
+    <div><h2 id="inv-h" class="text-xl font-bold">Invite a friend</h2><p class="help">Send the link. The game starts when they open it.</p></div>
+    <button class="btn btn-ghost btn-icon btn-sm" data-close aria-label="Close"><i data-lucide="x"></i></button>
+  </div>
+  <div class="grid gap-5 p-6 sm:grid-cols-[minmax(0,1fr)_132px]">
+    <div class="space-y-4">
+      <div class="space-y-1.5">
+        <span class="field-label block" id="tc-l">Time control</span>
+        <div class="seg flex-wrap" role="group" aria-labelledby="tc-l"><button>5 + 3</button><button class="is-active">10 + 5</button><button>15 + 10</button><button>By link</button></div>
+      </div>
+      <div class="space-y-1.5">
+        <span class="field-label block" id="col-l">You play</span>
+        <div class="seg" role="group" aria-labelledby="col-l"><button class="is-active">White</button><button>Black</button><button>Random</button></div>
+      </div>
+      <div class="space-y-1.5">
+        <label for="link" class="field-label">Your link</label>
+        <div class="flex gap-2"><input id="link" class="input font-mono text-[13px]" value="chessking.app/play/k7x9q" readonly><button class="btn btn-default shrink-0" data-toast="Link copied. Send it to your friend." data-toast-icon="copy"><i data-lucide="copy"></i>Copy</button></div>
+      </div>
+    </div>
+    <figure class="text-center">
+      <svg viewBox="0 0 21 21" class="mx-auto size-[132px] rounded-lg bg-card p-1.5 ring-1 ring-border" shape-rendering="crispEdges" role="img" aria-label="QR code for the invite link">
+        <g fill="var(--foreground)">
+          <path d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2z" fill-rule="evenodd"/>
+          <path d="M14 0h7v7h-7zM15 1v5h5V1zM16 2h3v3h-3z" fill-rule="evenodd"/>
+          <path d="M0 14h7v7H0zM1 15v5h5v-5zM2 16h3v3H2z" fill-rule="evenodd"/>
+          <path d="M8 0h1v1H8zM10 0h2v1h-2zM9 2h1v2H9zM11 2h1v1h-1zM8 4h1v2H8zM10 5h2v1h-2zM12 4h1v1h-1zM8 8h2v1H8zM11 8h1v2h-1zM13 8h2v1h-2zM16 8h1v1h-1zM18 8h3v1h-3zM0 8h1v2H0zM2 8h3v1H2zM5 9h1v2H5zM1 10h2v1H1zM3 11h1v2H3zM0 12h2v1H0zM6 12h2v1H6zM8 10h1v3H8zM10 10h2v1h-2zM9 12h3v1H9zM13 10h1v2h-1zM15 9h1v3h-1zM17 10h2v1h-2zM20 10h1v2h-1zM12 12h1v1h-1zM16 12h3v1h-3zM8 14h1v2H8zM10 14h1v1h-1zM12 14h2v1h-2zM15 14h1v1h-1zM17 14h2v2h-2zM20 14h1v1h-1zM9 16h2v1H9zM12 16h1v2h-1zM14 16h2v1h-2zM8 18h2v1H8zM11 19h1v2h-1zM13 18h1v1h-1zM15 18h1v3h-1zM17 17h1v1h-1zM19 17h2v1h-2zM18 19h1v1h-1zM20 19h1v2h-1zM9 20h1v1H9zM13 20h1v1h-1zM17 20h1v1h-1z"/>
+        </g>
+      </svg>
+      <figcaption class="mt-1.5 text-xs text-muted-foreground">Scan to open on a phone</figcaption>
+    </figure>
+  </div>
+  <div class="mx-6 mb-6 flex gap-2 rounded-xl bg-accent/60 p-3 text-xs text-muted-foreground"><i data-lucide="radio-tower" class="mt-px size-3.5 text-primary"></i><span>Works on any network through a tiny relay. Only moves pass through, nothing is stored.</span></div>
+</dialog>
+</body>
+</html>

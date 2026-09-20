@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D1 · Grove Light — Chess King</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="board.js" defer></script>
+<style type="text/tailwindcss">
+/* shadcn/ui token contract — same names the React app will use */
+:root{
+  --background:#f6f2ea; --foreground:#1d2822;
+  --card:#fffdf8; --card-foreground:#1d2822;
+  --popover:#fffdf8; --popover-foreground:#1d2822;
+  --primary:#2f4a3a; --primary-foreground:#fbf7ee;
+  --secondary:#efe9dd; --secondary-foreground:#2f4a3a;
+  --muted:#efe9dd; --muted-foreground:#6e746b;
+  --accent:#e6eddf; --accent-foreground:#2f4a3a;
+  --destructive:#c2412d; --border:#e4dccd; --input:#e4dccd; --ring:#6c8c6f;
+  --cta:#d4643a; --cta-foreground:#fff; --reward:#f0c35f; --reward-soft:#fbf0d2; --sky:#dbe8ef; --coach:#2f4a3a;
+  --sidebar:#fbf8f1; --radius:0.9rem;
+  --vb-light:#f3ebd9; --vb-dark:#9db393; --vb-hl:rgba(240,195,95,.55); --vb-arrow:rgba(47,74,58,.85); --vb-arrow-alt:rgba(212,100,58,.9);
+}
+@theme inline{
+  --color-background:var(--background); --color-foreground:var(--foreground);
+  --color-card:var(--card); --color-card-foreground:var(--card-foreground);
+  --color-primary:var(--primary); --color-primary-foreground:var(--primary-foreground);
+  --color-secondary:var(--secondary); --color-secondary-foreground:var(--secondary-foreground);
+  --color-muted:var(--muted); --color-muted-foreground:var(--muted-foreground);
+  --color-accent:var(--accent); --color-accent-foreground:var(--accent-foreground);
+  --color-destructive:var(--destructive); --color-border:var(--border); --color-input:var(--input); --color-ring:var(--ring);
+  --color-cta:var(--cta); --color-cta-foreground:var(--cta-foreground); --color-reward:var(--reward); --color-reward-soft:var(--reward-soft); --color-sky:var(--sky); --color-sidebar:var(--sidebar);
+  --radius-sm:calc(var(--radius) - 6px); --radius-md:calc(var(--radius) - 3px); --radius-lg:var(--radius); --radius-xl:calc(var(--radius) + 6px);
+  --font-sans:'Inter',system-ui,sans-serif; --font-display:'Bricolage Grotesque',system-ui,sans-serif; --font-mono:'JetBrains Mono',monospace;
+}
+@layer base{
+  *{@apply border-border outline-ring/50}
+  body{@apply bg-background text-foreground font-sans antialiased}
+  [data-lucide]{@apply size-4 shrink-0}
+}
+@layer components{
+  .btn{@apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all h-9 px-4 cursor-pointer focus-visible:ring-[3px] focus-visible:ring-ring/50 outline-none disabled:opacity-50}
+  .btn-default{@apply bg-primary text-primary-foreground shadow-xs hover:bg-primary/90}
+  .btn-cta{@apply bg-cta text-cta-foreground shadow-sm hover:brightness-105 h-11 px-6 text-[15px] rounded-lg}
+  .btn-outline{@apply border bg-card shadow-xs hover:bg-accent hover:text-accent-foreground}
+  .btn-ghost{@apply hover:bg-accent hover:text-accent-foreground}
+  .btn-icon{@apply size-9 px-0}
+  .card{@apply bg-card text-card-foreground rounded-xl border shadow-xs}
+  .badge{@apply inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-medium whitespace-nowrap}
+  .nav-item{@apply flex items-center gap-3 rounded-md px-2.5 h-9 text-sm font-medium text-foreground/75 hover:bg-accent hover:text-accent-foreground transition-colors}
+  .nav-item[aria-current]{@apply bg-accent text-accent-foreground font-semibold}
+  .label{@apply text-xs font-medium text-muted-foreground}
+  .kbd{@apply inline-flex h-5 items-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground}
+}
+</style>
+</head>
+<body class="h-dvh overflow-hidden">
+<div class="grid h-dvh grid-cols-[240px_minmax(0,1fr)_360px] max-[1280px]:grid-cols-[240px_minmax(0,1fr)] max-[900px]:grid-cols-1">
+
+  <!-- Sidebar (shadcn sidebar pattern) -->
+  <aside class="flex min-h-0 flex-col border-r bg-sidebar max-[900px]:hidden">
+    <div class="flex items-center gap-2.5 p-4">
+      <div class="grid size-9 place-items-center rounded-lg bg-primary text-reward"><i data-lucide="crown" class="size-5"></i></div>
+      <div class="leading-tight"><div class="font-display text-[17px] font-bold tracking-tight">Chess King</div><div class="text-xs text-muted-foreground">Train daily, calmly</div></div>
+    </div>
+    <div class="px-3"><button class="btn btn-outline w-full justify-start text-muted-foreground font-normal"><i data-lucide="search"></i>Search…<span class="kbd ml-auto">⌘K</span></button></div>
+    <nav class="flex-1 overflow-auto px-3 py-4 space-y-5" aria-label="Main">
+      <div class="space-y-0.5">
+        <a class="nav-item" aria-current="page" href="#"><i data-lucide="sun"></i>Today</a>
+        <a class="nav-item" href="#"><i data-lucide="swords"></i>Play</a>
+        <a class="nav-item" href="#"><i data-lucide="puzzle"></i>Puzzles</a>
+        <a class="nav-item" href="#"><i data-lucide="sprout"></i>Learn</a>
+        <a class="nav-item" href="#"><i data-lucide="rotate-ccw"></i>Mistake bank<span class="ml-auto rounded-full bg-cta px-1.5 text-[11px] font-semibold text-white">7</span></a>
+      </div>
+      <div class="space-y-0.5">
+        <div class="px-2.5 pb-1 label">Study</div>
+        <a class="nav-item" href="#"><i data-lucide="library"></i>My games</a>
+        <a class="nav-item" href="#"><i data-lucide="microscope"></i>Analysis</a>
+        <a class="nav-item" href="#"><i data-lucide="book-open"></i>Openings</a>
+      </div>
+      <div class="space-y-0.5">
+        <div class="px-2.5 pb-1 label">You</div>
+        <a class="nav-item" href="#"><i data-lucide="users"></i>Friends<span class="ml-auto size-2 rounded-full bg-cta"></span></a>
+        <a class="nav-item" href="#"><i data-lucide="leaf"></i>Growth</a>
+      </div>
+    </nav>
+    <div class="space-y-3 p-3">
+      <div class="card p-3.5 bg-reward-soft border-reward/40">
+        <div class="flex items-center gap-2 text-sm font-semibold"><i data-lucide="flame" class="text-[#b07d10]"></i>12-day streak</div>
+        <div class="mt-2.5 grid grid-cols-7 gap-1">
+          <span class="h-1.5 rounded-full bg-reward"></span><span class="h-1.5 rounded-full bg-reward"></span><span class="h-1.5 rounded-full bg-sky"></span><span class="h-1.5 rounded-full bg-reward"></span><span class="h-1.5 rounded-full bg-reward"></span><span class="h-1.5 rounded-full bg-reward/40"></span><span class="h-1.5 rounded-full bg-black/10"></span>
+        </div>
+        <p class="mt-2 text-xs text-muted-foreground">1 freeze saved · a missed day won't break it</p>
+      </div>
+      <div class="flex items-center gap-2.5 rounded-md p-1.5 hover:bg-accent">
+        <div class="grid size-8 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">SK</div>
+        <div class="min-w-0 flex-1 leading-tight"><div class="truncate text-sm font-medium">Shudipto</div><div class="text-xs text-muted-foreground">Local profile · no account</div></div>
+        <i data-lucide="chevrons-up-down" class="text-muted-foreground"></i>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="min-h-0 overflow-auto">
+    <header class="sticky top-0 z-10 flex h-14 items-center gap-3 border-b bg-background/80 px-6 backdrop-blur">
+      <i data-lucide="panel-left" class="text-muted-foreground"></i>
+      <div class="h-4 w-px bg-border"></div>
+      <nav class="text-sm text-muted-foreground">Home <span class="mx-1.5">/</span><span class="text-foreground font-medium">Today</span></nav>
+      <div class="ml-auto flex items-center gap-2">
+        <div class="inline-flex rounded-md border bg-card p-0.5 text-xs font-medium" role="group" aria-label="Time today">
+          <button class="rounded px-2.5 py-1 text-muted-foreground hover:text-foreground">5 min</button>
+          <button class="rounded bg-primary px-2.5 py-1 text-primary-foreground">15 min</button>
+          <button class="rounded px-2.5 py-1 text-muted-foreground hover:text-foreground">30 min</button>
+        </div>
+        <button class="btn btn-ghost btn-icon" aria-label="Toggle theme"><i data-lucide="moon"></i></button>
+      </div>
+    </header>
+
+    <div class="mx-auto max-w-[1100px] space-y-6 p-6 lg:p-8">
+      <div>
+        <h1 class="font-display text-3xl font-bold tracking-tight">Good evening, Shudipto</h1>
+        <p class="mt-1 text-muted-foreground">Fifteen calm minutes. Here's the plan that fits.</p>
+      </div>
+
+      <!-- Hero -->
+      <section class="card overflow-hidden">
+        <div class="grid gap-8 p-7 md:grid-cols-[minmax(0,1fr)_232px] items-center">
+          <div>
+            <span class="badge border-transparent bg-accent text-accent-foreground"><i data-lucide="sparkles" class="size-3.5"></i>Step 3 of 3 · almost done</span>
+            <h2 class="mt-4 font-display text-[36px] font-bold leading-[1.04] tracking-tight">Five mistakes want<br>a <span class="text-cta">second chance.</span></h2>
+            <p class="mt-3 max-w-[46ch] text-[15px] text-muted-foreground">They're from this week's games. Solve them while they're fresh, and they quietly stop happening at the board.</p>
+            <div class="mt-6 flex flex-wrap items-center gap-3">
+              <button class="btn btn-cta"><i data-lucide="play" class="size-[18px]"></i>Start review · 4 min</button>
+              <button class="btn btn-ghost h-11 text-muted-foreground">Play a game instead</button>
+            </div>
+            <!-- stepper -->
+            <ol class="mt-7 flex flex-wrap items-center gap-2 whitespace-nowrap text-[13px]" aria-label="Today's plan">
+              <li class="flex items-center gap-2 text-sm"><span class="grid size-6 place-items-center rounded-full bg-primary text-primary-foreground"><i data-lucide="check" class="size-3.5"></i></span><span class="text-muted-foreground line-through decoration-border">Daily puzzle</span></li>
+              <li class="h-px w-6 bg-border"></li>
+              <li class="flex items-center gap-2 text-sm"><span class="grid size-6 place-items-center rounded-full bg-primary text-primary-foreground"><i data-lucide="check" class="size-3.5"></i></span><span class="text-muted-foreground line-through decoration-border">Forks lesson</span></li>
+              <li class="h-px w-6 bg-border"></li>
+              <li class="flex items-center gap-2 text-sm font-medium"><span class="grid size-6 place-items-center rounded-full border-2 border-cta text-[11px] font-semibold text-cta">3</span>Mistake review</li>
+            </ol>
+          </div>
+          <figure class="relative">
+            <div class="overflow-hidden rounded-lg border shadow-sm"><div class="vb" data-id="h" data-set="california" data-coords data-fen="r4rk1/pp3ppp/2p5/6n1/3P4/2P5/PP3P1P/R3Q1K1 b - - 0 17" data-hl="g5"></div></div>
+            <figcaption class="mt-2.5 flex items-center justify-between gap-2 text-xs text-muted-foreground"><span><b class="font-medium text-foreground">Black to play</b> · what did the knight see?</span><span class="font-mono whitespace-nowrap">1 / 5</span></figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <!-- KPI cards -->
+      <section class="grid grid-cols-2 gap-4 min-[1400px]:grid-cols-4" aria-label="Your numbers">
+        <div class="card p-5">
+          <div class="flex items-center justify-between label"><span>Daily goal</span><i data-lucide="target"></i></div>
+          <div class="mt-2 flex items-baseline gap-2"><span class="font-display text-3xl font-bold tabular-nums">2/3</span><span class="text-xs text-muted-foreground">one more and today counts</span></div>
+          <div class="mt-3 grid grid-cols-3 gap-1"><span class="h-1.5 rounded-full bg-cta"></span><span class="h-1.5 rounded-full bg-cta"></span><span class="h-1.5 rounded-full bg-muted"></span></div>
+        </div>
+        <div class="card p-5">
+          <div class="flex items-center justify-between label"><span>Puzzle rating</span><i data-lucide="trending-up"></i></div>
+          <div class="mt-2 font-display text-3xl font-bold tabular-nums">1482</div>
+          <div class="mt-1 text-xs"><span class="font-medium text-[#3f7a4a]">+64</span> <span class="text-muted-foreground">in 30 days</span></div>
+        </div>
+        <div class="card p-5">
+          <div class="flex items-center justify-between label"><span>Sparring</span><i data-lucide="swords"></i></div>
+          <div class="mt-2 font-display text-3xl font-bold tabular-nums">1180</div>
+          <div class="mt-1 text-xs text-muted-foreground">Next: <span class="font-medium text-foreground">Stockfish 1200</span></div>
+        </div>
+        <div class="card p-5">
+          <div class="flex items-center justify-between label"><span>Last accuracy</span><i data-lucide="gauge"></i></div>
+          <div class="mt-2 font-display text-3xl font-bold tabular-nums">84%</div>
+          <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-muted"><div class="h-full w-[84%] rounded-full bg-primary"></div></div>
+        </div>
+      </section>
+
+      <section class="grid gap-4 lg:grid-cols-5">
+        <a href="#" class="card group p-5 lg:col-span-3 bg-accent/60 transition hover:shadow-md">
+          <div class="flex items-start justify-between">
+            <div class="grid size-10 place-items-center rounded-lg bg-card text-primary border"><i data-lucide="sprout" class="size-5"></i></div>
+            <span class="badge bg-card">Unit 3 · Lesson 4 of 9</span>
+          </div>
+          <h3 class="mt-4 font-display text-xl font-bold">Continue: The royal fork</h3>
+          <p class="mt-1 text-sm text-muted-foreground">The exact trick behind four of your five losses this week. About 6 minutes.</p>
+          <div class="mt-4 flex items-center gap-3"><div class="h-2 flex-1 overflow-hidden rounded-full bg-card"><div class="h-full w-[38%] rounded-full bg-primary"></div></div><span class="text-xs font-medium">38%</span></div>
+        </a>
+        <a href="#" class="card group p-5 lg:col-span-2 bg-sky/60 transition hover:shadow-md">
+          <div class="flex items-start justify-between">
+            <div class="grid size-10 place-items-center rounded-lg bg-card text-[#2d5a78] border"><i data-lucide="send" class="size-5"></i></div>
+            <span class="badge border-transparent bg-cta text-white">Your move</span>
+          </div>
+          <h3 class="mt-4 font-display text-xl font-bold">Rafi is waiting</h3>
+          <p class="mt-1 text-sm text-muted-foreground">Sicilian Najdorf, move 14. Correspondence: no clock, no rush.</p>
+          <div class="mt-4 flex items-center gap-2 text-xs text-muted-foreground"><span class="grid size-6 place-items-center rounded-full bg-[#e9a15a] text-[10px] font-semibold text-[#3b1d00]">RA</span>Sent 2 hours ago</div>
+        </a>
+      </section>
+
+      <!-- Recent games table -->
+      <section class="card">
+        <div class="flex items-center justify-between p-5 pb-3">
+          <div><h3 class="font-semibold">Recent games</h3><p class="text-sm text-muted-foreground">Each one is analyzed; mistakes go to your bank.</p></div>
+          <button class="btn btn-outline h-8 px-3 text-xs">View all</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead><tr class="border-y bg-muted/40 text-left text-xs text-muted-foreground"><th class="px-5 py-2.5 font-medium">Result</th><th class="px-3 py-2.5 font-medium">Opponent</th><th class="px-3 py-2.5 font-medium">Opening</th><th class="px-3 py-2.5 font-medium">Accuracy</th><th class="px-3 py-2.5 font-medium">Mistakes</th><th class="px-5 py-2.5"></th></tr></thead>
+            <tbody class="divide-y">
+              <tr class="hover:bg-muted/40"><td class="px-5 py-3"><span class="badge border-transparent bg-accent text-accent-foreground">Won</span></td><td class="px-3 py-3 font-medium">Stockfish 1200</td><td class="px-3 py-3 text-muted-foreground">Italian Game</td><td class="px-3 py-3 font-mono text-xs">84%</td><td class="px-3 py-3"><span class="badge text-destructive border-destructive/30">1 blunder</span></td><td class="px-5 py-3 text-right"><button class="btn btn-ghost h-8 px-3 text-xs">Review<i data-lucide="chevron-right" class="size-3.5"></i></button></td></tr>
+              <tr class="hover:bg-muted/40"><td class="px-5 py-3"><span class="badge border-transparent bg-[#f6ddd3] text-[#a4452a]">Lost</span></td><td class="px-3 py-3 font-medium">Rafi</td><td class="px-3 py-3 text-muted-foreground">Sicilian Najdorf</td><td class="px-3 py-3 font-mono text-xs">71%</td><td class="px-3 py-3"><span class="badge text-destructive border-destructive/30">3 blunders</span></td><td class="px-5 py-3 text-right"><button class="btn btn-ghost h-8 px-3 text-xs">Review<i data-lucide="chevron-right" class="size-3.5"></i></button></td></tr>
+              <tr class="hover:bg-muted/40"><td class="px-5 py-3"><span class="badge">Draw</span></td><td class="px-3 py-3 font-medium">Stockfish 1400</td><td class="px-3 py-3 text-muted-foreground">Queen's Gambit</td><td class="px-3 py-3 font-mono text-xs">88%</td><td class="px-3 py-3"><span class="badge text-[#3f7a4a] border-[#3f7a4a]/30">Clean</span></td><td class="px-5 py-3 text-right"><button class="btn btn-ghost h-8 px-3 text-xs">Review<i data-lucide="chevron-right" class="size-3.5"></i></button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Coach panel -->
+  <aside class="flex min-h-0 flex-col border-l bg-card max-[1280px]:hidden" aria-label="AI coach Sage">
+    <div class="flex items-center gap-3 border-b p-4">
+      <div class="relative grid size-10 place-items-center rounded-xl bg-primary text-reward"><i data-lucide="brain" class="size-5"></i><span class="absolute -right-0.5 -bottom-0.5 size-3 rounded-full border-2 border-card bg-[#6fcf8e]"></span></div>
+      <div class="min-w-0 flex-1 leading-tight"><div class="font-display text-base font-bold">Sage</div><div class="text-xs text-muted-foreground">Your coach · Gemini 2.5 Flash · your key</div></div>
+      <button class="btn btn-ghost btn-icon" aria-label="New chat"><i data-lucide="square-pen"></i></button>
+      <button class="btn btn-ghost btn-icon" aria-label="Close coach"><i data-lucide="panel-right-close"></i></button>
+    </div>
+    <div class="flex gap-1 border-b px-4 pt-2 text-sm" role="tablist">
+      <button class="border-b-2 border-primary px-2 pb-2 font-medium" role="tab" aria-selected="true">Chat</button>
+      <button class="border-b-2 border-transparent px-2 pb-2 text-muted-foreground hover:text-foreground" role="tab">Insights<span class="ml-1.5 rounded bg-muted px-1 text-[10px]">3</span></button>
+      <button class="border-b-2 border-transparent px-2 pb-2 text-muted-foreground hover:text-foreground" role="tab">Plan</button>
+    </div>
+    <div class="flex-1 min-h-0 space-y-4 overflow-auto p-4" aria-live="polite">
+      <div class="flex items-center gap-2 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground"><i data-lucide="eye" class="size-3.5"></i>Sage can see: your last 9 games, today's plan</div>
+      <div class="space-y-3 rounded-xl rounded-tl-sm bg-accent/70 p-3.5 text-sm leading-relaxed">
+        <p>I looked through your week. Your openings are solid. The one thing tripping you up is <b class="text-primary">knight forks</b>: four of your five losses started with one.</p>
+        <div class="overflow-hidden rounded-lg border bg-card p-1.5"><div class="vb rounded" data-id="c" data-set="california" data-fen="r4rk1/pp3ppp/2p5/6n1/3P4/2P5/PP3P1P/R3Q1K1 b - - 0 17" data-arrows="g5f3,f3g1:alt,f3e1:alt"></div>
+          <p class="px-1.5 pt-2 pb-1 text-xs text-muted-foreground"><span class="rounded bg-muted px-1 font-mono text-foreground">…Nf3+</span> hits king and queen together</p></div>
+        <div class="flex flex-wrap gap-2"><button class="btn h-8 bg-cta px-3 text-xs text-white hover:brightness-105"><i data-lucide="target" class="size-3.5"></i>8 fork puzzles</button><button class="btn btn-outline h-8 px-3 text-xs">Why after castling?</button></div>
+      </div>
+      <div class="ml-auto w-fit max-w-[85%] rounded-xl rounded-tr-sm bg-primary px-3.5 py-2.5 text-sm text-primary-foreground">Is the Italian still right for me?</div>
+      <div class="rounded-xl rounded-tl-sm bg-accent/70 p-3.5 text-sm leading-relaxed">Yes. You play it <b class="text-primary">6% more accurately</b> than anything else. One idea to add: <span class="rounded bg-card px-1 font-mono text-xs">a4</span> when Black plays …a6.</div>
+    </div>
+    <div class="space-y-2.5 border-t p-4">
+      <div class="flex gap-1.5 overflow-x-auto [scrollbar-width:none]">
+        <button class="badge h-7 rounded-full bg-card px-3 hover:bg-accent">What should I work on?</button>
+        <button class="badge h-7 rounded-full bg-card px-3 hover:bg-accent">Plan my week</button>
+        <button class="badge h-7 rounded-full bg-card px-3 hover:bg-accent">Explain simply</button>
+      </div>
+      <div class="rounded-lg border bg-background shadow-xs focus-within:ring-[3px] focus-within:ring-ring/40">
+        <textarea rows="2" class="block w-full resize-none bg-transparent px-3 pt-2.5 text-sm outline-none placeholder:text-muted-foreground" placeholder="Ask Sage anything…"></textarea>
+        <div class="flex items-center gap-1 p-1.5">
+          <button class="btn btn-ghost h-7 px-2 text-xs text-primary"><i data-lucide="eye-off" class="size-3.5"></i>No spoilers</button>
+          <button class="btn btn-ghost h-7 px-2 text-xs text-muted-foreground"><i data-lucide="cpu" class="size-3.5"></i>Engine</button>
+          <button class="btn btn-default ml-auto size-8 px-0" aria-label="Send"><i data-lucide="arrow-up"></i></button>
+        </div>
+      </div>
+      <p class="text-center text-[11px] text-muted-foreground">1.2k tokens today · ≈ $0.0004 · key encrypted in this browser</p>
+    </div>
+  </aside>
+</div>
+<script>addEventListener('load',()=>lucide.createIcons())</script>
+</body>
+</html>

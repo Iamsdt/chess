@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Growth · Chess King</title>
+<script src="assets/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="assets/board.js" defer></script>
+<script src="assets/shell.js" defer></script>
+<style>
+  @keyframes sway { 0%,100% { transform: rotate(-1.5deg) } 50% { transform: rotate(1.5deg) } }
+  .sway { transform-origin: 180px 170px; animation: sway 6s ease-in-out infinite; }
+</style>
+</head>
+<body data-nav="progress"
+      data-chat-context="your last 30 days · ratings · skill map · practice log"
+      data-chat-attach="Weekly report"
+      data-chat-quick="Why is Endgames low?|What changed this month?|Plan next week">
+
+<template id="chat-seed">
+  <div data-divider>Weekly report · Sunday, 13 Sep</div>
+  <div data-sage data-time="9:00 AM">
+    <div class="bubble">Here's your week in plain words. <b>You practised 5 of 7 days</b> and used one freeze on Wednesday. That's a good rhythm.</div>
+    <div class="bubble">The big win: you hang fewer pieces. <b>1.4 blunders a game</b>, down from 2.3 a month ago. Your "can any knight hit two things?" check is working.</div>
+    <div class="bubble">The idea you keep missing is in <b>rook endgames</b>. You push pawns before your king is active. Three of your draws were wins.</div>
+  </div>
+  <div data-me data-time="9:04 AM">So what should I do this week?</div>
+  <div data-sage data-time="9:04 AM" data-replies="Start the endgame drill|Keep my plan as is" data-cta="0">Swap two puzzle days for the <b>Lucena and Philidor</b> drills. 10 minutes each. If you can build the bridge twice without help, we move on.</div>
+</template>
+
+<main>
+  <div class="page">
+    <header class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="label">Only you vs you. No leaderboards, ever.</p>
+        <h1 class="page-title mt-1">Growth</h1>
+      </div>
+      <div class="seg" role="group" aria-label="Time range">
+        <button class="is-active">30 days</button><button>90 days</button><button>All time</button>
+      </div>
+    </header>
+
+    <!-- garden hero -->
+    <section class="card mt-6 overflow-hidden" aria-labelledby="garden-h">
+      <div class="grid gap-0 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+        <div class="relative flex flex-col bg-accent/60 p-6">
+          <span class="badge badge-reward self-start"><i data-lucide="flame" class="size-3.5"></i>12-day streak</span>
+          <svg viewBox="70 14 220 186" class="mx-auto my-auto w-full max-w-[360px] pt-2" role="img" aria-label="Your chess garden: a sapling with a yellow bud, three days from blooming">
+            <circle cx="252" cy="50" r="22" fill="var(--reward)" opacity=".35"/>
+            <circle cx="252" cy="50" r="13" fill="var(--reward)" opacity=".7"/>
+            <ellipse cx="180" cy="182" rx="104" ry="13" fill="#a3b89b" opacity=".35"/>
+            <ellipse cx="180" cy="180" rx="62" ry="7" fill="#a3b89b" opacity=".45"/>
+            <!-- next stage ghost -->
+            <g opacity=".35" fill="none" stroke="var(--muted-foreground)" stroke-width="1.5" stroke-dasharray="3 4">
+              <circle cx="180" cy="44" r="16"/><circle cx="160" cy="58" r="10"/><circle cx="202" cy="56" r="11"/>
+            </g>
+            <g class="sway">
+              <path d="M180 176 C180 146 178 116 181 70" stroke="#5f8b6c" stroke-width="5" fill="none" stroke-linecap="round"/>
+              <path d="M180 140 C160 134 142 120 138 98 C160 98 176 114 180 140Z" fill="#8fb88f"/>
+              <path d="M181 118 C200 110 218 96 222 74 C198 74 184 92 181 118Z" fill="#6c9d73"/>
+              <path d="M180 158 C198 154 212 146 218 132 C200 130 186 140 180 158Z" fill="#8fb88f"/>
+              <path d="M181 96 C166 92 156 82 152 68 C168 68 178 78 181 96Z" fill="#6c9d73"/>
+              <circle cx="181" cy="66" r="9" fill="var(--reward)"/>
+              <circle cx="181" cy="66" r="4" fill="var(--cta)" opacity=".6"/>
+            </g>
+            <path d="M150 180 Q180 170 210 180" stroke="#5f8b6c" stroke-width="2" fill="none" opacity=".5"/>
+          </svg>
+          <p class="text-center text-xs text-muted-foreground">Dashed outline: what it becomes at Bloom</p>
+        </div>
+        <div class="flex flex-col p-6">
+          <p class="eyebrow">Your chess garden · Level 4</p>
+          <h2 id="garden-h" class="mt-1 text-[28px] font-bold leading-tight">Sapling, and nearly in bloom</h2>
+          <p class="mt-2 text-sm text-muted-foreground">It grows with steady practice, not with wins. Missed days don't kill it. A freeze keeps it watered.</p>
+          <ol class="mt-5 grid grid-cols-5 gap-1 text-center text-[11px] font-medium" aria-label="Garden stages">
+            <li><span class="mx-auto grid size-9 place-items-center rounded-full bg-primary text-primary-foreground"><i data-lucide="circle-dot" class="size-4"></i></span><span class="mt-1.5 block">Seed</span></li>
+            <li><span class="mx-auto grid size-9 place-items-center rounded-full bg-primary text-primary-foreground"><i data-lucide="sprout" class="size-4"></i></span><span class="mt-1.5 block">Sprout</span></li>
+            <li aria-current="step"><span class="mx-auto grid size-9 place-items-center rounded-full border-[2.5px] border-cta bg-card text-cta shadow-[0_0_0_5px_rgba(224,103,60,.12)]"><i data-lucide="leaf" class="size-4"></i></span><span class="mt-1.5 block text-cta">Sapling</span></li>
+            <li><span class="mx-auto grid size-9 place-items-center rounded-full border border-dashed bg-card text-muted-foreground"><i data-lucide="flower-2" class="size-4"></i></span><span class="mt-1.5 block text-muted-foreground">Bloom</span></li>
+            <li><span class="mx-auto grid size-9 place-items-center rounded-full border border-dashed bg-card text-muted-foreground"><i data-lucide="trees" class="size-4"></i></span><span class="mt-1.5 block text-muted-foreground">Tree</span></li>
+          </ol>
+          <div class="mt-6">
+            <div class="flex items-center justify-between text-sm"><span class="font-medium">To Bloom</span><span class="text-muted-foreground"><span class="font-semibold text-foreground">12 of 15</span> practice days</span></div>
+            <div class="progress mt-2 h-2.5"><span class="w-[80%] bg-cta"></span></div>
+            <p class="mt-2 text-xs text-muted-foreground">3 more days. 1 freeze saved in case life gets busy.</p>
+          </div>
+          <div class="mt-auto flex flex-wrap items-center gap-3 pt-6">
+            <a href="index.html" class="btn btn-cta"><i data-lucide="droplets" class="size-[18px]"></i>Water it today · 4 min</a>
+            <button class="btn btn-ghost h-11 text-muted-foreground" data-ask="How does the chess garden grow?"><i data-lucide="help-circle"></i>How it grows</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- you vs you -->
+    <section class="@container mt-8" aria-labelledby="vs-h">
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 id="vs-h" class="text-xl font-bold">You vs you, 30 days ago</h2>
+        <span class="text-xs text-muted-foreground">20 Aug → 19 Sep</span>
+      </div>
+      <div class="mt-4 grid grid-cols-2 gap-3 @[520px]:grid-cols-3 @[980px]:grid-cols-6">
+        <div class="card p-4"><div class="label">Puzzle rating</div><div class="mt-1 font-display text-2xl font-bold tabular-nums">1482</div><div class="mt-0.5 flex items-center gap-1 text-xs font-medium text-success"><i data-lucide="arrow-up-right" class="size-3.5"></i>+64 from 1418</div></div>
+        <div class="card p-4"><div class="label">Sparring rating</div><div class="mt-1 font-display text-2xl font-bold tabular-nums">1180</div><div class="mt-0.5 flex items-center gap-1 text-xs font-medium text-success"><i data-lucide="arrow-up-right" class="size-3.5"></i>+56 from 1124</div></div>
+        <div class="card p-4"><div class="label">Blunders / game</div><div class="mt-1 font-display text-2xl font-bold tabular-nums">1.4</div><div class="mt-0.5 flex items-center gap-1 text-xs font-medium text-success"><i data-lucide="arrow-down-right" class="size-3.5"></i>was 2.3</div></div>
+        <div class="card p-4"><div class="label">Game accuracy</div><div class="mt-1 font-display text-2xl font-bold tabular-nums">78.6%</div><div class="mt-0.5 flex items-center gap-1 text-xs font-medium text-success"><i data-lucide="arrow-up-right" class="size-3.5"></i>+4.1 pts</div></div>
+        <div class="card p-4"><div class="label">Mistakes cleared</div><div class="mt-1 font-display text-2xl font-bold tabular-nums">23</div><div class="mt-0.5 flex items-center gap-1 text-xs font-medium text-muted-foreground"><i data-lucide="rotate-ccw" class="size-3.5"></i>7 due this week</div></div>
+        <div class="card p-4"><div class="label">Time practised</div><div class="mt-1 font-display text-2xl font-bold tabular-nums">6h 10m</div><div class="mt-0.5 flex items-center gap-1 text-xs font-medium text-success"><i data-lucide="arrow-up-right" class="size-3.5"></i>+1h 20m</div></div>
+      </div>
+    </section>
+
+    <!-- charts -->
+    <section class="mt-6 grid gap-4 lg:grid-cols-2" aria-label="Rating charts">
+      <figure class="card p-5">
+        <figcaption class="flex items-center justify-between">
+          <div><h3 class="text-base font-bold">Puzzle rating</h3><p class="text-xs text-muted-foreground">Last 30 days · 412 puzzles</p></div>
+          <span class="badge badge-soft">+64</span>
+        </figcaption>
+        <svg viewBox="0 0 320 160" class="mt-3 w-full" role="img" aria-label="Puzzle rating rose from 1418 to 1482 over 30 days">
+          <g class="text-[10px]" fill="var(--muted-foreground)">
+            <line x1="40" x2="312" y1="20" y2="20" stroke="var(--border)"/><text x="32" y="23" text-anchor="end">1500</text>
+            <line x1="40" x2="312" y1="75" y2="75" stroke="var(--border)"/><text x="32" y="78" text-anchor="end">1450</text>
+            <line x1="40" x2="312" y1="130" y2="130" stroke="var(--border)"/><text x="32" y="133" text-anchor="end">1400</text>
+            <text x="40" y="150">20 Aug</text><text x="175" y="150" text-anchor="middle">4 Sep</text><text x="310" y="150" text-anchor="end">Today</text>
+          </g>
+          <path d="M40,110.2 L70,102.5 L100,116.8 L130,90.4 L160,84.9 L190,93.7 L220,72.8 L250,64 L280,51.9 L310,39.8 L310,130 L40,130Z" fill="var(--q-best)" opacity=".12"/>
+          <polyline points="40,110.2 70,102.5 100,116.8 130,90.4 160,84.9 190,93.7 220,72.8 250,64 280,51.9 310,39.8" fill="none" stroke="var(--q-best)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="40" cy="110.2" r="3.5" fill="var(--card)" stroke="var(--muted-foreground)" stroke-width="1.5"/>
+          <circle cx="310" cy="39.8" r="4.5" fill="var(--q-best)" stroke="var(--card)" stroke-width="2"/>
+          <text x="302" y="30" text-anchor="end" class="text-[11px] font-semibold" fill="var(--foreground)">1482</text>
+        </svg>
+      </figure>
+      <figure class="card p-5">
+        <figcaption class="flex items-center justify-between">
+          <div><h3 class="text-base font-bold">Sparring rating</h3><p class="text-xs text-muted-foreground">Last 30 days · 18 games vs Stockfish</p></div>
+          <span class="badge badge-soft">+56</span>
+        </figcaption>
+        <svg viewBox="0 0 320 160" class="mt-3 w-full" role="img" aria-label="Sparring rating rose from 1124 to 1180 over 30 days">
+          <g class="text-[10px]" fill="var(--muted-foreground)">
+            <line x1="40" x2="312" y1="20" y2="20" stroke="var(--border)"/><text x="32" y="23" text-anchor="end">1200</text>
+            <line x1="40" x2="312" y1="75" y2="75" stroke="var(--border)"/><text x="32" y="78" text-anchor="end">1150</text>
+            <line x1="40" x2="312" y1="130" y2="130" stroke="var(--border)"/><text x="32" y="133" text-anchor="end">1100</text>
+            <text x="40" y="150">20 Aug</text><text x="175" y="150" text-anchor="middle">4 Sep</text><text x="310" y="150" text-anchor="end">Today</text>
+          </g>
+          <path d="M40,103.6 L70,95.9 L100,109.1 L130,86 L160,72.8 L190,79.4 L220,66.2 L250,60.7 L280,51.9 L310,42 L310,130 L40,130Z" fill="var(--sky-ink)" opacity=".12"/>
+          <polyline points="40,103.6 70,95.9 100,109.1 130,86 160,72.8 190,79.4 220,66.2 250,60.7 280,51.9 310,42" fill="none" stroke="var(--sky-ink)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="40" cy="103.6" r="3.5" fill="var(--card)" stroke="var(--muted-foreground)" stroke-width="1.5"/>
+          <circle cx="310" cy="42" r="4.5" fill="var(--sky-ink)" stroke="var(--card)" stroke-width="2"/>
+          <text x="302" y="32" text-anchor="end" class="text-[11px] font-semibold" fill="var(--foreground)">1180</text>
+        </svg>
+      </figure>
+    </section>
+
+    <!-- skills -->
+    <section class="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]" aria-labelledby="skills-h">
+      <div class="card p-5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div><h2 id="skills-h" class="text-base font-bold">Skill map</h2><p class="text-xs text-muted-foreground">From your games, puzzles and drills</p></div>
+          <div class="flex items-center gap-3 text-xs text-muted-foreground">
+            <span class="flex items-center gap-1.5"><span class="h-2.5 w-4 rounded-sm bg-q-best/40 ring-1 ring-q-best"></span>Now</span>
+            <span class="flex items-center gap-1.5"><span class="h-0 w-4 border-t-2 border-dashed border-muted-foreground"></span>30 days ago</span>
+          </div>
+        </div>
+        <svg viewBox="-56 -10 372 262" class="mx-auto mt-3 w-full max-w-[440px]" role="img" aria-label="Skill radar. Tactics 78, Openings 72, Endgames 42, Calculation 60, Time use 50, Board vision 66. Every skill grew except Endgames, which is flat.">
+<polygon points="130.0,98.5 148.6,109.2 148.6,130.8 130.0,141.5 111.4,130.8 111.4,109.2" fill="none" stroke="var(--border)" stroke-width="1"/>
+<polygon points="130.0,77.0 167.2,98.5 167.2,141.5 130.0,163.0 92.8,141.5 92.8,98.5" fill="none" stroke="var(--border)" stroke-width="1"/>
+<polygon points="130.0,55.5 185.9,87.8 185.9,152.2 130.0,184.5 74.1,152.2 74.1,87.8" fill="none" stroke="var(--border)" stroke-width="1"/>
+<polygon points="130.0,34.0 204.5,77.0 204.5,163.0 130.0,206.0 55.5,163.0 55.5,77.0" fill="none" stroke="var(--border)" stroke-width="1"/>
+<line x1="130" y1="120" x2="130.0" y2="34.0" stroke="var(--border)" stroke-width="1"/>
+<line x1="130" y1="120" x2="204.5" y2="77.0" stroke="var(--border)" stroke-width="1"/>
+<line x1="130" y1="120" x2="204.5" y2="163.0" stroke="var(--border)" stroke-width="1"/>
+<line x1="130" y1="120" x2="130.0" y2="206.0" stroke="var(--border)" stroke-width="1"/>
+<line x1="130" y1="120" x2="55.5" y2="163.0" stroke="var(--border)" stroke-width="1"/>
+<line x1="130" y1="120" x2="55.5" y2="77.0" stroke="var(--border)" stroke-width="1"/>
+<polygon points="130.0,66.7 179.2,91.6 159.8,137.2 130.0,164.7 97.2,138.9 89.0,96.3" fill="none" stroke="var(--muted-foreground)" stroke-width="1.5" stroke-dasharray="4 3"/>
+<polygon points="130.0,52.9 183.6,89.0 161.3,138.1 130.0,171.6 92.8,141.5 80.8,91.6" fill="var(--q-best)" fill-opacity=".22" stroke="var(--q-best)" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="130.0" cy="52.9" r="3.5" fill="var(--q-best)" stroke="var(--card)" stroke-width="1.5"/>
+<circle cx="183.6" cy="89.0" r="3.5" fill="var(--q-best)" stroke="var(--card)" stroke-width="1.5"/>
+<circle cx="161.3" cy="138.1" r="3.5" fill="var(--q-best)" stroke="var(--card)" stroke-width="1.5"/>
+<circle cx="130.0" cy="171.6" r="3.5" fill="var(--q-best)" stroke="var(--card)" stroke-width="1.5"/>
+<circle cx="92.8" cy="141.5" r="3.5" fill="var(--q-best)" stroke="var(--card)" stroke-width="1.5"/>
+<circle cx="80.8" cy="91.6" r="3.5" fill="var(--q-best)" stroke="var(--card)" stroke-width="1.5"/>
+<text x="130.0" y="20.8" text-anchor="middle" class="fill-foreground text-[12.5px] font-medium">Tactics <tspan class="fill-muted-foreground">78</tspan></text>
+<text x="219.4" y="72.4" text-anchor="start" class="fill-foreground text-[12.5px] font-medium">Openings <tspan class="fill-muted-foreground">72</tspan></text>
+<text x="219.4" y="175.6" text-anchor="start" class="fill-foreground text-[12.5px] font-medium">Endgames <tspan class="fill-muted-foreground">42</tspan></text>
+<text x="130.0" y="227.2" text-anchor="middle" class="fill-foreground text-[12.5px] font-medium">Calculation <tspan class="fill-muted-foreground">60</tspan></text>
+<text x="40.6" y="175.6" text-anchor="end" class="fill-foreground text-[12.5px] font-medium">Time use <tspan class="fill-muted-foreground">50</tspan></text>
+<text x="40.6" y="72.4" text-anchor="end" class="fill-foreground text-[12.5px] font-medium">Board vision <tspan class="fill-muted-foreground">66</tspan></text>
+        </svg>
+        <dl class="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
+          <div class="rounded-lg bg-muted/60 p-2"><dt class="text-muted-foreground">Tactics</dt><dd class="font-semibold text-success">+16</dd></div>
+          <div class="rounded-lg bg-muted/60 p-2"><dt class="text-muted-foreground">Openings</dt><dd class="font-semibold text-success">+6</dd></div>
+          <div class="rounded-lg bg-cta-soft p-2"><dt class="text-muted-foreground">Endgames</dt><dd class="font-semibold text-cta">+2 · flat</dd></div>
+          <div class="rounded-lg bg-muted/60 p-2"><dt class="text-muted-foreground">Calculation</dt><dd class="font-semibold text-success">+8</dd></div>
+          <div class="rounded-lg bg-muted/60 p-2"><dt class="text-muted-foreground">Time use</dt><dd class="font-semibold text-success">+6</dd></div>
+          <div class="rounded-lg bg-muted/60 p-2"><dt class="text-muted-foreground">Board vision</dt><dd class="font-semibold text-success">+11</dd></div>
+        </dl>
+      </div>
+
+      <div class="grid content-start gap-4">
+        <div class="card p-5">
+          <h3 class="flex items-center gap-2 text-base font-bold"><i data-lucide="trending-up" class="text-success"></i>Getting stronger</h3>
+          <ul class="mt-3 divide-y text-sm">
+            <li class="flex items-center gap-3 py-2.5"><span class="flex-1"><span class="block font-medium">Tactics: forks and pins</span><span class="text-xs text-muted-foreground">+16 this month · you spot them 2s faster</span></span><a href="puzzles.html" class="btn btn-ghost btn-sm">Keep sharp</a></li>
+            <li class="flex items-center gap-3 py-2.5"><span class="flex-1"><span class="block font-medium">Italian Game</span><span class="text-xs text-muted-foreground">84.6% accuracy in 11 games</span></span><a href="openings.html" class="btn btn-ghost btn-sm">Repertoire</a></li>
+            <li class="flex items-center gap-3 py-2.5"><span class="flex-1"><span class="block font-medium">Board vision</span><span class="text-xs text-muted-foreground">+11 · fewer pieces left hanging</span></span><a href="vision.html" class="btn btn-ghost btn-sm">Keep sharp</a></li>
+          </ul>
+        </div>
+        <div class="card border-cta/25 bg-cta-soft p-5">
+          <h3 class="flex items-center gap-2 text-base font-bold"><i data-lucide="heart-handshake" class="text-cta"></i>Needs a little love</h3>
+          <ul class="mt-3 divide-y divide-cta/15 text-sm">
+            <li class="flex items-center gap-3 py-2.5"><span class="flex-1"><span class="block font-medium">Rook endgames</span><span class="text-xs text-muted-foreground">3 won positions ended in draws</span></span><a href="endgames.html" class="btn btn-sm bg-cta text-white hover:brightness-105"><i data-lucide="target" class="size-3.5"></i>Train this</a></li>
+            <li class="flex items-center gap-3 py-2.5"><span class="flex-1"><span class="block font-medium">Time use</span><span class="text-xs text-muted-foreground">You spend 40% of your clock on moves 8–12</span></span><a href="play-setup.html" class="btn btn-outline btn-sm">Train this</a></li>
+            <li class="flex items-center gap-3 py-2.5"><span class="flex-1"><span class="block font-medium">Defending knight forks</span><span class="text-xs text-muted-foreground">Started 4 of your 5 losses</span></span><a href="mistakes.html" class="btn btn-outline btn-sm">Train this</a></li>
+          </ul>
+          <button class="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-cta hover:underline" data-ask="Why is my Endgames skill low, and what's the smallest thing I can fix?"><i data-lucide="message-circle" class="size-3.5"></i>Ask Sage why Endgames is flat</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- heatmap -->
+    <section class="card mt-6 p-5" aria-labelledby="heat-h">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div><h2 id="heat-h" class="text-base font-bold">Practice, last 16 weeks</h2><p class="text-xs text-muted-foreground">88 days practised · longest streak 19 days · 1 freeze used</p></div>
+        <div class="flex items-center gap-1.5 text-[11px] text-muted-foreground">Less
+          <span class="size-3 rounded-[3px] bg-muted"></span><span class="size-3 rounded-[3px] bg-q-best/25"></span><span class="size-3 rounded-[3px] bg-q-best/50"></span><span class="size-3 rounded-[3px] bg-q-best/75"></span><span class="size-3 rounded-[3px] bg-q-best"></span>More
+          <span class="ml-2 size-3 rounded-[3px] bg-sky ring-1 ring-inset ring-sky-ink/30"></span>Freeze
+        </div>
+      </div>
+      <div class="mt-4 flex flex-wrap items-start gap-x-10 gap-y-5"><div class="w-full max-w-[480px]">
+        <div class="ml-9 grid grid-cols-16 gap-[3px] text-[10px] text-muted-foreground" aria-hidden="true"><span class="col-span-5">June</span><span class="col-span-4">July</span><span class="col-span-5">August</span><span class="col-span-2">Sep</span></div>
+        <div class="mt-1.5 flex gap-1.5">
+          <div class="grid w-7.5 shrink-0 grid-rows-7 gap-[3px] text-[10px] leading-none text-muted-foreground" aria-hidden="true">
+            <span class="flex items-center">Mon</span><span></span><span class="flex items-center">Wed</span><span></span><span class="flex items-center">Fri</span><span></span><span></span>
+          </div>
+          <div class="min-w-0 flex-1">
+<div class="grid grid-cols-16 gap-[3px]" role="img" aria-label="Practice heatmap for the last 16 weeks">
+<div class="grid grid-rows-7 gap-[3px]"><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span></div>
+<div class="grid grid-rows-7 gap-[3px]"><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/75" title="20 min"></span></div>
+<div class="grid grid-rows-7 gap-[3px]"><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best" title="35 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best" title="35 min"></span></div>
+<div class="grid grid-rows-7 gap-[3px]"><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-q-best/75" title="20 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/75" title="20 min"></span></div>
+<div class="grid grid-rows-7 gap-[3px]"><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span></div>
+<div class="grid grid-rows-7 gap-[3px]"><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span></div>
+<div class="grid grid-rows-7 gap-[3px]"><span class="aspect-square rounded-[3px] bg-q-best/75" title="20 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best/75" title="20 min"></span><span class="aspect-square rounded-[3px] bg-q-best/75" title="20 min"></span></div>
+<div class="grid grid-rows-7 gap-[3px]"><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best" title="35 min"></span><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/75" title="20 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span></div>
+<div class="grid grid-rows-7 gap-[3px]"><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best/75" title="20 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best/75" title="20 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span></div>
+<div class="grid grid-rows-7 gap-[3px]"><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best/75" title="20 min"></span><span class="aspect-square rounded-[3px] bg-q-best" title="35 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span></div>
+<div class="grid grid-rows-7 gap-[3px]"><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best" title="35 min"></span><span class="aspect-square rounded-[3px] bg-q-best/75" title="20 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span></div>
+<div class="grid grid-rows-7 gap-[3px]"><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-q-best/75" title="20 min"></span></div>
+<div class="grid grid-rows-7 gap-[3px]"><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/75" title="20 min"></span><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span></div>
+<div class="grid grid-rows-7 gap-[3px]"><span class="aspect-square rounded-[3px] bg-q-best/75" title="20 min"></span><span class="aspect-square rounded-[3px] bg-q-best/75" title="20 min"></span><span class="aspect-square rounded-[3px] bg-q-best/75" title="20 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-muted" title="no practice"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/75" title="20 min"></span></div>
+<div class="grid grid-rows-7 gap-[3px]"><span class="aspect-square rounded-[3px] bg-q-best" title="35 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span></div>
+<div class="grid grid-rows-7 gap-[3px]"><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-sky ring-1 ring-inset ring-sky-ink/30" title="streak freeze"></span><span class="aspect-square rounded-[3px] bg-q-best/25" title="5 min"></span><span class="aspect-square rounded-[3px] bg-q-best/50" title="12 min"></span><span class="aspect-square rounded-[3px] bg-q-best" title="35 min"></span><span class="aspect-square rounded-[3px] border border-dashed bg-transparent" title="tomorrow"></span></div>
+          </div>
+        </div>
+      </div>
+      </div>
+      <dl class="grid flex-1 grid-cols-2 gap-x-6 gap-y-4 text-sm sm:min-w-[260px]">
+        <div><dt class="label">Favourite time</dt><dd class="mt-0.5 font-semibold">Evenings, around 8pm</dd></div>
+        <div><dt class="label">Average session</dt><dd class="mt-0.5 font-semibold">14 min</dd></div>
+        <div><dt class="label">Most consistent</dt><dd class="mt-0.5 font-semibold">Thursdays</dd></div>
+        <div><dt class="label">This month</dt><dd class="mt-0.5 font-semibold">17 of 19 days</dd></div>
+      </dl>
+      </div>
+    </section>
+
+    <!-- milestones -->
+    <section class="mt-8" aria-labelledby="ms-h">
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 id="ms-h" class="text-xl font-bold">Milestones</h2>
+        <span class="text-xs text-muted-foreground">Few, and they mean something</span>
+      </div>
+      <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="card flex items-start gap-3 p-4"><span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-reward text-[#5a3f00]"><i data-lucide="shield-check" class="size-5"></i></span><div><div class="text-sm font-semibold">A week without blunders</div><div class="text-xs text-muted-foreground">7 games in a row, no piece left hanging</div><div class="mt-1 text-[11px] text-reward-ink">Earned 14 Sep</div></div></div>
+        <div class="card flex items-start gap-3 p-4"><span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-reward text-[#5a3f00]"><i data-lucide="swords" class="size-5"></i></span><div><div class="text-sm font-semibold">Beat Stockfish 1200</div><div class="text-xs text-muted-foreground">Won with the Italian, no take-backs</div><div class="mt-1 text-[11px] text-reward-ink">Earned 9 Sep</div></div></div>
+        <div class="card flex items-start gap-3 p-4"><span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-reward text-[#5a3f00]"><i data-lucide="rotate-ccw" class="size-5"></i></span><div><div class="text-sm font-semibold">First mistake mastered</div><div class="text-xs text-muted-foreground">Recalled it at 3, 7 and 21 days</div><div class="mt-1 text-[11px] text-reward-ink">Earned 28 Aug</div></div></div>
+        <div class="flex items-start gap-3 rounded-xl border border-dashed p-4"><span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-muted text-muted-foreground"><i data-lucide="castle" class="size-5"></i></span><div class="flex-1"><div class="text-sm font-semibold">Build the bridge</div><div class="text-xs text-muted-foreground">Win the Lucena position 3 times</div><div class="progress mt-2 h-1.5"><span class="w-[33%]"></span></div><div class="mt-1 text-[11px] text-muted-foreground">1 of 3</div></div></div>
+        <div class="flex items-start gap-3 rounded-xl border border-dashed p-4"><span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-muted text-muted-foreground"><i data-lucide="puzzle" class="size-5"></i></span><div class="flex-1"><div class="text-sm font-semibold">Puzzle rating 1500</div><div class="text-xs text-muted-foreground">18 points to go at this pace: about 6 days</div><div class="progress mt-2 h-1.5"><span class="w-[78%]"></span></div><div class="mt-1 text-[11px] text-muted-foreground">1482 of 1500</div></div></div>
+        <div class="flex items-start gap-3 rounded-xl border border-dashed p-4"><span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-muted text-muted-foreground"><i data-lucide="flower-2" class="size-5"></i></span><div class="flex-1"><div class="text-sm font-semibold">First bloom</div><div class="text-xs text-muted-foreground">Practise 15 days in a row</div><div class="progress mt-2 h-1.5"><span class="w-[80%]"></span></div><div class="mt-1 text-[11px] text-muted-foreground">12 of 15</div></div></div>
+      </div>
+    </section>
+  </div>
+</main>
+</body>
+</html>

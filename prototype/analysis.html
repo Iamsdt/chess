@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Analysis · Chess King</title>
+<script src="assets/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="assets/board.js" defer></script>
+<script src="assets/shell.js" defer></script>
+<style>
+  /* Board pages: board + eval bar sized by viewport height */
+  .board-size { width: min(100%, calc(100dvh - 56px - 48px - 64px)); }
+</style>
+</head>
+<body data-nav="analysis" data-layout="board"
+      data-chat-context="analysis board · Giuoco Pianissimo · move 7, White to play · engine on"
+      data-chat-attach="Current position"
+      data-chat-quick="What's the plan for each side?|Why is h3 useful?|Where does my knight belong?">
+
+<template id="chat-seed">
+  <div data-divider>Analysis · 8:52 PM</div>
+  <div data-me data-time="8:52 PM">The engine says it's equal. So what am I supposed to do here?</div>
+  <div data-sage data-time="8:52 PM" data-replies="Show the knight route|What does Black want?" data-cta="0">
+    <div class="bubble">Equal doesn't mean nothing to do. This is a slow position, so the plan matters more than any single move.</div>
+    <div class="bubble"><b>Your plan:</b> make room, then reroute. <span class="san">h3</span> stops …Bg4 and …Ng4. <span class="san">Re1</span> backs up e4. Then your b1 knight walks <span class="san">Nbd2–f1–g3</span> towards the kingside.</div>
+    <div class="chat-card">
+      <div class="vb" data-fen="r1bq1rk1/ppp2ppp/2np1n2/2b1p3/2B1P3/2PP1N2/PP3PPP/RNBQ1RK1 w - - 2 7" data-arrows="b1d2:ai,d2f1:ai,f1g3:ai"></div>
+      <div class="flex items-center justify-between gap-2 px-3 py-2 text-xs"><span>The knight's long walk to <span class="san">g3</span></span><span class="text-muted-foreground">3 moves</span></div>
+    </div>
+    <div class="bubble"><b>Black's plan</b> is the mirror: …a6 and …Ba7 to keep the bishop safe, then …Be6 to trade off your best piece.</div>
+  </div>
+</template>
+
+<main>
+  <!-- toolbar -->
+  <header class="sticky top-0 z-10 flex h-14 items-center gap-1.5 border-b bg-background/85 px-4 backdrop-blur lg:px-6">
+    <h1 class="flex min-w-0 items-center gap-2 text-base font-bold"><i data-lucide="microscope" class="text-primary"></i><span class="truncate">Analysis board</span></h1>
+    <span class="badge max-md:hidden">Italian · Giuoco Pianissimo</span>
+    <div class="ml-auto flex items-center gap-1">
+      <button class="btn btn-ghost btn-sm" data-toast="Board flipped" data-toast-icon="arrow-up-down" aria-label="Flip board"><i data-lucide="arrow-up-down"></i><span class="max-lg:hidden">Flip</span></button>
+      <button class="btn btn-ghost btn-sm" data-open="setup" aria-label="Set up position"><i data-lucide="grid-2x2-plus"></i><span class="max-lg:hidden">Set up</span></button>
+      <button class="btn btn-ghost btn-sm" data-toast="Link copied — the position lives in the URL" data-toast-icon="link" aria-label="Share link"><i data-lucide="link"></i><span class="max-lg:hidden">Share</span></button>
+      <a href="play.html" class="btn btn-cta ml-1 h-9 px-4 text-sm max-sm:px-3"><i data-lucide="swords"></i><span class="max-sm:hidden">Practice from here</span></a>
+    </div>
+  </header>
+
+  <div class="grid gap-5 p-4 lg:p-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+    <!-- board column -->
+    <section class="flex justify-center" aria-label="Analysis board">
+      <div class="board-size">
+        <div class="flex gap-2.5">
+          <!-- eval bar: +0.2 for White -->
+          <div class="relative flex w-3.5 shrink-0 flex-col overflow-hidden rounded-full ring-1 ring-border sm:w-5" role="meter" aria-label="Evaluation" aria-valuemin="-10" aria-valuemax="10" aria-valuenow="0.2" aria-valuetext="+0.2, about equal">
+            <div class="h-[48%] bg-[#3b4a44]"></div>
+            <div class="flex-1 bg-white dark:bg-[#e9eee8]"></div>
+            <div class="absolute inset-x-0 top-1/2 h-px bg-cta"></div>
+            <span class="absolute inset-x-0 bottom-1 text-center font-mono text-[9px] font-semibold text-[#1b2620] max-sm:hidden">+0.2</span>
+          </div>
+          <div class="min-w-0 flex-1 overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.45)] ring-1 ring-border">
+            <div class="vb" data-interactive data-coords
+                 data-fen="r1bq1rk1/ppp2ppp/2np1n2/2b1p3/2B1P3/2PP1N2/PP3PPP/RNBQ1RK1 w - - 2 7"
+                 data-hl="e8,g8"
+                 data-arrows="h2h3,f1e1,b1d2"
+                 aria-label="Analysis board, White to move. Engine arrows: h3, Re1, Nbd2."></div>
+          </div>
+        </div>
+        <div class="mt-2.5 flex items-center justify-between gap-2 pl-6 text-xs text-muted-foreground sm:pl-7">
+          <span><span class="font-medium text-foreground">White to move</span> · move 7</span>
+          <span class="flex items-center gap-1"><i data-lucide="mouse-pointer-click" class="size-3.5"></i>Click a piece, then a square</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- side panel -->
+    <div class="flex min-h-0 flex-col gap-4 xl:h-[max(600px,calc(100dvh-56px-48px))]">
+      <!-- engine -->
+      <section class="card shrink-0 overflow-hidden" aria-labelledby="eng-h">
+        <div class="flex items-center gap-3 border-b px-4 py-3">
+          <label class="switch" title="Engine on/off"><input type="checkbox" checked aria-labelledby="eng-h"><span></span></label>
+          <div class="min-w-0 flex-1 leading-tight">
+            <h2 id="eng-h" class="text-sm font-semibold">Stockfish 17</h2>
+            <div class="text-xs text-muted-foreground">In your browser · depth <span class="font-mono text-foreground">24</span> · 3 lines</div>
+          </div>
+          <span class="font-display text-xl font-bold tabular-nums">+0.2</span>
+        </div>
+        <ol class="divide-y text-sm">
+          <li class="flex items-start gap-3 px-4 py-2.5">
+            <span class="mt-0.5 w-11 shrink-0 rounded bg-white px-1 py-0.5 text-center font-mono text-xs font-semibold text-[#1b2620] ring-1 ring-border">+0.22</span>
+            <p class="min-w-0 font-mono text-[12.5px] leading-relaxed"><span class="font-semibold text-primary">7.h3</span> a6 8.Re1 Be6 9.Nbd2 Ba7 10.a4 h6</p>
+          </li>
+          <li class="flex items-start gap-3 px-4 py-2.5">
+            <span class="mt-0.5 w-11 shrink-0 rounded bg-white px-1 py-0.5 text-center font-mono text-xs font-semibold text-[#1b2620] ring-1 ring-border">+0.21</span>
+            <p class="min-w-0 font-mono text-[12.5px] leading-relaxed"><span class="font-semibold text-primary">7.Re1</span> a6 8.h3 Be6 9.Nbd2 Bxc4 10.Nxc4 h6</p>
+          </li>
+          <li class="flex items-start gap-3 px-4 py-2.5">
+            <span class="mt-0.5 w-11 shrink-0 rounded bg-white px-1 py-0.5 text-center font-mono text-xs font-semibold text-[#1b2620] ring-1 ring-border">+0.18</span>
+            <p class="min-w-0 font-mono text-[12.5px] leading-relaxed"><span class="font-semibold text-primary">7.Nbd2</span> a6 8.b4 Ba7 9.a4 Ne7 10.Re1 c6</p>
+          </li>
+        </ol>
+        <div class="flex items-center gap-2 border-t bg-muted/40 px-4 py-2 text-xs text-muted-foreground">
+          <i data-lucide="info" class="size-3.5"></i><span class="flex-1">Three moves within 0.04. Pick the plan you understand.</span>
+          <button class="font-medium text-primary hover:underline" data-ask="These three moves are all equal. Which plan fits me best?">Ask Sage</button>
+        </div>
+      </section>
+
+      <!-- tabs -->
+      <aside class="card flex min-h-0 flex-1 flex-col overflow-hidden" aria-label="Moves, explorer and import">
+        <div class="tabs px-3 pt-2">
+          <button class="tab is-active" data-tab="tree" data-group="an">Moves</button>
+          <button class="tab" data-tab="exp" data-group="an">Explorer</button>
+          <button class="tab" data-tab="io" data-group="an">FEN / PGN</button>
+        </div>
+
+        <!-- variation tree -->
+        <div class="min-h-0 flex-1 overflow-auto p-3" data-panel="tree" data-group="an">
+          <div class="font-mono text-[13px] leading-8">
+            <div class="flex flex-wrap items-center gap-x-0.5">
+              <span class="inline-flex items-center whitespace-nowrap"><span class="text-xs text-muted-foreground">1.</span><span class="mv">e4</span><span class="mv">e5</span></span>
+              <span class="inline-flex items-center whitespace-nowrap"><span class="text-xs text-muted-foreground">2.</span><span class="mv">Nf3</span><span class="mv">Nc6</span></span>
+              <span class="inline-flex items-center whitespace-nowrap"><span class="text-xs text-muted-foreground">3.</span><span class="mv">Bc4</span><span class="mv">Bc5</span></span>
+              <span class="inline-flex items-center whitespace-nowrap"><span class="text-xs text-muted-foreground">4.</span><span class="mv">c3</span><span class="mv">Nf6</span></span>
+              <span class="inline-flex items-center whitespace-nowrap"><span class="text-xs text-muted-foreground">5.</span><span class="mv">d3</span><span class="mv">d6</span></span>
+              <span class="inline-flex items-center whitespace-nowrap"><span class="text-xs text-muted-foreground">6.</span><span class="mv">O-O</span><span class="mv is-current">O-O</span></span>
+            </div>
+            <!-- side line -->
+            <div class="my-1 ml-3 border-l-2 border-lilac-ink/30 pl-3 text-muted-foreground">
+              <span class="text-xs">7.</span><span class="mv">b4</span><span class="mv">Bb6</span><span class="text-xs">8.</span><span class="mv">a4</span><span class="mv">a5</span>
+              <span class="ml-1 font-sans text-[11px] italic">your idea</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-x-0.5">
+              <span class="inline-flex items-center whitespace-nowrap"><span class="text-xs text-muted-foreground">7.</span><span class="mv">a4</span><span class="mv">a6</span></span>
+            </div>
+            <div class="my-1 ml-3 border-l-2 border-lilac-ink/30 pl-3 text-muted-foreground">
+              <span class="text-xs">7…</span><span class="mv">a5</span><span class="text-xs">8.</span><span class="mv">h3</span><span class="mv">h6</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-x-0.5">
+              <span class="inline-flex items-center whitespace-nowrap"><span class="text-xs text-muted-foreground">8.</span><span class="mv">Re1</span><span class="mv">Ba7</span></span>
+              <span class="inline-flex items-center whitespace-nowrap"><span class="text-xs text-muted-foreground">9.</span><span class="mv">h3</span><span class="mv">Be6</span></span>
+            </div>
+          </div>
+          <p class="mt-3 flex gap-2 rounded-lg bg-muted/50 p-2.5 text-xs text-muted-foreground"><i data-lucide="git-branch" class="mt-px size-3.5"></i>Play a different move on the board to start a new side line. Right-click a move to promote or delete it.</p>
+        </div>
+
+        <!-- explorer -->
+        <div class="min-h-0 flex-1 overflow-auto" data-panel="exp" data-group="an" hidden>
+          <div class="flex items-center gap-2 border-b bg-muted/40 px-4 py-2 text-xs text-muted-foreground">
+            <i data-lucide="globe" class="size-3.5"></i><span class="flex-1">Lichess masters · online lookup, optional</span>
+            <label class="switch scale-90" title="Online lookup"><input type="checkbox" checked aria-label="Online lookup"><span></span></label>
+          </div>
+          <table class="w-full text-sm">
+            <caption class="sr-only">Master games from this position</caption>
+            <thead><tr class="text-left text-xs text-muted-foreground"><th scope="col" class="px-4 py-2 font-medium">Move</th><th scope="col" class="px-2 py-2 text-right font-medium">Games</th><th scope="col" class="px-4 py-2 font-medium">White / Draw / Black</th></tr></thead>
+            <tbody class="divide-y">
+              <tr class="cursor-pointer hover:bg-muted/40"><td class="px-4 py-2 font-mono font-semibold">Re1</td><td class="px-2 py-2 text-right tabular-nums text-muted-foreground">4,212</td>
+                <td class="px-4 py-2"><div class="flex h-4 overflow-hidden rounded ring-1 ring-border text-[9px] font-semibold leading-4"><span class="w-[36%] bg-white pl-1 text-[#1b2620]">36</span><span class="w-[39%] bg-muted-foreground/45 pl-1 text-white">39</span><span class="w-[25%] bg-[#3b4a44] pl-1 text-white">25</span></div></td></tr>
+              <tr class="cursor-pointer hover:bg-muted/40"><td class="px-4 py-2 font-mono font-semibold">h3</td><td class="px-2 py-2 text-right tabular-nums text-muted-foreground">3,870</td>
+                <td class="px-4 py-2"><div class="flex h-4 overflow-hidden rounded ring-1 ring-border text-[9px] font-semibold leading-4"><span class="w-[35%] bg-white pl-1 text-[#1b2620]">35</span><span class="w-[41%] bg-muted-foreground/45 pl-1 text-white">41</span><span class="w-[24%] bg-[#3b4a44] pl-1 text-white">24</span></div></td></tr>
+              <tr class="cursor-pointer bg-accent/40 hover:bg-muted/40"><td class="px-4 py-2 font-mono font-semibold">a4 <span class="ml-1 font-sans text-[10px] font-medium text-primary">yours</span></td><td class="px-2 py-2 text-right tabular-nums text-muted-foreground">2,954</td>
+                <td class="px-4 py-2"><div class="flex h-4 overflow-hidden rounded ring-1 ring-border text-[9px] font-semibold leading-4"><span class="w-[37%] bg-white pl-1 text-[#1b2620]">37</span><span class="w-[38%] bg-muted-foreground/45 pl-1 text-white">38</span><span class="w-[25%] bg-[#3b4a44] pl-1 text-white">25</span></div></td></tr>
+              <tr class="cursor-pointer hover:bg-muted/40"><td class="px-4 py-2 font-mono font-semibold">Bb3</td><td class="px-2 py-2 text-right tabular-nums text-muted-foreground">2,611</td>
+                <td class="px-4 py-2"><div class="flex h-4 overflow-hidden rounded ring-1 ring-border text-[9px] font-semibold leading-4"><span class="w-[33%] bg-white pl-1 text-[#1b2620]">33</span><span class="w-[42%] bg-muted-foreground/45 pl-1 text-white">42</span><span class="w-[25%] bg-[#3b4a44] pl-1 text-white">25</span></div></td></tr>
+              <tr class="cursor-pointer hover:bg-muted/40"><td class="px-4 py-2 font-mono font-semibold">Nbd2</td><td class="px-2 py-2 text-right tabular-nums text-muted-foreground">2,288</td>
+                <td class="px-4 py-2"><div class="flex h-4 overflow-hidden rounded ring-1 ring-border text-[9px] font-semibold leading-4"><span class="w-[34%] bg-white pl-1 text-[#1b2620]">34</span><span class="w-[40%] bg-muted-foreground/45 pl-1 text-white">40</span><span class="w-[26%] bg-[#3b4a44] pl-1 text-white">26</span></div></td></tr>
+              <tr class="cursor-pointer hover:bg-muted/40"><td class="px-4 py-2 font-mono font-semibold">Bg5</td><td class="px-2 py-2 text-right tabular-nums text-muted-foreground">903</td>
+                <td class="px-4 py-2"><div class="flex h-4 overflow-hidden rounded ring-1 ring-border text-[9px] font-semibold leading-4"><span class="w-[31%] bg-white pl-1 text-[#1b2620]">31</span><span class="w-[36%] bg-muted-foreground/45 pl-1 text-white">36</span><span class="w-[33%] bg-[#3b4a44] pl-1 text-white">33</span></div></td></tr>
+            </tbody>
+          </table>
+          <p class="px-4 py-3 text-xs text-muted-foreground">Percentages are results from this position. Turn lookup off to stay fully offline.</p>
+        </div>
+
+        <!-- fen / pgn -->
+        <div class="min-h-0 flex-1 space-y-4 overflow-auto p-4" data-panel="io" data-group="an" hidden>
+          <div>
+            <label for="fen" class="field-label">FEN</label>
+            <div class="mt-1.5 flex gap-2">
+              <input id="fen" class="input font-mono text-xs" value="r1bq1rk1/ppp2ppp/2np1n2/2b1p3/2B1P3/2PP1N2/PP3PPP/RNBQ1RK1 w - - 2 7" spellcheck="false">
+              <button class="btn btn-outline btn-icon shrink-0" data-toast="FEN copied" data-toast-icon="clipboard-check" aria-label="Copy FEN"><i data-lucide="clipboard-copy"></i></button>
+            </div>
+          </div>
+          <div>
+            <label for="pgn" class="field-label">PGN</label>
+            <textarea id="pgn" rows="5" class="textarea mt-1.5 font-mono text-xs" spellcheck="false">1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. c3 Nf6 5. d3 d6 6. O-O O-O 7. a4 (7. b4 Bb6 8. a4 a5) 7... a6 (7... a5 8. h3 h6) 8. Re1 Ba7 9. h3 Be6 *</textarea>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-default btn-sm" data-toast="Position loaded" data-toast-icon="upload"><i data-lucide="upload"></i>Load</button>
+            <a href="games.html" class="btn btn-ghost btn-sm text-muted-foreground"><i data-lucide="library"></i>Open a saved game</a>
+          </div>
+        </div>
+
+        <div class="border-t p-3">
+          <div class="grid grid-cols-4 gap-1">
+            <button class="btn btn-ghost btn-sm" aria-label="Start position"><i data-lucide="chevrons-left"></i></button>
+            <button class="btn btn-ghost btn-sm" aria-label="Previous move"><i data-lucide="chevron-left"></i></button>
+            <button class="btn btn-ghost btn-sm" aria-label="Next move"><i data-lucide="chevron-right"></i></button>
+            <button class="btn btn-ghost btn-sm" aria-label="Last move"><i data-lucide="chevrons-right"></i></button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<dialog class="modal w-[min(640px,calc(100vw-32px))]" id="setup" aria-labelledby="setup-h">
+  <div class="flex items-center justify-between border-b px-5 py-4">
+    <h2 id="setup-h" class="text-lg font-bold">Set up a position</h2>
+    <button class="btn btn-ghost btn-icon btn-sm" data-close aria-label="Close"><i data-lucide="x"></i></button>
+  </div>
+  <div class="grid gap-5 p-5 sm:grid-cols-[minmax(0,1fr)_190px]">
+    <div class="self-start overflow-hidden rounded-xl ring-1 ring-border">
+      <div class="vb" data-interactive data-coords data-fen="r1bq1rk1/ppp2ppp/2np1n2/2b1p3/2B1P3/2PP1N2/PP3PPP/RNBQ1RK1 w - - 2 7" aria-label="Setup board"></div>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <p class="field-label">Pieces</p>
+        <div class="mt-2 grid grid-cols-6 gap-1 sm:grid-cols-3" data-options role="radiogroup" aria-label="Piece to place">
+          <button type="button" class="option is-active justify-center p-1" aria-label="White king"><img src="assets/pieces/california/wK.svg" alt="" class="size-8"></button>
+          <button type="button" class="option justify-center p-1" aria-label="White queen"><img src="assets/pieces/california/wQ.svg" alt="" class="size-8"></button>
+          <button type="button" class="option justify-center p-1" aria-label="White rook"><img src="assets/pieces/california/wR.svg" alt="" class="size-8"></button>
+          <button type="button" class="option justify-center p-1" aria-label="White bishop"><img src="assets/pieces/california/wB.svg" alt="" class="size-8"></button>
+          <button type="button" class="option justify-center p-1" aria-label="White knight"><img src="assets/pieces/california/wN.svg" alt="" class="size-8"></button>
+          <button type="button" class="option justify-center p-1" aria-label="White pawn"><img src="assets/pieces/california/wP.svg" alt="" class="size-8"></button>
+          <button type="button" class="option justify-center p-1" aria-label="Black king"><img src="assets/pieces/california/bK.svg" alt="" class="size-8"></button>
+          <button type="button" class="option justify-center p-1" aria-label="Black queen"><img src="assets/pieces/california/bQ.svg" alt="" class="size-8"></button>
+          <button type="button" class="option justify-center p-1" aria-label="Black rook"><img src="assets/pieces/california/bR.svg" alt="" class="size-8"></button>
+          <button type="button" class="option justify-center p-1" aria-label="Black bishop"><img src="assets/pieces/california/bB.svg" alt="" class="size-8"></button>
+          <button type="button" class="option justify-center p-1" aria-label="Black knight"><img src="assets/pieces/california/bN.svg" alt="" class="size-8"></button>
+          <button type="button" class="option justify-center p-1" aria-label="Black pawn"><img src="assets/pieces/california/bP.svg" alt="" class="size-8"></button>
+        </div>
+        <div class="mt-2 grid grid-cols-2 gap-1">
+          <button class="btn btn-outline btn-sm" data-toast="Eraser selected" data-toast-icon="eraser"><i data-lucide="eraser"></i>Erase</button>
+          <button class="btn btn-outline btn-sm" data-toast="Board cleared" data-toast-icon="trash-2"><i data-lucide="trash-2"></i>Clear</button>
+        </div>
+      </div>
+      <div>
+        <p class="field-label" id="stm">Side to move</p>
+        <div class="seg mt-2" role="radiogroup" aria-labelledby="stm"><button type="button" class="is-active">White</button><button type="button">Black</button></div>
+      </div>
+      <fieldset>
+        <legend class="field-label">Castling</legend>
+        <div class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs sm:grid-cols-1">
+          <label class="flex items-center gap-2"><input type="checkbox" class="accent-primary"> White O-O</label>
+          <label class="flex items-center gap-2"><input type="checkbox" class="accent-primary"> White O-O-O</label>
+          <label class="flex items-center gap-2"><input type="checkbox" class="accent-primary"> Black O-O</label>
+          <label class="flex items-center gap-2"><input type="checkbox" class="accent-primary"> Black O-O-O</label>
+        </div>
+      </fieldset>
+    </div>
+    <div class="sm:col-span-2">
+      <label for="setup-fen" class="field-label">FEN</label>
+      <input id="setup-fen" class="input mt-1.5 font-mono text-xs" value="r1bq1rk1/ppp2ppp/2np1n2/2b1p3/2B1P3/2PP1N2/PP3PPP/RNBQ1RK1 w - - 2 7" spellcheck="false">
+      <p class="help mt-1.5 flex items-center gap-1.5"><i data-lucide="circle-check" class="size-3.5 text-success"></i>Legal position · both kings safe</p>
+    </div>
+  </div>
+  <div class="flex justify-end gap-2 border-t px-5 py-4">
+    <button class="btn btn-outline" data-toast="Reset to the starting position" data-toast-icon="rotate-ccw">Start position</button>
+    <button class="btn btn-default" data-close data-toast="Position loaded" data-toast-icon="check">Load position</button>
+  </div>
+</dialog>
+</body>
+</html>

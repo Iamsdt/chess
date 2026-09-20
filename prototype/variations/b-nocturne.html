@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B · Nocturne — Chess King</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="board.js" defer></script>
+<style>
+/* B · NOCTURNE — deep night, soft glass, bento. Mint = action. The coach is a living aurora. */
+:root{
+  --bg:#07080c; --glass:rgba(255,255,255,.035); --glass-2:rgba(255,255,255,.06); --stroke:rgba(255,255,255,.08); --stroke-2:rgba(255,255,255,.14);
+  --text:#eef0f6; --text-2:#aab0c0; --muted:#6d7385;
+  --mint:#46e6c0; --mint-ink:#03211a; --violet:#8b7bff; --pink:#ff6fb5; --amber:#ffc15e; --red:#ff6b6b;
+  --sans:'Manrope',system-ui,sans-serif; --mono:'JetBrains Mono',monospace;
+  --vb-light:#dde3ec; --vb-dark:#8190ad; --vb-hl:rgba(70,230,192,.35); --vb-arrow:rgba(70,230,192,.9); --vb-arrow-alt:rgba(255,111,181,.9); --vb-focus:#46e6c0;
+}
+*{box-sizing:border-box} html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14.5px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow:hidden}
+body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
+  background:radial-gradient(40% 35% at 18% 12%,rgba(70,230,192,.10),transparent 70%),
+             radial-gradient(35% 35% at 72% 8%,rgba(139,123,255,.12),transparent 70%),
+             radial-gradient(40% 40% at 60% 100%,rgba(255,111,181,.06),transparent 70%)}
+a{color:inherit;text-decoration:none} button{font:inherit;color:inherit;cursor:pointer;border:0;background:none} p,h1,h2,h3{margin:0}
+[data-lucide]{width:18px;height:18px;stroke-width:1.8}
+.app{position:relative;z-index:1;display:grid;grid-template-columns:84px minmax(0,1fr) 380px;height:100dvh;gap:0}
+
+/* floating dock */
+.dock{margin:14px 0 14px 14px;border-radius:24px;background:var(--glass);border:1px solid var(--stroke);backdrop-filter:blur(20px);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:6px}
+.logo{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;margin-bottom:14px;background:conic-gradient(from 200deg,var(--mint),var(--violet),var(--pink),var(--mint));color:#07080c}
+.logo [data-lucide]{width:22px;height:22px;stroke-width:2.2}
+.dk{position:relative;width:50px;height:50px;border-radius:16px;display:grid;place-items:center;color:var(--muted);transition:all .2s}
+.dk:hover{color:var(--text);background:var(--glass-2)}
+.dk.on{color:var(--mint);background:rgba(70,230,192,.1);box-shadow:inset 0 0 0 1px rgba(70,230,192,.25)}
+.dk .tip{position:absolute;left:62px;top:50%;transform:translateY(-50%) translateX(-4px);background:#15171f;border:1px solid var(--stroke-2);padding:5px 10px;border-radius:8px;font-size:12.5px;font-weight:600;white-space:nowrap;opacity:0;pointer-events:none;transition:all .15s;color:var(--text)}
+.dk:hover .tip{opacity:1;transform:translateY(-50%)}
+.dk .b{position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--pink);box-shadow:0 0 0 3px #0c0d12}
+.dock .sp{flex:1}
+.me{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#2a2f3f,#1a1d27);border:1px solid var(--stroke-2);display:grid;place-items:center;font-weight:800;font-size:13px}
+
+/* main */
+main{overflow:auto;padding:26px 28px 40px}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:16px}
+.hello h1{font-size:28px;font-weight:800;letter-spacing:-.02em}
+.hello p{color:var(--text-2);margin-top:2px}
+.search{display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;border-radius:14px;background:var(--glass);border:1px solid var(--stroke);color:var(--muted);min-width:300px;font-size:13.5px}
+.search kbd{margin-left:auto;font:500 11px var(--mono);border:1px solid var(--stroke-2);border-radius:6px;padding:1px 6px}
+.bento{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-rows:minmax(0,auto);gap:14px}
+.t{position:relative;border-radius:22px;background:var(--glass);border:1px solid var(--stroke);padding:20px;overflow:hidden;backdrop-filter:blur(14px);transition:border-color .2s,transform .2s}
+a.t:hover{border-color:var(--stroke-2);transform:translateY(-2px)}
+.label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+.label [data-lucide]{width:15px;height:15px}
+.hero{grid-column:span 8;grid-row:span 2;display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:26px;padding:28px;
+  background:linear-gradient(135deg,rgba(70,230,192,.09),rgba(139,123,255,.06) 60%,transparent),var(--glass)}
+.hero h2{font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1.05;margin-top:14px}
+.hero h2 span{background:linear-gradient(90deg,var(--mint),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--text-2);margin-top:12px;max-width:40ch;font-size:15px}
+.go{display:inline-flex;align-items:center;gap:10px;height:52px;padding:0 22px;border-radius:16px;background:var(--mint);color:var(--mint-ink);font-weight:800;font-size:15.5px;margin-top:24px;box-shadow:0 10px 30px -8px rgba(70,230,192,.6),inset 0 1px 0 rgba(255,255,255,.4);transition:transform .15s,box-shadow .2s}
+.go:hover{transform:translateY(-1px);box-shadow:0 14px 36px -8px rgba(70,230,192,.75),inset 0 1px 0 rgba(255,255,255,.4)}
+.ghost{margin-left:14px;color:var(--text-2);font-weight:600}
+.ghost:hover{color:var(--text)}
+.steps{display:flex;gap:8px;margin-top:26px}
+.st{flex:1;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--stroke);font-size:12px;color:var(--muted)}
+.st b{display:block;color:var(--text-2);font-size:13px;margin-top:2px}
+.st.done{color:var(--mint)} .st.done b{color:var(--text)}
+.st.now{border-color:rgba(70,230,192,.4);background:rgba(70,230,192,.07)}
+.bwrap{position:relative;align-self:center}
+.bwrap::before{content:"";position:absolute;inset:-18px;border-radius:30px;background:radial-gradient(closest-side,rgba(70,230,192,.25),transparent);filter:blur(10px)}
+.bwrap .vb{border-radius:14px;box-shadow:0 30px 60px -20px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.08)}
+.bcap{position:relative;margin-top:10px;font-size:12px;color:var(--muted);text-align:center}
+.bcap b{color:var(--text-2)}
+
+.streak{grid-column:span 4;display:flex;flex-direction:column;gap:14px}
+.big{font-size:44px;font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+.big small{font-size:15px;color:var(--muted);font-weight:600;letter-spacing:0;margin-left:6px}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.wd{height:36px;border-radius:10px;background:rgba(255,255,255,.04);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--muted)}
+.wd.on{background:linear-gradient(180deg,rgba(255,193,94,.35),rgba(255,193,94,.12));color:var(--amber);box-shadow:inset 0 0 0 1px rgba(255,193,94,.35)}
+.wd.fr{background:rgba(139,123,255,.14);color:var(--violet)}
+.wd.td{box-shadow:inset 0 0 0 1.5px var(--amber);color:var(--amber)}
+.goal{grid-column:span 4;display:flex;align-items:center;gap:18px}
+.ring{--v:66;width:86px;height:86px;border-radius:50%;flex:none;display:grid;place-items:center;background:conic-gradient(var(--mint) calc(var(--v)*1%),rgba(255,255,255,.07) 0);position:relative;filter:drop-shadow(0 0 12px rgba(70,230,192,.25))}
+.ring::before{content:"";position:absolute;inset:8px;border-radius:50%;background:#0d0f15}
+.ring b{position:relative;font-size:20px;font-weight:800}
+.rating{grid-column:span 5}
+.spark{width:100%;height:84px;margin-top:10px}
+.lesson{grid-column:span 4}
+.lesson h3,.friend h3{font-size:18px;font-weight:800;margin-top:12px;letter-spacing:-.01em}
+.lesson p,.friend p{color:var(--text-2);font-size:13.5px;margin-top:4px}
+.prog{height:6px;border-radius:9px;background:rgba(255,255,255,.07);margin-top:16px;overflow:hidden}
+.prog span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--violet),var(--mint))}
+.friend{grid-column:span 3;background:linear-gradient(160deg,rgba(255,111,181,.08),transparent 60%),var(--glass)}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:99px;font-size:11.5px;font-weight:700}
+.tag.pink{background:rgba(255,111,181,.14);color:var(--pink)}
+.tag.mint{background:rgba(70,230,192,.12);color:var(--mint)}
+.tag.red{background:rgba(255,107,107,.13);color:var(--red)}
+.games{grid-column:span 12}
+.row{display:grid;grid-template-columns:40px 1.4fr 1fr 80px 110px 90px;gap:14px;align-items:center;padding:12px 6px;border-top:1px solid var(--stroke);font-size:13.5px}
+.row:first-of-type{border-top:0}
+.res{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-weight:800;font-size:12.5px}
+.res.w{background:rgba(70,230,192,.12);color:var(--mint)} .res.l{background:rgba(255,107,107,.12);color:var(--red)} .res.d{background:rgba(255,255,255,.06);color:var(--text-2)}
+.sub{color:var(--muted);font-size:12px}
+.mono{font-family:var(--mono);font-size:12.5px}
+.rv{justify-self:end;padding:7px 14px;border-radius:10px;background:var(--glass-2);font-weight:700;font-size:12.5px}
+.rv:hover{background:rgba(70,230,192,.14);color:var(--mint)}
+
+/* coach — aurora companion */
+.coach{margin:14px 14px 14px 0;border-radius:26px;border:1px solid var(--stroke);background:linear-gradient(180deg,rgba(139,123,255,.08),rgba(255,255,255,.02) 40%);backdrop-filter:blur(24px);display:flex;flex-direction:column;min-height:0;overflow:hidden;position:relative}
+.orb-wrap{padding:22px 22px 14px;display:flex;align-items:center;gap:14px}
+.orb{width:48px;height:48px;border-radius:50%;flex:none;position:relative;background:conic-gradient(from 0deg,var(--mint),var(--violet),var(--pink),var(--mint));animation:spin 8s linear infinite;filter:blur(.3px)}
+.orb::after{content:"";position:absolute;inset:3px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.85),rgba(160,150,255,.5) 30%,#141526 70%)}
+.orb-wrap h2{font-size:17px;font-weight:800}
+.orb-wrap .s{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.orb-wrap .s i{width:6px;height:6px;border-radius:50%;background:var(--mint);box-shadow:0 0 8px var(--mint)}
+.cx{margin:0 18px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.03);border:1px dashed var(--stroke-2);font-size:12px;color:var(--text-2);display:flex;gap:8px;align-items:center}
+.cx [data-lucide]{width:15px;height:15px;color:var(--violet)}
+.thread{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:14px}
+.m{max-width:100%;font-size:14px;line-height:1.55}
+.m.ai{padding:14px 16px;border-radius:6px 20px 20px 20px;background:rgba(255,255,255,.045);border:1px solid var(--stroke)}
+.m.ai b{color:#fff}
+.m.ai .san{font-family:var(--mono);font-size:12.5px;padding:1px 6px;border-radius:6px;background:rgba(139,123,255,.18);color:#cfc8ff}
+.m.u{align-self:flex-end;max-width:82%;padding:10px 14px;border-radius:20px 6px 20px 20px;background:linear-gradient(135deg,rgba(139,123,255,.35),rgba(139,123,255,.18));border:1px solid rgba(139,123,255,.35)}
+.insight{margin-top:12px;border-radius:16px;overflow:hidden;border:1px solid var(--stroke-2);background:#0d0f16}
+.insight .vb{border-radius:0}
+.insight .cap{padding:10px 12px;font-size:12.5px;color:var(--text-2);display:flex;gap:8px;align-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{padding:7px 12px;border-radius:12px;font-size:12.5px;font-weight:700;background:rgba(255,255,255,.05);border:1px solid var(--stroke);display:inline-flex;gap:6px;align-items:center}
+.chip:hover{border-color:var(--stroke-2);background:rgba(255,255,255,.08)}
+.chip.go2{background:rgba(70,230,192,.12);border-color:rgba(70,230,192,.35);color:var(--mint)}
+.chip [data-lucide]{width:14px;height:14px}
+.composer{padding:14px 18px 18px}
+.box{border-radius:18px;background:rgba(255,255,255,.05);border:1px solid var(--stroke-2);padding:12px 12px 10px 16px;transition:box-shadow .2s,border-color .2s}
+.box:focus-within{border-color:rgba(139,123,255,.6);box-shadow:0 0 0 4px rgba(139,123,255,.12)}
+.box textarea{width:100%;border:0;outline:0;background:transparent;color:var(--text);font:inherit;resize:none;height:44px}
+.box textarea::placeholder{color:var(--muted)}
+.box .bar{display:flex;align-items:center;gap:6px}
+.box .bar .sp{flex:1}
+.mini{height:30px;padding:0 10px;border-radius:9px;font-size:12px;font-weight:700;color:var(--text-2);display:inline-flex;gap:6px;align-items:center;background:rgba(255,255,255,.04)}
+.mini.on{color:var(--mint);background:rgba(70,230,192,.1)}
+.send{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--violet),var(--pink));display:grid;place-items:center;color:#fff}
+.fine{font-size:11px;color:var(--muted);margin-top:8px;text-align:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.orb{animation:none}}
+@media (max-width:1380px){.hero{grid-column:span 12}.streak,.goal{grid-column:span 6}.rating{grid-column:span 12}.lesson{grid-column:span 7}.friend{grid-column:span 5}}
+@media (max-width:1100px){.app{grid-template-columns:84px minmax(0,1fr)}.coach{display:none}}
+@media (max-width:760px){.app{grid-template-columns:1fr}.dock{display:none}.hero{grid-template-columns:1fr}.bento>*{grid-column:span 12!important}.search{display:none}.row{grid-template-columns:40px 1fr 80px}.row>*:nth-child(3),.row>*:nth-child(5){display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="dock" aria-label="Main">
+    <div class="logo"><i data-lucide="crown"></i></div>
+    <a class="dk on" href="#" aria-label="Home"><i data-lucide="layout-grid"></i><span class="tip">Home</span></a>
+    <a class="dk" href="#" aria-label="Play"><i data-lucide="swords"></i><span class="tip">Play</span></a>
+    <a class="dk" href="#" aria-label="Puzzles"><i data-lucide="puzzle"></i><span class="tip">Puzzles</span></a>
+    <a class="dk" href="#" aria-label="Learn"><i data-lucide="book-open"></i><span class="tip">Learn</span></a>
+    <a class="dk" href="#" aria-label="Mistake bank, 7 due"><i data-lucide="rotate-ccw"></i><span class="b"></span><span class="tip">Mistake Bank · 7 due</span></a>
+    <a class="dk" href="#" aria-label="Games"><i data-lucide="library"></i><span class="tip">My Games</span></a>
+    <a class="dk" href="#" aria-label="Analysis"><i data-lucide="scan-search"></i><span class="tip">Analysis</span></a>
+    <a class="dk" href="#" aria-label="Friends"><i data-lucide="users"></i><span class="tip">Friends</span></a>
+    <a class="dk" href="#" aria-label="Progress"><i data-lucide="activity"></i><span class="tip">Progress</span></a>
+    <span class="sp"></span>
+    <a class="dk" href="#" aria-label="Settings"><i data-lucide="settings"></i><span class="tip">Settings</span></a>
+    <span class="me">SK</span>
+  </nav>
+
+  <main>
+    <div class="top">
+      <div class="hello"><h1>Evening, Shudipto</h1><p>Saturday · you usually train for 15 minutes around now</p></div>
+      <div class="search"><i data-lucide="search"></i>Search openings, lessons, games…<kbd>⌘K</kbd></div>
+    </div>
+
+    <div class="bento">
+      <section class="t hero">
+        <div>
+          <span class="tag mint"><i data-lucide="sparkles" style="width:13px;height:13px"></i>Your next step</span>
+          <h2>Fix <span>5 mistakes</span><br>from this week</h2>
+          <p>These positions are due today. Recall them now, while they're fresh, and they stop repeating in your games.</p>
+          <div><a class="go" href="#"><i data-lucide="play"></i>Start review · 4 min</a><a class="ghost" href="#">or play a game</a></div>
+          <div class="steps">
+            <div class="st done"><i data-lucide="check" style="width:14px;height:14px"></i><b>Daily puzzle</b></div>
+            <div class="st done"><i data-lucide="check" style="width:14px;height:14px"></i><b>Lesson · Forks II</b></div>
+            <div class="st now">Step 3<b>Mistake review</b></div>
+          </div>
+        </div>
+        <div class="bwrap">
+          <div class="vb" data-id="h" data-set="staunty" data-fen="r4rk1/pp3ppp/2p5/6n1/3P4/2P5/PP3P1P/R3Q1K1 b - - 0 17" data-hl="g5"></div>
+          <div class="bcap"><b>Black to play</b> · what did the knight see?</div>
+        </div>
+      </section>
+
+      <section class="t streak">
+        <div class="label"><i data-lucide="flame" style="color:var(--amber)"></i>STREAK</div>
+        <div class="big">12<small>days</small></div>
+        <div class="week"><div class="wd on">M</div><div class="wd on">T</div><div class="wd fr" title="Freeze used"><i data-lucide="snowflake" style="width:14px;height:14px"></i></div><div class="wd on">T</div><div class="wd on">F</div><div class="wd td">S</div><div class="wd">S</div></div>
+      </section>
+      <section class="t goal">
+        <div class="ring"><b>2/3</b></div>
+        <div><div class="label"><i data-lucide="target"></i>DAILY GOAL</div><p style="font-weight:700;font-size:16px;margin-top:6px">One more to go</p><p class="sub">Mistake review completes today</p></div>
+      </section>
+
+      <section class="t rating">
+        <div class="label" style="justify-content:space-between"><span style="display:flex;gap:8px;align-items:center"><i data-lucide="trending-up"></i>PUZZLE RATING</span><span class="tag mint">+64 · 30d</span></div>
+        <div class="big" style="margin-top:10px">1482</div>
+        <svg class="spark" viewBox="0 0 300 84" preserveAspectRatio="none" aria-label="Rating trend up">
+          <defs><linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#8b7bff"/><stop offset="1" stop-color="#46e6c0"/></linearGradient>
+          <linearGradient id="g2" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#46e6c0" stop-opacity=".25"/><stop offset="1" stop-color="#46e6c0" stop-opacity="0"/></linearGradient></defs>
+          <path d="M0,70 C30,66 45,72 70,58 S110,60 130,48 S170,50 190,36 S240,34 260,22 S290,14 300,10 L300,84 L0,84Z" fill="url(#g2)"/>
+          <path d="M0,70 C30,66 45,72 70,58 S110,60 130,48 S170,50 190,36 S240,34 260,22 S290,14 300,10" fill="none" stroke="url(#g1)" stroke-width="3" vector-effect="non-scaling-stroke"/>
+          <circle cx="300" cy="10" r="4" fill="#46e6c0"/>
+        </svg>
+      </section>
+      <a class="t lesson" href="#">
+        <div class="label"><i data-lucide="book-open"></i>CONTINUE LEARNING</div>
+        <h3>Royal fork</h3><p>Tactics Foundations · Unit 3, lesson 4</p>
+        <div class="prog"><span style="width:38%"></span></div>
+        <p class="sub" style="margin-top:8px">38% of track · 3 lessons to the next unit</p>
+      </a>
+      <a class="t friend" href="#">
+        <div class="label"><i data-lucide="users"></i>FRIENDS</div>
+        <h3>Your move vs Rafi</h3><p>Najdorf · move 14 · no clock</p>
+        <div style="margin-top:14px"><span class="tag pink"><i data-lucide="send" style="width:12px;height:12px"></i>Invite link ready</span></div>
+      </a>
+
+      <section class="t games">
+        <div class="label" style="margin-bottom:8px"><i data-lucide="history"></i>RECENT GAMES</div>
+        <a class="row" href="#"><span class="res w">W</span><span><b>Stockfish 1200</b><div class="sub">Italian Game · 34 moves</div></span><span class="sub">2 hours ago</span><span class="mono">84%</span><span><span class="tag red">1 blunder</span></span><span class="rv">Review</span></a>
+        <a class="row" href="#"><span class="res l">L</span><span><b>Rafi</b><div class="sub">Sicilian Najdorf · 41 moves</div></span><span class="sub">Yesterday</span><span class="mono">71%</span><span><span class="tag red">3 blunders</span></span><span class="rv">Review</span></a>
+        <a class="row" href="#"><span class="res d">½</span><span><b>Stockfish 1400</b><div class="sub">Queen's Gambit · 58 moves</div></span><span class="sub">Thursday</span><span class="mono">88%</span><span><span class="tag mint">Clean</span></span><span class="rv">Review</span></a>
+      </section>
+    </div>
+  </main>
+
+  <aside class="coach" aria-label="AI coach">
+    <div class="orb-wrap"><div class="orb" aria-hidden="true"></div><div><h2>Coach</h2><div class="s"><i></i>Gemini 2.5 Flash · your key</div></div></div>
+    <div class="cx"><i data-lucide="scan-eye"></i>Seeing your last 9 games · today's plan</div>
+    <div class="thread" aria-live="polite">
+      <div class="m ai">I went through your week. <b>4 of your 5 losses</b> started the same way: a knight fork you didn't see coming.
+        <div class="insight"><div class="vb" data-id="c" data-set="staunty" data-fen="r4rk1/pp3ppp/2p5/6n1/3P4/2P5/PP3P1P/R3Q1K1 b - - 0 17" data-arrows="g5f3,f3g1:alt,f3e1:alt"></div>
+          <div class="cap"><i data-lucide="zap" style="width:14px;height:14px;color:var(--pink)"></i><span><span class="san">…Nf3+</span> hits king and queen at once</span></div></div>
+        <div class="chips"><button class="chip go2"><i data-lucide="target"></i>Drill forks · 8</button><button class="chip">Why after castling?</button></div>
+      </div>
+      <div class="m u">Is the Italian still right for me?</div>
+      <div class="m ai">Yes. Your accuracy is <b>6 points higher</b> in Italian games. Keep it and add the <span class="san">a4</span> plan against …a6.</div>
+    </div>
+    <div class="composer">
+      <div class="box">
+        <textarea placeholder="Ask about a move, a plan, your week…" aria-label="Ask the coach"></textarea>
+        <div class="bar"><button class="mini on"><i data-lucide="eye-off" style="width:13px;height:13px"></i>No spoilers</button><button class="mini"><i data-lucide="cpu" style="width:13px;height:13px"></i>Engine</button><span class="sp"></span><button class="send" aria-label="Send"><i data-lucide="arrow-up" style="width:16px;height:16px"></i></button></div>
+      </div>
+      <div class="fine">1.2k tokens today · ≈ $0.0004</div>
+    </div>
+  </aside>
+</div>
+<script>addEventListener('DOMContentLoaded',()=>lucide.createIcons())</script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D · Grove — Chess King</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="board.js" defer></script>
+<style>
+/* D · GROVE — calm, warm, tactile. Training should feel like a good habit, not a grind.
+   Clay = action, sage = growth, butter = reward. The coach is a character: "Sage". */
+:root{
+  --oat:#f3ede2; --card:#fffaf1; --ink:#1f2b25; --ink-2:#4b5850; --muted:#8a8f86; --line:#e6ddcd;
+  --clay:#d4643a; --clay-2:#b9522c; --sage:#6c8c6f; --sage-soft:#e2eadc; --sage-deep:#2f4a3a;
+  --butter:#f2c867; --butter-soft:#fbefcf; --sky:#cfe0ea; --rose:#f3d9cf;
+  --disp:'Bricolage Grotesque',system-ui,sans-serif; --sans:'DM Sans',system-ui,sans-serif;
+  --r:26px;
+  --vb-light:#f4ecda; --vb-dark:#9fb596; --vb-hl:rgba(242,200,103,.55); --vb-arrow:rgba(47,74,58,.85); --vb-arrow-alt:rgba(212,100,58,.9); --vb-focus:#d4643a;
+}
+*{box-sizing:border-box} html,body{height:100%}
+body{margin:0;background:var(--oat);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none} button{font:inherit;color:inherit;cursor:pointer;border:0;background:none} p,h1,h2,h3{margin:0}
+[data-lucide]{width:19px;height:19px;stroke-width:2}
+.app{display:grid;grid-template-columns:236px minmax(0,1fr) 372px;height:100dvh;gap:16px;padding:16px}
+
+/* nav */
+.nav{background:var(--card);border-radius:var(--r);padding:20px 14px;display:flex;flex-direction:column;gap:2px;box-shadow:0 1px 0 var(--line),0 12px 30px -18px rgba(60,50,20,.25);overflow:auto}
+.logo{display:flex;align-items:center;gap:10px;padding:0 8px 18px;font-family:var(--disp);font-weight:800;font-size:21px;letter-spacing:-.02em}
+.logo .k{width:38px;height:38px;border-radius:13px;background:var(--sage-deep);color:var(--butter);display:grid;place-items:center;transform:rotate(-6deg)}
+.nv{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;font-weight:600;color:var(--ink-2);transition:background .2s,color .2s}
+.nv:hover{background:var(--oat);color:var(--ink)}
+.nv.on{background:var(--sage-soft);color:var(--sage-deep)}
+.nv .ct{margin-left:auto;min-width:22px;height:22px;border-radius:99px;background:var(--clay);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center;padding:0 6px}
+.nav hr{border:0;border-top:1.5px dashed var(--line);margin:10px 8px}
+.energy{margin-top:auto;padding:14px;border-radius:20px;background:var(--oat)}
+.energy b{font-family:var(--disp);font-size:15px}
+.energy p{font-size:12.5px;color:var(--muted);margin-top:2px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:10px;background:var(--card);padding:4px;border-radius:14px}
+.seg button{padding:7px 0;border-radius:10px;font-weight:700;font-size:12.5px;color:var(--ink-2)}
+.seg button.on{background:var(--sage-deep);color:#fff}
+
+/* main */
+main{overflow:auto;padding:12px 8px 40px}
+.greet{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:14px}
+.greet h1{font-family:var(--disp);font-weight:700;font-size:34px;letter-spacing:-.03em;line-height:1.05}
+.greet p{color:var(--ink-2);margin-top:4px}
+.flame{display:flex;align-items:center;gap:10px;padding:8px 16px 8px 8px;border-radius:99px;background:var(--butter-soft);font-weight:700}
+.flame span{width:34px;height:34px;border-radius:50%;background:var(--butter);display:grid;place-items:center;color:#6b4a00}
+.hero{position:relative;overflow:hidden;border-radius:32px;background:var(--sage-deep);color:#f5f1e6;padding:32px;display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:30px;align-items:center}
+.hero::before{content:"";position:absolute;right:-80px;top:-120px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(242,200,103,.28),transparent 65%)}
+.hero .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.1);font-size:13px;font-weight:600;color:#e7e1cf}
+.hero h2{font-family:var(--disp);font-weight:700;font-size:46px;line-height:1;letter-spacing:-.035em;margin-top:16px}
+.hero h2 em{font-style:normal;color:var(--butter)}
+.hero p{color:#cdd5cc;margin-top:12px;max-width:40ch;font-size:15.5px}
+.cta{display:inline-flex;align-items:center;gap:10px;height:56px;padding:0 26px;border-radius:20px;background:var(--clay);color:#fff;font-weight:700;font-size:16px;margin-top:24px;box-shadow:0 5px 0 var(--clay-2);transition:transform .12s,box-shadow .12s}
+.cta:hover{transform:translateY(-1px)}
+.cta:active{transform:translateY(4px);box-shadow:0 1px 0 var(--clay-2)}
+.soft{margin-left:16px;color:#cdd5cc;font-weight:600;text-decoration:underline;text-underline-offset:4px;text-decoration-color:rgba(255,255,255,.3)}
+/* stepping stones */
+.stones{position:relative;display:flex;align-items:center;gap:0;margin-top:28px;max-width:420px}
+.stone{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;font-size:12px;font-weight:600;color:#aebcaf;text-align:center}
+.stone i{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.08);font-style:normal;border:2px solid rgba(255,255,255,.12)}
+.stone.done i{background:var(--butter);border-color:var(--butter);color:#5a3f00}
+.stone.now i{background:transparent;border:2.5px solid var(--butter);color:var(--butter);box-shadow:0 0 0 6px rgba(242,200,103,.15)}
+.stone.now{color:#fff}
+.stones::before{content:"";position:absolute;left:16%;right:16%;top:20px;border-top:2px dashed rgba(255,255,255,.25)}
+.hb{position:relative;z-index:1}
+.hb .vb{border-radius:18px;box-shadow:0 24px 50px -18px rgba(0,0,0,.6);transform:rotate(-3deg)}
+.hb .note{position:absolute;left:-26px;bottom:-14px;background:var(--card);color:var(--ink);padding:9px 14px;border-radius:16px 16px 16px 4px;font-size:13px;font-weight:600;box-shadow:0 10px 24px -10px rgba(0,0,0,.4);transform:rotate(2deg)}
+
+.cards{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;margin-top:16px}
+.card{border-radius:var(--r);background:var(--card);padding:22px;box-shadow:0 1px 0 var(--line),0 12px 30px -20px rgba(60,50,20,.3);transition:transform .2s}
+a.card:hover{transform:translateY(-3px) rotate(-.3deg)}
+.card h3{font-family:var(--disp);font-weight:700;font-size:21px;letter-spacing:-.02em;line-height:1.15}
+.card .s{color:var(--ink-2);font-size:14px;margin-top:4px}
+.ico{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;margin-bottom:16px}
+.c-lesson{grid-column:span 5;background:var(--sage-soft)} .c-lesson .ico{background:var(--card);color:var(--sage-deep)}
+.c-goal{grid-column:span 3;background:var(--butter-soft);display:flex;flex-direction:column;align-items:center;text-align:center} .c-goal .s{font-size:13px}
+.c-friend{grid-column:span 4;background:var(--sky)} .c-friend .ico{background:var(--card);color:#2d5a78}
+.bar{height:10px;border-radius:99px;background:rgba(255,255,255,.7);margin-top:18px;overflow:hidden}
+.bar span{display:block;height:100%;border-radius:inherit;background:var(--sage)}
+.ring{--v:66;width:92px;height:92px;border-radius:50%;background:conic-gradient(var(--clay) calc(var(--v)*1%),rgba(0,0,0,.07) 0);display:grid;place-items:center;position:relative;margin-bottom:12px}
+.ring::before{content:"";position:absolute;inset:10px;border-radius:50%;background:var(--butter-soft)}
+.ring b{position:relative;font-family:var(--disp);font-size:24px}
+.av{display:flex;align-items:center;gap:10px;margin-top:16px}
+.av span{width:34px;height:34px;border-radius:50%;background:#e9a15a;color:#3b1d00;font-weight:700;display:grid;place-items:center;font-size:13px}
+.mini-t{font-size:13px;font-weight:600}
+.c-rate{grid-column:span 5}
+.c-games{grid-column:span 7}
+.big{font-family:var(--disp);font-weight:800;font-size:48px;letter-spacing:-.04em;line-height:1}
+.up{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;background:var(--sage-soft);color:var(--sage-deep);font-weight:700;font-size:13px}
+.spark{width:100%;height:80px;margin-top:14px}
+.gm{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1.5px dashed var(--line)}
+.gm:first-of-type{border-top:0}
+.gm .r{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;font-family:var(--disp);font-weight:800;flex:none}
+.gm .r.w{background:var(--sage-soft);color:var(--sage-deep)} .gm .r.l{background:var(--rose);color:var(--clay-2)} .gm .r.d{background:var(--oat);color:var(--ink-2)}
+.gm .t{flex:1;min-width:0} .gm .t b{display:block} .gm .t span{font-size:12.5px;color:var(--muted)}
+.gm .go{padding:8px 14px;border-radius:12px;background:var(--oat);font-weight:700;font-size:13px}
+.gm .go:hover{background:var(--ink);color:var(--card)}
+
+/* coach — Sage */
+.coach{background:var(--card);border-radius:var(--r);display:flex;flex-direction:column;min-height:0;box-shadow:0 1px 0 var(--line),0 12px 30px -18px rgba(60,50,20,.25);overflow:hidden}
+.ch{padding:20px 20px 14px;display:flex;align-items:center;gap:12px}
+.face{width:52px;height:52px;border-radius:18px;background:var(--sage-deep);display:grid;place-items:center;color:var(--butter);position:relative;flex:none}
+.face::after{content:"";position:absolute;right:-3px;bottom:-3px;width:14px;height:14px;border-radius:50%;background:#7ed49a;border:3px solid var(--card)}
+.face [data-lucide]{width:26px;height:26px}
+.ch h2{font-family:var(--disp);font-weight:700;font-size:20px;letter-spacing:-.02em}
+.ch p{font-size:12.5px;color:var(--muted)}
+.ch .x{margin-left:auto;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;color:var(--muted)}
+.ch .x:hover{background:var(--oat)}
+.sees{margin:0 20px;padding:10px 14px;border-radius:16px;background:var(--oat);font-size:12.5px;color:var(--ink-2);display:flex;gap:8px;align-items:center}
+.th{flex:1;overflow:auto;padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.sb{background:var(--sage-soft);border-radius:6px 22px 22px 22px;padding:14px 16px;font-size:14.5px;line-height:1.55;color:var(--ink)}
+.sb b{color:var(--sage-deep)}
+.sb .san{font-weight:700;background:var(--card);padding:1px 7px;border-radius:8px;font-size:13.5px}
+.sb .pic{margin-top:12px;background:var(--card);border-radius:16px;padding:8px}
+.sb .pic .vb{border-radius:10px}
+.sb .pic p{font-size:12.5px;color:var(--ink-2);padding:8px 4px 2px}
+.ub{align-self:flex-end;max-width:82%;background:var(--ink);color:var(--card);border-radius:22px 6px 22px 22px;padding:11px 15px;font-size:14px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.act{padding:8px 13px;border-radius:13px;background:var(--card);font-weight:700;font-size:13px;display:inline-flex;gap:6px;align-items:center;border:1.5px solid var(--line)}
+.act:hover{border-color:var(--sage)}
+.act.pri{background:var(--clay);border-color:var(--clay);color:#fff}
+.act [data-lucide]{width:15px;height:15px}
+.cf{padding:12px 20px 18px}
+.qs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:10px}
+.qs button{white-space:nowrap;padding:7px 12px;border-radius:99px;background:var(--oat);font-size:12.5px;font-weight:600;color:var(--ink-2)}
+.qs button:hover{background:var(--sage-soft);color:var(--sage-deep)}
+.inp{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 16px;border-radius:20px;background:var(--oat);border:2px solid transparent;transition:border-color .2s}
+.inp:focus-within{border-color:var(--sage)}
+.inp input{flex:1;border:0;outline:0;background:transparent;font:inherit;color:var(--ink)}
+.inp button{width:42px;height:42px;border-radius:15px;background:var(--sage-deep);color:var(--butter);display:grid;place-items:center}
+.tiny{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:8px;padding:0 4px}
+@media (max-width:1320px){.app{grid-template-columns:80px minmax(0,1fr) 340px}.nav .nv span,.logo span,.energy{display:none}.nv{justify-content:center}.nv .ct{position:absolute;margin:0;transform:translate(12px,-12px);min-width:18px;height:18px;font-size:10px}.nv{position:relative}.hero{grid-template-columns:1fr 200px}.hero h2{font-size:38px}.c-lesson,.c-friend,.c-rate,.c-games{grid-column:span 6}.c-goal{grid-column:span 12;flex-direction:row;gap:16px;text-align:left}}
+@media (max-width:1050px){.app{grid-template-columns:minmax(0,1fr)}.nav,.coach{display:none}}
+@media (max-width:700px){.hero{grid-template-columns:1fr;padding:24px}.cards>*{grid-column:span 12!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="nav" aria-label="Main">
+    <div class="logo"><span class="k"><i data-lucide="crown"></i></span><span>Chess King</span></div>
+    <a class="nv on" href="#"><i data-lucide="sun"></i><span>Today</span></a>
+    <a class="nv" href="#"><i data-lucide="swords"></i><span>Play</span></a>
+    <a class="nv" href="#"><i data-lucide="puzzle"></i><span>Puzzles</span></a>
+    <a class="nv" href="#"><i data-lucide="sprout"></i><span>Learn</span></a>
+    <a class="nv" href="#"><i data-lucide="rotate-ccw"></i><span>Mistakes</span><b class="ct">7</b></a>
+    <hr>
+    <a class="nv" href="#"><i data-lucide="library"></i><span>My games</span></a>
+    <a class="nv" href="#"><i data-lucide="microscope"></i><span>Analysis</span></a>
+    <a class="nv" href="#"><i data-lucide="users"></i><span>Friends</span></a>
+    <a class="nv" href="#"><i data-lucide="leaf"></i><span>Growth</span></a>
+    <a class="nv" href="#"><i data-lucide="settings"></i><span>Settings</span></a>
+    <div class="energy">
+      <b>Time today?</b><p>I'll shape the plan around it.</p>
+      <div class="seg" role="group" aria-label="Session length"><button>5m</button><button class="on">15m</button><button>30m</button></div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="greet">
+      <div><h1>Good evening, Shudipto</h1><p>Fifteen calm minutes. That's all today needs.</p></div>
+      <div class="flame"><span><i data-lucide="flame"></i></span>12 days · 1 freeze saved</div>
+    </div>
+
+    <section class="hero">
+      <div style="position:relative;z-index:1">
+        <span class="pill"><i data-lucide="sparkles" style="width:15px;height:15px"></i>Step 3 of 3 · almost done</span>
+        <h2>Five little <em>mistakes</em> want a second chance.</h2>
+        <p>They're from this week's games. Solve them now while they're fresh, and they'll quietly stop happening.</p>
+        <div><a class="cta" href="#"><i data-lucide="play"></i>Let's fix them · 4 min</a><a class="soft" href="#">play a game instead</a></div>
+        <div class="stones" aria-label="Today's plan">
+          <div class="stone done"><i><i data-lucide="check"></i></i>Daily puzzle</div>
+          <div class="stone done"><i><i data-lucide="check"></i></i>Forks lesson</div>
+          <div class="stone now"><i>3</i>Mistakes</div>
+        </div>
+      </div>
+      <div class="hb">
+        <div class="vb" data-id="h" data-set="california" data-fen="r4rk1/pp3ppp/2p5/6n1/3P4/2P5/PP3P1P/R3Q1K1 b - - 0 17" data-hl="g5"></div>
+        <div class="note">What did this knight see?</div>
+      </div>
+    </section>
+
+    <div class="cards">
+      <a class="card c-lesson" href="#">
+        <div class="ico"><i data-lucide="sprout"></i></div>
+        <h3>Royal fork</h3><p class="s">Tactics Foundations · Unit 3, lesson 4. The trick behind 4 of your losses.</p>
+        <div class="bar"><span style="width:38%"></span></div>
+      </a>
+      <section class="card c-goal">
+        <div class="ring"><b>2/3</b></div>
+        <div><h3>Daily goal</h3><p class="s">One more and today blooms.</p></div>
+      </section>
+      <a class="card c-friend" href="#">
+        <div class="ico"><i data-lucide="send"></i></div>
+        <h3>Rafi is waiting</h3><p class="s">Your move in the Najdorf. No clock, no rush.</p>
+        <div class="av"><span>RA</span><div class="mini-t">Sent 2 hours ago</div></div>
+      </a>
+      <section class="card c-rate">
+        <div style="display:flex;justify-content:space-between;align-items:center"><p class="s" style="margin:0;font-weight:600">Puzzle rating</p><span class="up"><i data-lucide="trending-up" style="width:14px;height:14px"></i>+64 this month</span></div>
+        <div class="big" style="margin-top:8px">1482</div>
+        <svg class="spark" viewBox="0 0 300 80" preserveAspectRatio="none" aria-label="Rating trend up">
+          <path d="M0,66 C40,62 50,70 80,56 S130,58 150,44 S200,46 220,32 S270,24 300,12 L300,80 L0,80Z" fill="#e2eadc"/>
+          <path d="M0,66 C40,62 50,70 80,56 S130,58 150,44 S200,46 220,32 S270,24 300,12" fill="none" stroke="#6c8c6f" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+        </svg>
+        <p class="s" style="font-size:12.5px">You vs you, 30 days ago: <b style="color:var(--sage-deep)">better at forks and pins</b>.</p>
+      </section>
+      <section class="card c-games">
+        <h3 style="font-size:18px;margin-bottom:6px">Recent games</h3>
+        <a class="gm" href="#"><span class="r w">W</span><span class="t"><b>Stockfish 1200</b><span>Italian Game · 84% accuracy · 2h ago</span></span><span class="go">Review</span></a>
+        <a class="gm" href="#"><span class="r l">L</span><span class="t"><b>Rafi</b><span>Sicilian Najdorf · 71% · yesterday</span></span><span class="go">Review</span></a>
+        <a class="gm" href="#"><span class="r d">½</span><span class="t"><b>Stockfish 1400</b><span>Queen's Gambit · 88% · Thursday</span></span><span class="go">Review</span></a>
+      </section>
+    </div>
+  </main>
+
+  <aside class="coach" aria-label="AI coach Sage">
+    <div class="ch"><span class="face"><i data-lucide="brain"></i></span><div><h2>Sage</h2><p>Your coach · Gemini, your key</p></div><button class="x" aria-label="Close coach"><i data-lucide="panel-right-close"></i></button></div>
+    <div class="sees"><i data-lucide="eye" style="width:16px;height:16px;color:var(--sage)"></i>I can see your week and today's plan</div>
+    <div class="th" aria-live="polite">
+      <div class="sb">Hey! I looked through your last 9 games. Good news: your openings are solid. The one thing tripping you up: <b>knight forks</b>. Four of five losses started with one.
+        <div class="pic"><div class="vb" data-id="c" data-set="california" data-fen="r4rk1/pp3ppp/2p5/6n1/3P4/2P5/PP3P1P/R3Q1K1 b - - 0 17" data-arrows="g5f3,f3g1:alt,f3e1:alt"></div><p><span class="san">…Nf3+</span> hits your king and queen together.</p></div>
+        <div class="acts"><button class="act pri"><i data-lucide="target"></i>8 fork puzzles</button><button class="act">Why after castling?</button></div>
+      </div>
+      <div class="ub">Is the Italian still right for me?</div>
+      <div class="sb">Definitely. You play it <b>6% more accurately</b> than anything else. Let's add one idea: <span class="san">a4</span> when Black plays …a6.</div>
+    </div>
+    <div class="cf">
+      <div class="qs"><button>What should I work on?</button><button>Plan my week</button><button>Explain like I'm new</button></div>
+      <label class="inp"><input placeholder="Ask Sage anything…" aria-label="Ask Sage"><button aria-label="Send"><i data-lucide="arrow-up"></i></button></label>
+      <div class="tiny"><span>No spoilers during puzzles</span><span>1.2k tokens today</span></div>
+    </div>
+  </aside>
+</div>
+<script>addEventListener('DOMContentLoaded',()=>lucide.createIcons())</script>
+</body>
+</html>

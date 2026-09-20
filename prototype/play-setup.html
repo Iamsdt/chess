@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New game · Chess King</title>
+<script src="assets/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="assets/board.js" defer></script>
+<script src="assets/shell.js" defer></script>
+<style>
+  /* rating slider: token-coloured track and thumb */
+  .rating-range{ -webkit-appearance:none; appearance:none; height:8px; border-radius:999px; background:linear-gradient(to right,var(--primary) 0 var(--fill,40%),var(--muted) var(--fill,40%) 100%); cursor:pointer }
+  .rating-range::-webkit-slider-thumb{ -webkit-appearance:none; width:22px; height:22px; border-radius:50%; background:var(--card); border:3px solid var(--primary); box-shadow:0 2px 6px rgba(0,0,0,.18) }
+  .rating-range::-moz-range-thumb{ width:16px; height:16px; border-radius:50%; background:var(--card); border:3px solid var(--primary); box-shadow:0 2px 6px rgba(0,0,0,.18) }
+  .rating-range:focus-visible{ outline:none; box-shadow:0 0 0 3px color-mix(in oklab,var(--ring) 50%,transparent) }
+</style>
+</head>
+<body data-nav="play"
+      data-chat-context="your last 10 games vs Stockfish · results by level"
+      data-chat-attach="Game setup"
+      data-chat-quick="Which level should I pick?|What does 'Tricky' play like?|Should I play untimed?">
+
+<template id="chat-seed">
+  <div data-divider>Today, 7:58 PM</div>
+  <div data-sage data-time="7:58 PM" data-replies="Start at 1200|Stay at 1100 today" data-cta="0">
+    <div class="bubble">You won <b>4 of your last 5</b> at 1100, and two of those were over by move 30. That level is getting comfortable.</div>
+    <div class="bubble">I'd try <b>1200</b>. You'll win a bit more than half, which is where you learn fastest. Keep training wheels on for the first game.</div>
+  </div>
+  <div data-me data-time="7:59 PM">Should I pick a personality?</div>
+  <div data-sage data-time="7:59 PM">Go with <b>Solid</b> tonight. It won't throw tricks at you, so your games will turn on plans, not traps. Your Italian is ready for that.</div>
+</template>
+
+<main>
+  <div class="page">
+    <header class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="label">Sparring · no rating at stake</p>
+        <h1 class="page-title mt-1">Start a game</h1>
+        <p class="mt-1 text-sm text-muted-foreground">Stockfish runs in your browser. Every game is reviewed afterwards, win or lose.</p>
+      </div>
+      <a href="games.html" class="btn btn-ghost btn-sm text-muted-foreground"><i data-lucide="library"></i>Past games</a>
+    </header>
+
+    <div class="@container"><div class="mt-7 grid gap-6 @[640px]:grid-cols-[minmax(0,1fr)_260px]">
+      <!-- setup form -->
+      <div class="space-y-5">
+        <!-- opponent strength -->
+        <section class="card p-5 sm:p-6" aria-labelledby="lvl-h">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 id="lvl-h" class="text-lg font-bold">Opponent strength</h2>
+              <p class="help mt-0.5">Stockfish, tuned to play like a human at this rating.</p>
+            </div>
+            <span class="badge badge-reward"><i data-lucide="sparkles" class="size-3.5"></i>Sage recommends 1200</span>
+          </div>
+
+          <div class="mt-5 flex items-end gap-3">
+            <output id="lvl-out" for="lvl" class="font-display text-5xl font-bold tabular-nums leading-none">1200</output>
+            <div class="pb-1 text-sm">
+              <div id="lvl-name" class="font-medium">A fair fight</div>
+              <div class="text-muted-foreground">≈<span id="lvl-win">55</span>% win chance for you</div>
+            </div>
+          </div>
+
+          <label for="lvl" class="sr-only">Opponent rating</label>
+          <input id="lvl" type="range" min="400" max="2400" step="50" value="1200" class="rating-range mt-6 w-full" aria-describedby="lvl-name">
+          <div class="relative mt-2 h-5 text-[11px] text-muted-foreground" aria-hidden="true">
+            <span class="absolute left-0">400</span>
+            <span class="absolute left-[20%] -translate-x-1/2">800</span>
+            <span class="absolute left-[40%] -translate-x-1/2 font-semibold text-foreground">1200</span>
+            <span class="absolute left-[60%] -translate-x-1/2">1600</span>
+            <span class="absolute left-[80%] -translate-x-1/2">2000</span>
+            <span class="absolute right-0">2400</span>
+          </div>
+
+          <div class="mt-4 grid grid-cols-3 gap-2 text-xs" aria-label="Where this level sits for you">
+            <div class="rounded-lg bg-accent/60 px-3 py-2.5"><div class="font-semibold text-accent-foreground">Comfortable</div><div class="text-muted-foreground">below 1100</div></div>
+            <div class="rounded-lg border-2 border-primary/30 bg-card px-3 py-2.5"><div class="font-semibold">Growth zone</div><div class="text-muted-foreground">1150 – 1300</div></div>
+            <div class="rounded-lg bg-cta-soft px-3 py-2.5"><div class="font-semibold text-cta">Stretch</div><div class="text-muted-foreground">above 1350</div></div>
+          </div>
+        </section>
+
+        <!-- color + time -->
+        <section class="card p-5 sm:p-6" aria-labelledby="col-h">
+          <h2 id="col-h" class="text-lg font-bold">Your colour</h2>
+          <div class="mt-3 grid grid-cols-3 gap-2" data-options data-sum="color">
+            <button type="button" class="option is-active flex-col gap-2 py-4 text-center" data-val="White">
+              <span class="grid size-10 place-items-center rounded-full border bg-[var(--vb-light)]"><img src="assets/pieces/california/wK.svg" alt="" class="size-7"></span>
+              <span class="text-sm font-medium">White</span>
+            </button>
+            <button type="button" class="option flex-col gap-2 py-4 text-center" data-val="Random">
+              <span class="grid size-10 place-items-center rounded-full border bg-[linear-gradient(90deg,var(--vb-light)_50%,var(--vb-dark)_50%)]"><i data-lucide="shuffle" class="size-4 text-foreground"></i></span>
+              <span class="text-sm font-medium">Random</span>
+            </button>
+            <button type="button" class="option flex-col gap-2 py-4 text-center" data-val="Black">
+              <span class="grid size-10 place-items-center rounded-full border bg-[var(--vb-dark)]"><img src="assets/pieces/california/bK.svg" alt="" class="size-7"></span>
+              <span class="text-sm font-medium">Black</span>
+            </button>
+          </div>
+
+          <h2 class="mt-6 text-lg font-bold" id="tc-h">Time control</h2>
+          <div class="mt-3 overflow-x-auto [scrollbar-width:none]">
+            <div class="seg" role="radiogroup" aria-labelledby="tc-h" data-sum="time">
+              <button type="button" data-val="Untimed">Untimed</button>
+              <button type="button" class="is-active" data-val="10 + 5">10 + 5</button>
+              <button type="button" data-val="15 + 10">15 + 10</button>
+              <button type="button" data-val="30 + 0">30 + 0</button>
+            </div>
+          </div>
+          <p class="help mt-2">10 + 5 gives you time to check every capture and check before you move.</p>
+        </section>
+
+        <!-- personality -->
+        <section class="card p-5 sm:p-6" aria-labelledby="per-h">
+          <h2 id="per-h" class="text-lg font-bold">Opponent personality</h2>
+          <div class="mt-3 grid gap-2 @[980px]:grid-cols-3" data-options data-sum="style">
+            <button type="button" class="option is-active items-start" data-val="Solid">
+              <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground"><i data-lucide="shield"></i></span>
+              <span><span class="block text-sm font-semibold">Solid</span><span class="block text-xs text-muted-foreground">Safe moves, slow plans. Punishes loose pieces.</span></span>
+            </button>
+            <button type="button" class="option items-start" data-val="Aggressive">
+              <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-cta-soft text-cta"><i data-lucide="flame"></i></span>
+              <span><span class="block text-sm font-semibold">Aggressive</span><span class="block text-xs text-muted-foreground">Attacks your king early. Good for defence practice.</span></span>
+            </button>
+            <button type="button" class="option items-start" data-val="Tricky">
+              <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-lilac text-lilac-ink"><i data-lucide="wand-sparkles"></i></span>
+              <span><span class="block text-sm font-semibold">Tricky</span><span class="block text-xs text-muted-foreground">Sets traps and cheap shots. Tests your blunder check.</span></span>
+            </button>
+          </div>
+        </section>
+
+        <!-- help -->
+        <section class="card p-5 sm:p-6" aria-labelledby="help-h">
+          <h2 id="help-h" class="text-lg font-bold">Help while you play</h2>
+          <div class="mt-3 space-y-2">
+            <label class="flex items-center gap-3 rounded-lg bg-muted/50 p-3 text-sm"><i data-lucide="shield-check" class="text-primary"></i><span class="flex-1"><span class="block font-medium">Training wheels</span><span class="text-xs text-muted-foreground">Sage warns you before you hang a piece</span></span><span class="switch"><input type="checkbox" checked data-sum-toggle="wheels"><span></span></span></label>
+            <label class="flex items-center gap-3 rounded-lg bg-muted/50 p-3 text-sm"><i data-lucide="gauge"></i><span class="flex-1"><span class="block font-medium">Show evaluation</span><span class="text-xs text-muted-foreground">Off helps you judge positions yourself</span></span><span class="switch"><input type="checkbox" data-sum-toggle="eval"><span></span></span></label>
+            <label class="flex items-center gap-3 rounded-lg bg-muted/50 p-3 text-sm"><i data-lucide="undo-2"></i><span class="flex-1"><span class="block font-medium">Allow take-backs</span><span class="text-xs text-muted-foreground">Take-backs are marked in the review, never hidden</span></span><span class="switch"><input type="checkbox" checked data-sum-toggle="undo"><span></span></span></label>
+          </div>
+        </section>
+
+        <!-- start from -->
+        <section class="card p-5 sm:p-6" aria-labelledby="from-h">
+          <h2 id="from-h" class="text-lg font-bold">Start from</h2>
+          <div class="mt-3 grid gap-2" data-options id="from-opts">
+            <button type="button" class="option is-active" data-val="Standard position" data-fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1">
+              <i data-lucide="layout-grid" class="text-muted-foreground"></i>
+              <span class="flex-1"><span class="block text-sm font-semibold">Standard position</span><span class="block text-xs text-muted-foreground">A full game from move one</span></span>
+            </button>
+            <button type="button" class="option" data-val="Lesson · The royal fork" data-fen="r1bqkb1r/pppp1ppp/2n2n2/4p1N1/2B1P3/8/PPPP1PPP/RNBQK2R b KQkq - 5 4">
+              <i data-lucide="sprout" class="text-muted-foreground"></i>
+              <span class="flex-1"><span class="block text-sm font-semibold">A position from a lesson or puzzle</span><span class="block text-xs text-muted-foreground">Last used: <span class="text-foreground">Two Knights, 4.Ng5</span> from “The royal fork”</span></span>
+              <span class="badge max-sm:hidden">Recent</span>
+            </button>
+            <button type="button" class="option" data-val="Custom FEN" data-fen="">
+              <i data-lucide="clipboard-paste" class="text-muted-foreground"></i>
+              <span class="flex-1"><span class="block text-sm font-semibold">Paste a FEN</span><span class="block text-xs text-muted-foreground">Any legal position. Play it out against Stockfish.</span></span>
+            </button>
+          </div>
+          <div id="fen-box" class="mt-3" hidden>
+            <label for="fen" class="field-label">FEN</label>
+            <input id="fen" class="input mt-1.5 font-mono text-xs" placeholder="r1bq1rk1/ppp2ppp/2np1n2/2b1p3/2B1P3/2PP1N2/PP3PPP/RNBQ1RK1 w - - 1 7" spellcheck="false">
+            <p class="help mt-1.5">Checked for legality before the game starts.</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- summary -->
+      <aside class="space-y-4 @[640px]:sticky @[640px]:top-6 @[640px]:self-start" aria-label="Game summary">
+        <div class="card overflow-hidden border-cta/30">
+          <div class="bg-muted/40 p-3">
+            <div class="mx-auto max-w-[168px] overflow-hidden rounded-xl ring-1 ring-border">
+              <div class="vb" id="sum-board" data-fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" aria-label="Starting position"></div>
+            </div>
+          </div>
+          <div class="p-5">
+            <p class="eyebrow">Your game</p>
+            <h2 class="mt-1 text-xl font-bold">vs Stockfish <span id="s-lvl">1200</span></h2>
+            <dl class="mt-3 space-y-2 text-sm">
+              <div class="flex justify-between gap-3"><dt class="text-muted-foreground">You play</dt><dd class="font-medium" id="s-color">White</dd></div>
+              <div class="flex justify-between gap-3"><dt class="text-muted-foreground">Clock</dt><dd class="font-medium" id="s-time">10 + 5</dd></div>
+              <div class="flex justify-between gap-3"><dt class="text-muted-foreground">Personality</dt><dd class="font-medium" id="s-style">Solid</dd></div>
+              <div class="flex justify-between gap-3"><dt class="text-muted-foreground">Start</dt><dd class="truncate font-medium" id="s-from">Standard position</dd></div>
+            </dl>
+            <div class="mt-3 flex flex-wrap gap-1.5" id="s-help">
+              <span class="badge badge-soft" data-flag="wheels"><i data-lucide="shield-check" class="size-3.5"></i>Training wheels</span>
+              <span class="badge badge-soft" data-flag="eval" hidden><i data-lucide="gauge" class="size-3.5"></i>Eval on</span>
+              <span class="badge badge-soft" data-flag="undo"><i data-lucide="undo-2" class="size-3.5"></i>Take-backs</span>
+            </div>
+            <div class="mt-4 rounded-lg bg-accent/60 px-3 py-2 text-xs text-accent-foreground"><span class="font-semibold">≈<span id="s-win">55</span>% win chance.</span> Right in your growth zone.</div>
+            <a href="play.html" class="btn btn-cta mt-5 w-full"><i data-lucide="play" class="size-[18px]"></i>Start game</a>
+            <p class="mt-2 text-center text-xs text-muted-foreground">Reviewed automatically when it ends</p>
+          </div>
+        </div>
+
+        <a href="friends.html" class="card card-hover flex items-center gap-3 bg-lilac/60 p-4">
+          <span class="grid size-10 place-items-center rounded-full bg-[#e9a15a] text-xs font-bold text-[#3b1d00]">RA</span>
+          <span class="min-w-0 flex-1">
+            <span class="block text-sm font-semibold">Play a friend instead</span>
+            <span class="block text-xs text-muted-foreground">Rafi is online · send a link, no account needed</span>
+          </span>
+          <i data-lucide="chevron-right" class="text-muted-foreground"></i>
+        </a>
+
+        <button type="button" class="flex w-full items-center gap-2 rounded-xl border border-dashed px-4 py-3 text-left text-xs text-muted-foreground hover:bg-card" data-ask="Why do you recommend 1200 for me tonight?">
+          <i data-lucide="message-circle" class="size-3.5 text-cta"></i>Not sure about the level? Ask Sage why 1200.
+        </button>
+      </aside>
+    </div></div>
+  </div>
+</main>
+
+<script>
+  // Prototype only: keep the summary card in sync with the form.
+  (function () {
+    const $ = s => document.querySelector(s);
+    const lvl = $('#lvl');
+    const names = [[700, 'Warm-up'], [1100, 'Comfortable'], [1300, 'A fair fight'], [1600, 'A real stretch'], [9999, 'Very hard']];
+    const update = () => {
+      const r = +lvl.value, win = Math.round(100 / (1 + Math.pow(10, (r - 1235) / 400)));
+      $('#lvl-out').textContent = r; $('#s-lvl').textContent = r;
+      $('#lvl-win').textContent = win; $('#s-win').textContent = win;
+      $('#lvl-name').textContent = names.find(n => r <= n[0])[1];
+      lvl.style.setProperty('--fill', ((r - 400) / 20) + '%');
+    };
+    lvl.addEventListener('input', update); update();
+    document.addEventListener('click', e => {
+      const o = e.target.closest('[data-sum] > *');
+      if (o) $('#s-' + o.parentElement.dataset.sum).textContent = o.dataset.val;
+      const f = e.target.closest('#from-opts > .option');
+      if (f) {
+        $('#s-from').textContent = f.dataset.val;
+        $('#fen-box').hidden = f.dataset.val !== 'Custom FEN';
+        if (f.dataset.fen) { const b = $('#sum-board'); b.dataset.fen = f.dataset.fen; window.VB && VB.render(b); }
+      }
+    });
+    document.querySelectorAll('[data-sum-toggle]').forEach(i => i.addEventListener('change', () => {
+      document.querySelector(`[data-flag="${i.dataset.sumToggle}"]`).hidden = !i.checked;
+    }));
+  })();
+</script>
+</body>
+</html>

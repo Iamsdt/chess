@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home Variations — Chess King</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f3ef;--card:#fff;--ink:#141412;--muted:#76746d;--line:#e2e0d9}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Geist',system-ui,sans-serif;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:48px 24px 80px}
+h1{font-size:34px;letter-spacing:-.03em;margin:0}
+.lead{color:var(--muted);margin:8px 0 32px;max-width:62ch}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+a.v{display:flex;flex-direction:column;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;color:inherit;text-decoration:none;transition:transform .2s,box-shadow .2s}
+a.v:hover{transform:translateY(-3px);box-shadow:0 20px 40px -24px rgba(0,0,0,.3)}
+.sw{display:flex;gap:6px}.sw i{width:28px;height:28px;border-radius:8px;border:1px solid rgba(0,0,0,.08)}
+.tag{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+h2{margin:0;font-size:24px;letter-spacing:-.02em}
+p{margin:0;color:#3f3e3a;font-size:14.5px}
+dl{margin:0;display:grid;grid-template-columns:110px 1fr;gap:4px 12px;font-size:13.5px}
+dt{color:var(--muted)} dd{margin:0}
+.open{margin-top:auto;font-weight:600}
+@media (max-width:800px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Chess King: home page directions</h1>
+  <p class="lead">You picked B (Nocturne) and D (Grove). D has three new variations built with Tailwind CSS and shadcn/ui tokens, which are the same component system the React app will use.</p>
+  <div class="grid">
+    <a class="v" href="d1-grove-light.html">
+      <span class="tag">D1 · Light · shadcn</span><h2>Grove Light</h2>
+      <div class="sw"><i style="background:#f6f2ea"></i><i style="background:#2f4a3a"></i><i style="background:#d4643a"></i><i style="background:#f0c35f"></i><i style="background:#dbe8ef"></i></div>
+      <p>The cleanest, most "product" version of D: a shadcn sidebar, breadcrumb header, one hero with today's stepper, a row of stat cards, a games table. Sage has Chat / Insights / Plan tabs.</p>
+      <dl><dt>Best for</dt><dd>Clarity and a familiar SaaS-quality feel</dd><dt>Stack</dt><dd>Tailwind v4 + shadcn tokens</dd></dl>
+      <span class="open">Open D1 →</span>
+    </a>
+    <a class="v" href="d2-grove-dusk.html">
+      <span class="tag">D2 · Dark · shadcn</span><h2>Grove Dusk</h2>
+      <div class="sw"><i style="background:#0e1311"></i><i style="background:#b5d3a8"></i><i style="background:#ec7d4f"></i><i style="background:#f2c867"></i><i style="background:#8fb8d4"></i></div>
+      <p>D's calm habit mixed with B's night mood. The home page is a session planner: pick 5, 15 or 30 minutes and Sage builds the session. Includes a practice-rhythm heatmap and a "waiting for you" inbox.</p>
+      <dl><dt>Best for</dt><dd>Evening practice, B's atmosphere</dd><dt>Stack</dt><dd>Tailwind v4 + shadcn tokens (dark)</dd></dl>
+      <span class="open">Open D2 →</span>
+    </a>
+    <a class="v" href="d3-grove-bloom.html">
+      <span class="tag">D3 · Warm · shadcn</span><h2>Grove Bloom</h2>
+      <div class="sw"><i style="background:#f7f3ec"></i><i style="background:#24463a"></i><i style="background:#e0673c"></i><i style="background:#f2c24e"></i><i style="background:#ece7fb"></i></div>
+      <p>The most habit-driven version: today is a vertical path you walk down, and a "chess garden" plant grows with your streak. Sage leads with insight cards (pattern, strength, habit) instead of chat.</p>
+      <dl><dt>Best for</dt><dd>Motivation and daily return</dd><dt>Stack</dt><dd>Tailwind v4 + shadcn tokens</dd></dl>
+      <span class="open">Open D3 →</span>
+    </a>
+    <a class="v" href="d-grove.html">
+      <span class="tag">D · Original</span><h2>Grove</h2>
+      <div class="sw"><i style="background:#f3ede2"></i><i style="background:#2f4a3a"></i><i style="background:#d4643a"></i><i style="background:#f2c867"></i><i style="background:#cfe0ea"></i></div>
+      <p>The first Grove concept, kept for reference: a big forest-green hero, stepping stones, the coach "Sage".</p>
+      <span class="open">Open D →</span>
+    </a>
+    <a class="v" href="b-nocturne.html">
+      <span class="tag">B · Dark · Glass bento</span><h2>Nocturne</h2>
+      <div class="sw"><i style="background:#07080c"></i><i style="background:#46e6c0"></i><i style="background:#8b7bff"></i><i style="background:#ff6fb5"></i><i style="background:#8190ad"></i></div>
+      <p>Deep night, aurora light, floating dock, bento grid, and a glowing orb coach. Kept for reference; D2 borrows its mood.</p>
+      <span class="open">Open B →</span>
+    </a>
+  </div>
+</div>
+</body>
+</html>

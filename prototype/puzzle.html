@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Puzzle 4 of 10 · Chess King</title>
+<script src="assets/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="assets/board.js" defer></script>
+<script src="assets/shell.js" defer></script>
+<style>
+  /* Board pages: the board is sized by viewport height so the whole puzzle fits without scrolling */
+  .board-size { width: min(100%, calc(100dvh - 56px - 48px - 84px)); }
+  /* keep ranks equal height when a move empties a whole rank */
+  .vb { grid-template-rows: repeat(8, 1fr); }
+</style>
+</head>
+<body data-nav="puzzles" data-layout="board"
+      data-chat-context="puzzle 4 of 10 · White to play · answer hidden (No spoilers)"
+      data-chat-attach="Puzzle 4 of 10"
+      data-chat-quick="Give me a nudge|What should I look at first?|Explain after I solve it">
+
+<template id="chat-seed">
+  <div data-divider>Adaptive set · 7:54 PM</div>
+  <div data-sage data-time="7:54 PM">Puzzle 4. Take your time, there's no rush on this one.</div>
+  <div data-me data-time="7:55 PM">I'm stuck. Just tell me the answer.</div>
+  <div data-sage data-time="7:55 PM" data-replies="One more nudge|I'll try again" data-cta="1">
+    <div class="bubble">I'll keep it spoiler-free, since you'll remember it far better if you find it. <b>Nudge:</b> Black's king and the rook on a8 are on the same back rank. Which of your pieces can hit two squares at once?</div>
+    <div class="bubble">Checks first. That's always the first question.</div>
+  </div>
+</template>
+
+<main>
+  <!-- puzzle header -->
+  <header class="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur lg:px-6">
+    <a href="puzzles.html" class="btn btn-ghost btn-sm"><i data-lucide="arrow-left"></i><span class="max-sm:hidden">Puzzles</span></a>
+    <div class="mx-1 h-5 w-px bg-border"></div>
+    <h1 class="flex items-center gap-2 text-base font-bold"><i data-lucide="puzzle" class="text-cta"></i><span class="max-sm:hidden">Adaptive puzzles</span><span class="sm:hidden">Puzzle</span></h1>
+    <div class="ml-2 flex items-center gap-1.5" role="img" aria-label="Puzzle 4 of 10: 2 solved, 1 missed, current puzzle, 6 to go">
+      <span class="size-2.5 rounded-full bg-primary"></span>
+      <span class="size-2.5 rounded-full bg-primary"></span>
+      <span class="size-2.5 rounded-full bg-q-mistake"></span>
+      <span class="size-3 rounded-full bg-cta ring-[3px] ring-cta/25"></span>
+      <span class="size-2.5 rounded-full bg-muted max-sm:hidden"></span><span class="size-2.5 rounded-full bg-muted max-sm:hidden"></span><span class="size-2.5 rounded-full bg-muted max-sm:hidden"></span><span class="size-2.5 rounded-full bg-muted max-sm:hidden"></span><span class="size-2.5 rounded-full bg-muted max-sm:hidden"></span><span class="size-2.5 rounded-full bg-muted max-sm:hidden"></span>
+    </div>
+    <span class="text-sm font-medium tabular-nums">4 <span class="text-muted-foreground">of 10</span></span>
+    <div class="ml-auto flex items-center gap-1">
+      <span class="badge badge-reward max-md:hidden"><i data-lucide="flame" class="size-3.5"></i>12 days</span>
+      <button class="btn btn-ghost btn-sm" data-toast="Board flipped" data-toast-icon="arrow-up-down"><i data-lucide="arrow-up-down"></i><span class="max-sm:hidden">Flip</span></button>
+      <a href="settings.html#board" class="btn btn-ghost btn-icon btn-sm" title="Board & pieces" aria-label="Board and piece settings"><i data-lucide="palette"></i></a>
+    </div>
+  </header>
+
+  <div class="grid gap-5 p-4 lg:p-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+    <!-- board column -->
+    <section class="flex justify-center" aria-label="Puzzle board">
+      <div class="board-size space-y-2.5">
+        <div class="flex items-center gap-3">
+          <span class="grid size-9 place-items-center rounded-xl bg-card ring-1 ring-border"><span class="size-4 rounded-full bg-[var(--vb-light)] ring-1 ring-black/25"></span></span>
+          <div class="leading-tight"><div class="text-sm font-semibold">White to play</div><div class="text-xs text-muted-foreground">Black just played <span class="san">…c6</span>, hitting your knight</div></div>
+          <div class="clock" aria-label="Time on this puzzle">0:24</div>
+        </div>
+        <div class="overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.45)] ring-1 ring-border">
+          <div class="vb" id="pz-board" data-interactive data-coords
+               data-fen="r3kb1r/pp1n1ppp/2p1pn2/1N6/3P4/5N2/PPP2PPP/R1B1KB1R w KQkq - 0 9"
+               data-hl="c7,c6" aria-label="Puzzle board, White to move"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- side panel -->
+    <aside class="card flex min-h-0 flex-col overflow-hidden xl:max-h-[calc(100dvh-56px-48px)]" aria-label="Puzzle panel">
+      <div class="border-b px-5 py-4">
+        <p class="label">Your task</p>
+        <h2 class="mt-0.5 font-display text-xl font-bold leading-snug">White to play and win material</h2>
+        <div class="mt-3 flex items-center gap-2 text-xs">
+          <span id="meta-hidden" class="inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-1 text-muted-foreground"><i data-lucide="eye-off" class="size-3.5"></i>Rating and theme hidden</span>
+          <span id="meta-shown" class="hidden items-center gap-1.5"><span class="badge badge-soft">Fork</span><span class="badge text-muted-foreground">Rating 1490</span></span>
+          <button class="ml-auto font-medium text-primary hover:underline" id="reveal-meta" type="button">Reveal</button>
+        </div>
+      </div>
+
+      <div class="min-h-0 flex-1 space-y-5 overflow-auto p-5">
+        <!-- hint ladder -->
+        <section aria-labelledby="hint-h">
+          <div class="flex items-center justify-between"><h3 id="hint-h" class="text-sm font-semibold">Hint ladder</h3><span class="text-xs text-muted-foreground">1 of 3 used</span></div>
+          <ol class="mt-2.5 space-y-2">
+            <li class="flex items-start gap-3 rounded-xl border border-reward/50 bg-reward-soft p-3">
+              <span class="grid size-6 shrink-0 place-items-center rounded-full bg-reward text-[11px] font-bold text-[#5a3f00]">1</span>
+              <div class="min-w-0 flex-1"><div class="flex items-center gap-2 text-sm font-medium">Nudge <span class="badge border-transparent bg-card text-[10px] text-reward-ink">Used</span></div><p class="mt-0.5 text-sm text-reward-ink">Look for a check.</p></div>
+            </li>
+            <li>
+              <button type="button" id="hint-2" class="flex w-full items-start gap-3 rounded-xl border bg-card p-3 text-left transition hover:border-ring/60">
+                <span class="grid size-6 shrink-0 place-items-center rounded-full bg-muted text-[11px] font-bold text-muted-foreground">2</span>
+                <span class="min-w-0 flex-1"><span class="block text-sm font-medium">Focus square</span><span class="block text-xs text-muted-foreground">Circles the key square on the board</span></span>
+                <i data-lucide="lock-open" class="mt-0.5 text-muted-foreground"></i>
+              </button>
+            </li>
+            <li>
+              <button type="button" class="flex w-full items-start gap-3 rounded-xl border border-dashed bg-card p-3 text-left opacity-70 transition hover:opacity-100" data-toast="Move shown. This puzzle won't count toward your rating." data-toast-icon="eye">
+                <span class="grid size-6 shrink-0 place-items-center rounded-full bg-muted text-[11px] font-bold text-muted-foreground">3</span>
+                <span class="min-w-0 flex-1"><span class="block text-sm font-medium">Show the move</span><span class="block text-xs text-muted-foreground">Then you replay it from the start</span></span>
+                <i data-lucide="lock" class="mt-0.5 text-muted-foreground"></i>
+              </button>
+            </li>
+          </ol>
+        </section>
+
+        <!-- feedback states (preview) -->
+        <section aria-labelledby="fb-h">
+          <div class="flex items-center justify-between gap-2">
+            <h3 id="fb-h" class="text-sm font-semibold">After your move</h3>
+            <div class="seg text-xs" role="tablist" aria-label="Preview feedback state">
+              <button class="is-active !px-2.5 !py-1" data-tab="solving" data-group="fb" role="tab">Solving</button>
+              <button class="!px-2.5 !py-1" data-tab="correct" data-group="fb" role="tab">Correct</button>
+              <button class="!px-2.5 !py-1" data-tab="wrong" data-group="fb" role="tab">Not quite</button>
+            </div>
+          </div>
+
+          <div class="mt-2.5 rounded-xl border border-dashed p-4 text-sm text-muted-foreground" data-panel="solving" data-group="fb">
+            <div class="flex items-center gap-2 font-medium text-foreground"><i data-lucide="hand" class="text-primary"></i>Your move</div>
+            <p class="mt-1">Drag or tap a piece. Checks, captures, threats: in that order.</p>
+          </div>
+
+          <div class="mt-2.5 rise rounded-xl border border-success/30 bg-accent/60 p-4" data-panel="correct" data-group="fb" hidden>
+            <div class="flex items-center gap-2">
+              <span class="grid size-7 place-items-center rounded-full bg-primary text-primary-foreground"><i data-lucide="check"></i></span>
+              <div class="flex-1 font-display text-lg font-bold">Correct</div>
+              <span class="badge border-transparent bg-card font-semibold text-success">+9 rating</span>
+            </div>
+            <p class="mt-2 text-sm"><span class="san">Nc7+</span> <span class="san">Kd8</span> <span class="san">Nxa8</span> <span class="text-muted-foreground">wins the rook.</span></p>
+            <div class="mt-3 rounded-lg bg-card p-3">
+              <div class="label">Why it works</div>
+              <p class="mt-1 text-sm leading-relaxed">The king on e8 and the rook on a8 are both one knight jump from c7, and nothing guards c7. A check forces the king to move first, so the rook can't escape.</p>
+            </div>
+            <div class="mt-3 flex flex-wrap items-center gap-2">
+              <a href="puzzle.html" class="btn btn-cta">Next puzzle<i data-lucide="arrow-right" class="size-[18px]"></i></a>
+              <button class="btn btn-ghost btn-sm" data-ask="Why does Nc7+ work here? Explain the fork.">Ask Sage why</button>
+            </div>
+          </div>
+
+          <div class="mt-2.5 rise rounded-xl border border-cta/30 bg-cta-soft p-4" data-panel="wrong" data-group="fb" hidden>
+            <div class="flex items-center gap-2">
+              <span class="grid size-7 place-items-center rounded-full bg-card text-cta ring-1 ring-cta/30"><i data-lucide="rotate-ccw"></i></span>
+              <div class="flex-1 font-display text-lg font-bold">Not quite</div>
+            </div>
+            <p class="mt-2 text-sm">That move is fine, but it lets Black off the hook. There's something stronger. <b class="font-semibold">Your rating hasn't changed yet.</b></p>
+            <div class="mt-3 flex flex-wrap items-center gap-2">
+              <button class="btn btn-default" id="try-again" type="button"><i data-lucide="rotate-ccw"></i>Try again</button>
+              <button class="btn btn-ghost btn-sm" id="hint-2b">Use hint 2</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="space-y-2 border-t p-3">
+        <div class="grid grid-cols-2 gap-2">
+          <button class="btn btn-outline btn-sm" data-ask="Why is this puzzle tricky? Don't tell me the move."><i data-lucide="message-circle"></i>Ask Sage why</button>
+          <button class="btn btn-ghost btn-sm text-muted-foreground" data-toast="Skipped. It will come back later in this set." data-toast-icon="skip-forward"><i data-lucide="skip-forward"></i>Skip</button>
+        </div>
+        <p class="flex items-center justify-center gap-1.5 text-center text-[11px] text-muted-foreground"><i data-lucide="eye-off" class="size-3"></i>No spoilers is on. Sage only nudges.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script>
+  // Prototype behaviour: the right move shows "Correct", anything else "Not quite".
+  document.addEventListener('DOMContentLoaded', () => {
+    const board = document.getElementById('pz-board');
+    const tab = t => document.querySelector(`.seg [data-tab="${t}"]`)?.click();
+    board.addEventListener('board:move', e => {
+      const ok = e.detail.from === 'b5' && e.detail.to === 'c7';
+      tab(ok ? 'correct' : 'wrong');
+      if (ok) document.getElementById('reveal-meta').click();
+    });
+    const focus = () => { board.dataset.focus = 'c7'; window.VB.render(board); window.CK?.toast('Hint 2: look at the circled square', 'lightbulb'); };
+    document.getElementById('try-again').addEventListener('click', () => { tab('solving'); window.VB.render(board); });
+    document.getElementById('hint-2').addEventListener('click', focus);
+    document.getElementById('hint-2b').addEventListener('click', focus);
+    document.getElementById('reveal-meta').addEventListener('click', e => {
+      document.getElementById('meta-hidden').remove();
+      const s = document.getElementById('meta-shown'); s.classList.remove('hidden'); s.classList.add('inline-flex');
+      e.currentTarget.remove();
+    });
+  });
+</script>
+</body>
+</html>

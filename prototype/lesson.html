@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Royal fork · Chess King</title>
+<script src="assets/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="assets/board.js" defer></script>
+<script src="assets/shell.js" defer></script>
+<style>
+  .board-size { width: min(100%, calc(100dvh - 56px - 48px - 64px)); }
+  .san { white-space: nowrap; }
+  .vb { grid-template-rows: repeat(8, 1fr); } /* equal ranks even when rows are empty */
+</style>
+</head>
+<body data-nav="learn" data-layout="board"
+      data-chat-context="lesson: Royal fork · step 3 of 7 · White to move · no spoilers"
+      data-chat-attach="Lesson step 3"
+      data-chat-quick="Explain differently|Another example|Why does this work?">
+
+<template id="chat-seed">
+  <div data-divider>Lesson started · 7:54 PM</div>
+  <div data-sage data-time="7:54 PM">I'm here if you get stuck. <b>No spoilers</b> is on, so I'll nudge rather than tell.</div>
+  <div data-me data-time="7:56 PM">I don't get it. Why is it called "royal"?</div>
+  <div data-sage data-time="7:56 PM" data-replies="Another example|Give me a nudge" data-cta="1">
+    <div class="bubble">Let me try it another way. A fork is <b>one piece shouting at two others</b>. It's "royal" when those two are the king and the queen.</div>
+    <div class="bubble">The king can't ignore a check, so the queen gets left behind. Remember your game from Tuesday?</div>
+    <div class="chat-card">
+      <div class="vb" data-fen="r4rk1/pp3ppp/2p5/6n1/3P4/2P5/PP3P1P/R3Q1K1 b - - 0 17" data-arrows="g5f3,f3g1:alt,f3e1:alt"></div>
+      <div class="flex items-center justify-between gap-2 px-3 py-2 text-xs"><span><span class="san">…Nf3+</span> hit your king and queen</span><span class="text-muted-foreground">Same shape</span></div>
+    </div>
+    <div class="bubble">Now it's your turn to be the knight.</div>
+  </div>
+</template>
+
+<main>
+  <!-- lesson header -->
+  <header class="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur lg:px-6">
+    <a href="learn.html" class="btn btn-ghost btn-sm"><i data-lucide="x"></i>Exit</a>
+    <div class="mx-1 h-5 w-px bg-border"></div>
+    <h1 class="flex min-w-0 items-center gap-2 text-base font-bold"><i data-lucide="sprout" class="text-cta"></i><span class="truncate">Royal fork</span></h1>
+    <span class="badge max-md:hidden">Double attacks</span>
+    <div class="ml-auto flex items-center gap-3">
+      <div class="flex items-center gap-1 max-sm:hidden" aria-hidden="true">
+        <span class="h-1.5 w-6 rounded-full bg-primary"></span><span class="h-1.5 w-6 rounded-full bg-primary"></span><span class="h-1.5 w-6 rounded-full bg-cta"></span><span class="h-1.5 w-6 rounded-full bg-muted"></span><span class="h-1.5 w-6 rounded-full bg-muted"></span><span class="h-1.5 w-6 rounded-full bg-muted"></span><span class="h-1.5 w-6 rounded-full bg-muted"></span>
+      </div>
+      <span class="text-sm font-medium tabular-nums">Step 3 <span class="text-muted-foreground">of 7</span></span>
+      <a href="settings.html#board" class="btn btn-ghost btn-icon btn-sm" title="Board &amp; pieces" aria-label="Board and piece settings"><i data-lucide="palette"></i></a>
+    </div>
+  </header>
+
+  <div class="grid gap-5 p-4 lg:p-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+    <!-- board column -->
+    <section class="flex justify-center" aria-label="Lesson board">
+      <div class="board-size space-y-2.5">
+        <div class="flex items-center justify-between gap-3 text-sm">
+          <span class="inline-flex items-center gap-2 font-medium"><span class="size-3 rounded-full bg-white ring-1 ring-border"></span>White to move</span>
+          <span class="inline-flex items-center gap-1.5 text-xs text-muted-foreground"><i data-lucide="mouse-pointer-click" class="size-3.5"></i>Click a piece, then a square</span>
+        </div>
+        <div class="overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.45)] ring-1 ring-border">
+          <div class="vb" data-interactive data-coords
+               data-fen="r1q2rk1/1p1n1pbp/p2p2p1/3Np3/4P3/2P5/PP2BPPP/R2Q1RK1 w - - 0 13"
+               data-focus="g8,c8" aria-label="Lesson board, White to move. The black king on g8 and queen on c8 are circled."></div>
+        </div>
+        <p class="flex items-center gap-2 text-xs text-muted-foreground"><span class="inline-block size-3 rounded-full ring-2 ring-cta"></span>Circled: the two targets. Your job is to hit both at once.</p>
+      </div>
+    </section>
+
+    <!-- side panel -->
+    <aside class="card flex min-h-0 flex-col overflow-hidden xl:max-h-[calc(100dvh-56px-48px)]" aria-label="Lesson step">
+      <div class="min-h-0 flex-1 space-y-4 overflow-auto p-5">
+        <div>
+          <p class="eyebrow">Step 3 · Your turn</p>
+          <h2 class="mt-1.5 text-xl font-bold leading-snug">Your move: find the knight jump that attacks king and queen</h2>
+          <p class="mt-2 text-sm text-muted-foreground">A knight check can't be blocked. If the same jump also lands on the queen, Black has to save the king first.</p>
+        </div>
+
+        <!-- hint ladder -->
+        <div>
+          <div class="flex items-center justify-between"><span class="label">Hints</span><span class="text-xs text-muted-foreground">1 of 3 used</span></div>
+          <ol class="mt-2 space-y-1.5 text-sm">
+            <li class="flex items-start gap-2.5 rounded-lg bg-muted/60 p-2.5"><span class="grid size-5 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">1</span><span><span class="font-medium">Nudge.</span> <span class="text-muted-foreground">Which of your pieces can check the king without being taken?</span></span></li>
+            <li><button class="flex w-full items-center gap-2.5 rounded-lg border border-dashed p-2.5 text-left hover:bg-muted/50" data-toast="The knight on d5 is your hero. Where can it jump?" data-toast-icon="lightbulb"><span class="grid size-5 shrink-0 place-items-center rounded-full border text-[10px] font-bold text-muted-foreground">2</span><span class="flex-1 text-muted-foreground">Show the piece</span><i data-lucide="lock-open" class="text-muted-foreground"></i></button></li>
+            <li><button class="flex w-full items-center gap-2.5 rounded-lg border border-dashed p-2.5 text-left hover:bg-muted/50" data-toast="Revealing the move ends this step without a star" data-toast-icon="eye"><span class="grid size-5 shrink-0 place-items-center rounded-full border text-[10px] font-bold text-muted-foreground">3</span><span class="flex-1 text-muted-foreground">Show the move</span><i data-lucide="eye" class="text-muted-foreground"></i></button></li>
+          </ol>
+        </div>
+
+        <!-- example feedback states -->
+        <div>
+          <div class="flex items-center justify-between gap-2"><span class="label">Feedback preview</span>
+            <div class="seg text-xs" role="tablist">
+              <button class="is-active" data-tab="ok" data-group="fb" role="tab">Correct</button>
+              <button data-tab="miss" data-group="fb" role="tab">Not quite</button>
+            </div>
+          </div>
+          <div class="mt-2 rounded-xl border border-primary/25 bg-accent/60 p-3.5" data-panel="ok" data-group="fb">
+            <div class="flex items-center gap-2 text-sm font-semibold text-primary"><span class="q q-best">★</span>That's the royal fork</div>
+            <div class="mt-2.5 grid grid-cols-[104px_1fr] items-start gap-3">
+              <div class="overflow-hidden rounded-lg ring-1 ring-border"><div class="vb" data-fen="r1q2rk1/1p1nNpbp/p2p2p1/4p3/4P3/2P5/PP2BPPP/R2Q1RK1 b - - 1 13" data-hl="d5,e7" data-check="g8" data-arrows="e7g8:alt,e7c8:alt" aria-label="Knight on e7 attacks g8 and c8"></div></div>
+              <p class="text-sm text-muted-foreground [&_.san]:whitespace-nowrap"><span class="san">Ne7+</span> checks the king on g8 and hits the queen on c8. After <span class="san">…Kh8</span>, <span class="san">Nxc8</span> wins the queen.</p>
+            </div>
+          </div>
+          <div class="mt-2 rounded-xl border border-reward/40 bg-reward-soft p-3.5" data-panel="miss" data-group="fb" hidden>
+            <div class="flex items-center gap-2 text-sm font-semibold text-reward-ink"><i data-lucide="lightbulb"></i>Close. Good eye for forks.</div>
+            <p class="mt-1.5 text-sm text-muted-foreground"><span class="san">Nb6</span> attacks the queen and the rook. But it isn't check, so Black simply moves the queen. Can you find a jump that <b class="font-semibold text-foreground">gives check</b> too?</p>
+            <button class="btn btn-outline btn-sm mt-2.5" data-toast="Position reset. Try again." data-toast-icon="rotate-ccw"><i data-lucide="rotate-ccw"></i>Try again</button>
+          </div>
+        </div>
+
+        <!-- key idea -->
+        <div class="flex gap-3 rounded-xl bg-lilac/60 p-3.5">
+          <i data-lucide="key-round" class="mt-0.5 text-lilac-ink"></i>
+          <div><div class="text-sm font-semibold text-lilac-ink">Key idea</div><p class="mt-0.5 text-sm text-muted-foreground">Check first, collect later. A fork with check leaves the opponent no time to save both pieces.</p></div>
+        </div>
+
+        <button class="btn btn-ghost btn-sm w-full text-muted-foreground" data-ask="Can you explain the royal fork in a different way? No spoilers."><i data-lucide="message-circle"></i>Still fuzzy? Ask Sage to explain it differently</button>
+      </div>
+
+      <div class="space-y-2 border-t p-3">
+        <div class="grid grid-cols-2 gap-2">
+          <button class="btn btn-outline btn-sm" data-toast="Step 2 · How a knight moves in an L" data-toast-icon="chevron-left"><i data-lucide="chevron-left"></i>Prev step</button>
+          <button class="btn btn-default btn-sm" data-toast="Play the move on the board first" data-toast-icon="mouse-pointer-click">Next step<i data-lucide="chevron-right"></i></button>
+        </div>
+        <button class="btn btn-ghost btn-sm w-full text-muted-foreground" data-open="done"><i data-lucide="party-popper"></i>Preview the lesson-complete card</button>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<dialog class="modal" id="done" aria-labelledby="done-h">
+  <div class="relative overflow-hidden p-6 text-center">
+    <div class="absolute inset-x-0 top-0 h-24 bg-reward-soft"></div>
+    <div class="relative mx-auto grid size-16 place-items-center rounded-2xl bg-primary text-reward shadow-lg"><i data-lucide="sprout" class="size-8"></i></div>
+    <p class="relative mt-4 eyebrow">Lesson complete</p>
+    <h2 id="done-h" class="mt-1 text-2xl font-bold">You found the royal fork</h2>
+    <p class="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">Seven steps in 6 minutes. You solved 5 of 6 without the final hint.</p>
+    <div class="mt-5 grid grid-cols-3 gap-2 text-left">
+      <div class="rounded-xl bg-muted/60 p-3"><div class="font-display text-xl font-bold">5/6</div><div class="text-xs text-muted-foreground">first try</div></div>
+      <div class="rounded-xl bg-muted/60 p-3"><div class="font-display text-xl font-bold">1</div><div class="text-xs text-muted-foreground">hint used</div></div>
+      <div class="rounded-xl bg-reward-soft p-3"><div class="font-display text-xl font-bold text-reward-ink">+1</div><div class="text-xs text-muted-foreground">leaf grown</div></div>
+    </div>
+    <div class="mt-4 rounded-xl border p-3 text-left text-sm">
+      <div class="label">Take-away</div>
+      <p class="mt-1">Before every move, ask: <b class="font-semibold">"Can a knight check and hit my queen?"</b> This comes back for review in 3 days.</p>
+    </div>
+    <div class="mt-6 flex flex-col items-center gap-2">
+      <a href="puzzle.html" class="btn btn-cta w-full sm:w-auto"><i data-lucide="target" class="size-[18px]"></i>Practice 5 puzzles</a>
+      <a href="learn.html" class="btn btn-ghost btn-sm text-muted-foreground">Back to course</a>
+    </div>
+  </div>
+</dialog>
+<script>/* chat-seed boards are built by shell.js after board.js has run */ addEventListener("DOMContentLoaded", () => window.VB && VB.renderAll());</script>
+</body>
+</html>

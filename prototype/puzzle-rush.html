@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Puzzle Rush · Chess King</title>
+<script src="assets/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="assets/board.js" defer></script>
+<script src="assets/shell.js" defer></script>
+<style>
+  /* keep ranks equal height when a rank is empty */
+  .vb { grid-template-rows: repeat(8, 1fr); }
+  /* Board pages: the board is sized by viewport height so the whole rush fits without scrolling */
+  .board-size { width: min(100%, calc(100dvh - 56px - 48px - 96px)); }
+</style>
+</head>
+<body data-nav="puzzles" data-layout="board" data-chat="closed"
+      data-chat-context="Puzzle Rush · 3 min · score 17 · answers hidden"
+      data-chat-attach="This rush"
+      data-chat-note="Chat is closed during timed modes so you can focus. Sage will recap your misses when the clock stops."
+      data-chat-quick="Recap my misses|Why did I lose time?|Which theme slowed me down?">
+
+<template id="chat-seed">
+  <div data-divider>Rush started · 8:10 PM</div>
+  <div data-sage data-time="8:10 PM">Good luck! I'll stay out of the way until the clock stops. Then we'll look at the <b>2 or 3 you missed</b>, not the ones you got.</div>
+</template>
+
+<main>
+  <!-- rush header -->
+  <header class="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur lg:px-6">
+    <a href="puzzles.html" class="btn btn-ghost btn-sm"><i data-lucide="arrow-left"></i><span class="max-sm:hidden">Puzzles</span></a>
+    <div class="mx-1 h-5 w-px bg-border"></div>
+    <h1 class="flex items-center gap-2 text-base font-bold"><i data-lucide="timer" class="text-cta"></i>Puzzle Rush</h1>
+    <span class="badge max-sm:hidden">3 min</span>
+    <div class="ml-auto flex items-center gap-1">
+      <button class="btn btn-ghost btn-sm" data-open="modes"><i data-lucide="list"></i><span class="max-sm:hidden">Change mode</span></button>
+      <a href="session-summary.html" class="btn btn-ghost btn-sm text-muted-foreground"><i data-lucide="square"></i><span class="max-sm:hidden">End run</span></a>
+    </div>
+  </header>
+
+  <div class="grid gap-5 p-4 lg:p-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+    <!-- board column -->
+    <section class="flex justify-center" aria-label="Rush board">
+      <div class="board-size space-y-3">
+        <!-- live stats -->
+        <div class="grid grid-cols-[auto_1fr_auto] items-center gap-3 sm:gap-5">
+          <div class="clock is-running ml-0 !rounded-xl !px-4 !py-1.5 !text-3xl" data-tick="134" role="timer" aria-label="Time left">2:14</div>
+          <div class="flex items-baseline gap-2">
+            <span class="font-display text-4xl font-bold tabular-nums leading-none">17</span>
+            <span class="text-sm text-muted-foreground">solved</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center gap-1 rounded-lg bg-reward-soft px-2.5 py-1 font-display text-lg font-bold text-reward-ink" title="Combo"><i data-lucide="zap" class="size-4"></i>x4</span>
+            <div class="flex items-center gap-1" role="img" aria-label="Strikes: 1 of 3 used">
+              <span class="grid size-6 place-items-center rounded-full bg-destructive-soft text-destructive"><i data-lucide="x" class="size-3.5"></i></span>
+              <span class="size-6 rounded-full border-2 border-dashed"></span>
+              <span class="size-6 rounded-full border-2 border-dashed"></span>
+            </div>
+          </div>
+        </div>
+        <div class="overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.45)] ring-1 ring-border">
+          <div class="vb" data-interactive data-coords
+               data-fen="r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4"
+               data-hl="g8,f6" aria-label="Rush puzzle 19, White to move"></div>
+        </div>
+        <div class="flex items-center justify-between text-sm">
+          <span class="flex items-center gap-2"><span class="size-3 rounded-full bg-[var(--vb-light)] ring-1 ring-black/25"></span><b class="font-semibold">White to play</b></span>
+          <span class="text-xs text-muted-foreground">Puzzle 19 · rating ~1150</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- side panel -->
+    <aside class="card flex min-h-0 flex-col overflow-hidden xl:max-h-[calc(100dvh-56px-48px)]" aria-label="Rush panel">
+      <div class="border-b p-5">
+        <div class="flex items-center justify-between"><span class="label">Personal best</span><span class="badge badge-reward"><i data-lucide="trophy" class="size-3.5"></i>PB 23</span></div>
+        <p class="mt-2 font-display text-2xl font-bold">6 to beat it</p>
+        <div class="mt-3 flex items-center gap-3"><div class="progress"><span class="w-[74%] !bg-reward"></span></div><span class="text-xs font-medium tabular-nums">17/23</span></div>
+        <p class="mt-2 text-xs text-muted-foreground">You're 3 ahead of your usual pace at this point.</p>
+      </div>
+      <div class="min-h-0 flex-1 overflow-auto p-5">
+        <h2 class="text-sm font-semibold">This run</h2>
+        <ol class="mt-3 flex flex-wrap gap-1.5" aria-label="Results so far">
+          <li class="grid size-8 place-items-center rounded-lg bg-accent text-xs font-semibold text-primary" title="Solved">1</li>
+          <li class="grid size-8 place-items-center rounded-lg bg-accent text-xs font-semibold text-primary" title="Solved">2</li>
+          <li class="grid size-8 place-items-center rounded-lg bg-accent text-xs font-semibold text-primary" title="Solved">3</li>
+          <li class="grid size-8 place-items-center rounded-lg bg-accent text-xs font-semibold text-primary" title="Solved">4</li>
+          <li class="grid size-8 place-items-center rounded-lg bg-accent text-xs font-semibold text-primary" title="Solved">5</li>
+          <li class="grid size-8 place-items-center rounded-lg bg-accent text-xs font-semibold text-primary" title="Solved">6</li>
+          <li class="grid size-8 place-items-center rounded-lg bg-accent text-xs font-semibold text-primary" title="Solved">7</li>
+          <li class="grid size-8 place-items-center rounded-lg bg-accent text-xs font-semibold text-primary" title="Solved">8</li>
+          <li class="grid size-8 place-items-center rounded-lg bg-accent text-xs font-semibold text-primary" title="Solved">9</li>
+          <li class="grid size-8 place-items-center rounded-lg bg-accent text-xs font-semibold text-primary" title="Solved">10</li>
+          <li class="grid size-8 place-items-center rounded-lg bg-accent text-xs font-semibold text-primary" title="Solved">11</li>
+          <li class="grid size-8 place-items-center rounded-lg bg-accent text-xs font-semibold text-primary" title="Solved">12</li>
+          <li class="grid size-8 place-items-center rounded-lg bg-accent text-xs font-semibold text-primary" title="Solved">13</li>
+          <li class="grid size-8 place-items-center rounded-lg bg-destructive-soft text-destructive" title="Puzzle 14 missed: skewer"><i data-lucide="x" class="size-3.5"></i><span class="sr-only">14 missed</span></li>
+          <li class="grid size-8 place-items-center rounded-lg bg-accent text-xs font-semibold text-primary" title="Solved">15</li>
+          <li class="grid size-8 place-items-center rounded-lg bg-accent text-xs font-semibold text-primary" title="Solved">16</li>
+          <li class="grid size-8 place-items-center rounded-lg bg-accent text-xs font-semibold text-primary" title="Solved">17</li>
+          <li class="grid size-8 place-items-center rounded-lg bg-accent text-xs font-semibold text-primary" title="Solved">18</li>
+          <li class="grid size-8 place-items-center rounded-lg border-2 border-cta bg-cta-soft text-xs font-bold text-cta" title="Current">19</li>
+        </ol>
+        <dl class="mt-5 grid grid-cols-2 gap-2 text-sm">
+          <div class="rounded-lg bg-muted/60 p-3"><dt class="label">Avg per puzzle</dt><dd class="mt-0.5 font-semibold tabular-nums">2.4s</dd></div>
+          <div class="rounded-lg bg-muted/60 p-3"><dt class="label">Best combo</dt><dd class="mt-0.5 font-semibold tabular-nums">x13</dd></div>
+        </dl>
+        <p class="mt-5 flex gap-2 rounded-lg border border-dashed p-3 text-xs text-muted-foreground"><i data-lucide="info" class="mt-px size-3.5"></i>Missed puzzles go to your Mistake Bank, so the skewer you missed comes back in 2 days.</p>
+      </div>
+      <div class="border-t p-3">
+        <button class="btn btn-ghost btn-sm w-full text-muted-foreground" data-toast="Paused. The clock will resume when you return." data-toast-icon="pause"><i data-lucide="pause"></i>Pause</button>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<dialog class="modal" id="modes" aria-labelledby="modes-h">
+  <div class="p-6">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h2 id="modes-h" class="text-xl font-bold">Pick your rush</h2>
+        <p class="mt-1 text-sm text-muted-foreground">Easy first, then harder. Chat with Sage pauses while the clock runs.</p>
+      </div>
+      <button class="btn btn-ghost btn-icon btn-sm" data-close aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+    <div class="mt-5 space-y-2" data-options>
+      <button class="option is-active" type="button">
+        <span class="grid size-10 place-items-center rounded-xl bg-cta-soft text-cta"><i data-lucide="timer" class="size-5"></i></span>
+        <span class="flex-1"><span class="block font-semibold">3 minutes</span><span class="block text-xs text-muted-foreground">Three strikes and you're out</span></span>
+        <span class="text-right text-xs text-muted-foreground">PB<br><b class="font-display text-base text-foreground">23</b></span>
+      </button>
+      <button class="option" type="button">
+        <span class="grid size-10 place-items-center rounded-xl bg-sky text-sky-ink"><i data-lucide="hourglass" class="size-5"></i></span>
+        <span class="flex-1"><span class="block font-semibold">5 minutes</span><span class="block text-xs text-muted-foreground">More room for harder puzzles</span></span>
+        <span class="text-right text-xs text-muted-foreground">PB<br><b class="font-display text-base text-foreground">29</b></span>
+      </button>
+      <button class="option" type="button">
+        <span class="grid size-10 place-items-center rounded-xl bg-lilac text-lilac-ink"><i data-lucide="heart-pulse" class="size-5"></i></span>
+        <span class="flex-1"><span class="block font-semibold">Survival</span><span class="block text-xs text-muted-foreground">No clock. Three misses end it</span></span>
+        <span class="text-right text-xs text-muted-foreground">PB<br><b class="font-display text-base text-foreground">31</b></span>
+      </button>
+    </div>
+    <div class="mt-6 flex items-center justify-between gap-2">
+      <span class="text-xs text-muted-foreground">Starts with a 3-second countdown</span>
+      <button class="btn btn-cta" data-close><i data-lucide="play" class="size-[18px]"></i>Start</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  // Pre-state: arriving from the Puzzles hub (#start) opens the mode picker.
+  document.addEventListener('DOMContentLoaded', () => { if (location.hash === '#start') document.getElementById('modes').showModal(); });
+</script>
+</body>
+</html>

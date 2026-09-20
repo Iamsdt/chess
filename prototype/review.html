@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game review · Chess King</title>
+<script src="assets/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="assets/board.js" defer></script>
+<script src="assets/shell.js" defer></script>
+<style>
+  /* Board pages: leave room under the board for the eval graph */
+  .board-size { width: min(100%, calc(100dvh - 56px - 48px - 104px - 118px)); min-width: min(100%, 340px); }
+</style>
+</head>
+<body data-nav="games" data-layout="board"
+      data-chat-context="full game review · vs Stockfish 1200 · you won in 37 · move 14…Qh4"
+      data-chat-attach="This game"
+      data-chat-quick="Why was …Qh4 bad?|What was my best move?|What should I practise?">
+
+<template id="chat-seed">
+  <div data-divider>Game review · 8:41 PM</div>
+  <div data-sage data-time="8:41 PM" data-replies="Show me 14.Qxb7|Practise loose pieces" data-cta="1">
+    <div class="bubble">Nice win. Here's the game in three lines.</div>
+    <div class="bubble">It stayed calm and even until move 13. On move 14 you missed a free pawn on <span class="san">b7</span>, and Black answered with a scary-looking <span class="san">…Qh4</span>. You found the only move, <span class="san">15.d4!</span>, and after that you never let go.</div>
+    <div class="bubble"><b>The one lesson:</b> before you make your plan, ask “what is loose?” Twice this game an unprotected piece or pawn decided things.</div>
+  </div>
+  <div data-me data-time="8:42 PM">How did I miss b7?</div>
+  <div data-sage data-time="8:42 PM">
+    <div class="bubble">Your eyes were on the <span class="san">e5</span> pawn. Your queen already hit <span class="san">b7</span>, and nothing guarded it.</div>
+    <div class="chat-card">
+      <div class="vb" data-fen="r2qr1k1/bpp2pp1/p1n1b2p/P2np3/2B5/1QPP1N1P/1P1N1PP1/R1B1R1K1 w - - 0 14" data-arrows="b3b7" data-focus="b7"></div>
+      <div class="flex items-center justify-between gap-2 px-3 py-2 text-xs"><span><span class="san">14.Qxb7</span> wins a pawn safely</span><a href="puzzle.html" class="font-medium text-primary hover:underline">Retry it</a></div>
+    </div>
+  </div>
+</template>
+
+<main>
+  <!-- review header -->
+  <header class="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur lg:px-6">
+    <a href="games.html" class="btn btn-ghost btn-sm"><i data-lucide="arrow-left"></i><span class="max-sm:hidden">Back to games</span></a>
+    <div class="mx-1 h-5 w-px bg-border"></div>
+    <h1 class="flex min-w-0 items-center gap-2 text-base font-bold"><i data-lucide="flag-triangle-right" class="text-cta"></i><span class="truncate">Review · vs Stockfish 1200 · Won</span></h1>
+    <span class="badge badge-soft max-md:hidden">1–0 · resigned on move 37</span>
+    <div class="ml-auto flex items-center gap-1">
+      <button class="btn btn-ghost btn-sm" data-toast="Board flipped" data-toast-icon="arrow-up-down"><i data-lucide="arrow-up-down"></i><span class="max-sm:hidden">Flip</span></button>
+      <a href="analysis.html" class="btn btn-ghost btn-sm"><i data-lucide="microscope"></i><span class="max-sm:hidden">Analyse</span></a>
+      <button class="btn btn-ghost btn-icon btn-sm" data-toast="PGN copied to clipboard" data-toast-icon="clipboard-check" aria-label="Copy PGN" title="Copy PGN"><i data-lucide="clipboard-copy"></i></button>
+    </div>
+  </header>
+
+  <div class="grid gap-5 p-4 lg:p-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+    <!-- board column -->
+    <section class="flex justify-center" aria-label="Review board">
+      <div class="board-size space-y-2.5">
+        <div class="flex items-center gap-3">
+          <span class="avatar size-9 rounded-xl bg-[#3b4a44] text-[#cfe0d6]"><i data-lucide="cpu" class="size-4"></i></span>
+          <div class="leading-tight"><div class="text-sm font-semibold">Stockfish <span class="font-normal text-muted-foreground">1200</span></div><div class="text-xs text-muted-foreground">Solid · accuracy 77%</div></div>
+          <span class="ml-auto badge">Black</span>
+        </div>
+        <div class="overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.45)] ring-1 ring-border">
+          <div class="vb" data-coords
+               data-fen="r3r1k1/bpp2pp1/p1n1b2p/P2nN3/2B4q/1QPP3P/1P1N1PP1/R1B1R1K1 w - - 1 15"
+               data-hl="d8,h4" data-marks="h4:mistake"
+               data-arrows="d3d4,h4f2:alt"
+               aria-label="Position after 14…Qh4, White to move. Green arrow: best reply d4. Red arrow: Black's threat on f2."></div>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="avatar size-9 rounded-xl bg-primary text-primary-foreground">SK</span>
+          <div class="leading-tight"><div class="text-sm font-semibold">You <span class="font-normal text-muted-foreground">1180</span></div><div class="text-xs text-muted-foreground">White · accuracy 84%</div></div>
+          <span class="ml-auto badge badge-reward"><i data-lucide="trophy" class="size-3.5"></i>Won</span>
+        </div>
+
+        <!-- eval graph -->
+        <figure class="card p-3" aria-labelledby="graph-cap">
+          <figcaption id="graph-cap" class="mb-1.5 flex items-center justify-between text-xs">
+            <span class="font-medium">Evaluation <span class="font-normal text-muted-foreground">· up is better for you</span></span>
+            <span class="flex items-center gap-3 text-muted-foreground">
+              <span class="flex items-center gap-1"><span class="size-2 rounded-full bg-q-mistake"></span>Mistake</span>
+              <span class="flex items-center gap-1 max-sm:hidden"><span class="size-2 rounded-full bg-q-inaccuracy"></span>Inaccuracy</span>
+              <span class="flex items-center gap-1"><span class="size-2 rounded-full bg-q-great"></span>Great</span>
+            </span>
+          </figcaption>
+          <div class="relative h-[72px] overflow-hidden rounded-lg bg-muted/60">
+            <svg viewBox="0 0 730 96" preserveAspectRatio="none" class="absolute inset-0 size-full" role="img" aria-label="Evaluation graph: even until move 14, then White pulls ahead and stays winning to the end.">
+              <line x1="0" y1="48" x2="730" y2="48" stroke="var(--border)" stroke-width="1" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>
+              <path d="M0,48.0 L10,46.1 L20,46.0 L30,45.8 L40,45.1 L50,45.5 L60,46.5 L70,46.2 L80,46.2 L90,46.2 L100,46.1 L110,46.2 L120,45.7 L130,46.5 L140,46.4 L150,46.8 L160,46.1 L170,46.6 L180,46.7 L190,46.9 L200,46.4 L210,48.7 L220,48.8 L230,47.6 L240,46.4 L250,46.4 L260,34.4 L270,48.0 L280,27.0 L290,26.3 L300,23.4 L310,23.7 L320,22.5 L330,24.2 L340,22.1 L350,22.3 L360,21.1 L370,27.4 L380,21.5 L390,20.4 L400,21.2 L410,31.9 L420,30.8 L430,30.2 L440,29.4 L450,30.8 L460,28.1 L470,27.6 L480,27.3 L490,26.6 L500,21.2 L510,21.1 L520,19.0 L530,19.1 L540,19.9 L550,15.8 L560,15.8 L570,15.4 L580,15.5 L590,16.0 L600,14.0 L610,14.6 L620,14.0 L630,13.8 L640,14.0 L650,15.0 L660,13.5 L670,12.9 L680,12.6 L690,12.9 L700,12.2 L710,11.9 L720,7.4 L730,6.4 L730,48.0 L0,48.0 Z" fill="var(--primary)" fill-opacity=".14"/>
+              <path d="M0,48.0 L10,46.1 L20,46.0 L30,45.8 L40,45.1 L50,45.5 L60,46.5 L70,46.2 L80,46.2 L90,46.2 L100,46.1 L110,46.2 L120,45.7 L130,46.5 L140,46.4 L150,46.8 L160,46.1 L170,46.6 L180,46.7 L190,46.9 L200,46.4 L210,48.7 L220,48.8 L230,47.6 L240,46.4 L250,46.4 L260,34.4 L270,48.0 L280,27.0 L290,26.3 L300,23.4 L310,23.7 L320,22.5 L330,24.2 L340,22.1 L350,22.3 L360,21.1 L370,27.4 L380,21.5 L390,20.4 L400,21.2 L410,31.9 L420,30.8 L430,30.2 L440,29.4 L450,30.8 L460,28.1 L470,27.6 L480,27.3 L490,26.6 L500,21.2 L510,21.1 L520,19.0 L530,19.1 L540,19.9 L550,15.8 L560,15.8 L570,15.4 L580,15.5 L590,16.0 L600,14.0 L610,14.6 L620,14.0 L630,13.8 L640,14.0 L650,15.0 L660,13.5 L670,12.9 L680,12.6 L690,12.9 L700,12.2 L710,11.9 L720,7.4 L730,6.4" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+              <line x1="280" y1="0" x2="280" y2="96" stroke="var(--cta)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+            </svg>
+            <!-- markers (HTML so they stay round) -->
+            <button class="absolute size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-q-mistake ring-2 ring-card" style="left:36.99%;top:50%" title="14.Nxe5 · mistake (missed 14.Qxb7)" aria-label="Move 14, your mistake Nxe5"></button>
+            <button class="absolute size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-q-mistake ring-2 ring-cta" style="left:38.36%;top:28.1%" title="14…Qh4 · Black's mistake (current move)" aria-label="Move 14, Black's mistake Qh4, current"></button>
+            <button class="absolute size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-q-great ring-2 ring-card" style="left:39.73%;top:27.4%" title="15.d4! · great, the only move" aria-label="Move 15, great move d4"></button>
+            <button class="absolute size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-q-inaccuracy ring-2 ring-card" style="left:50.68%;top:28.5%" title="19.Qa4 · inaccuracy (19.Qb7 was better)" aria-label="Move 19, inaccuracy Qa4"></button>
+            <button class="absolute size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-q-mistake ring-2 ring-card" style="left:56.16%;top:33.2%" title="21.Kh2 · mistake (21.Nf3 was better)" aria-label="Move 21, your mistake Kh2"></button>
+            <span class="pointer-events-none absolute left-2 top-1 text-[10px] font-medium text-muted-foreground">+ You</span>
+            <span class="pointer-events-none absolute bottom-1 left-2 text-[10px] font-medium text-muted-foreground">− Stockfish</span>
+          </div>
+          <div class="relative mt-1 h-3 font-mono text-[10px] text-muted-foreground" aria-hidden="true">
+            <span class="absolute left-[26%] -translate-x-1/2">10</span>
+            <span class="absolute left-[53.4%] -translate-x-1/2">20</span>
+            <span class="absolute left-[80.8%] -translate-x-1/2">30</span>
+          </div>
+        </figure>
+      </div>
+    </section>
+
+    <!-- side panel -->
+    <div class="flex min-h-0 flex-col gap-4 xl:h-[max(600px,calc(100dvh-56px-48px))]">
+      <!-- plain-language explanation for the current move -->
+      <article class="card shrink-0 border-q-mistake/40 p-4" aria-labelledby="explain-h">
+        <div class="flex items-center gap-2">
+          <span class="q q-mistake">?</span>
+          <h2 id="explain-h" class="text-base font-bold">14…Qh4 was a mistake</h2>
+          <span class="ml-auto font-mono text-xs text-muted-foreground">0.0 → +2.7</span>
+        </div>
+        <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
+          <span class="text-foreground">It looks like an attack on f2</span>, with the bishop on a7 helping. But one pawn move, <span class="san">15.d4!</span>, cuts the bishop off, protects your knight on e5 and leaves the queen hitting nothing.
+        </p>
+        <div class="mt-3 flex flex-wrap items-center gap-2 rounded-lg bg-accent/60 px-3 py-2 text-xs">
+          <i data-lucide="star" class="size-3.5 text-primary"></i><span>Black's best was <span class="san">14…Nf4</span>. You found <span class="san">15.d4!</span>, the only good reply.</span>
+        </div>
+        <div class="mt-3 flex gap-2">
+          <a href="puzzle.html" class="btn btn-outline btn-sm flex-1"><i data-lucide="rotate-ccw"></i>Retry this position</a>
+          <button class="btn btn-ghost btn-sm flex-1 text-primary" data-ask="Why was …Qh4 a mistake if it attacks f2?"><i data-lucide="message-circle"></i>Why?</button>
+        </div>
+      </article>
+
+      <aside class="card flex min-h-0 flex-1 flex-col overflow-hidden" aria-label="Review panel">
+        <div class="tabs px-3 pt-2">
+          <button class="tab is-active" data-tab="sum" data-group="rv">Summary</button>
+          <button class="tab" data-tab="key" data-group="rv">Key moments</button>
+          <button class="tab" data-tab="mv" data-group="rv">Moves</button>
+        </div>
+
+        <!-- summary -->
+        <div class="min-h-0 flex-1 overflow-auto p-4" data-panel="sum" data-group="rv">
+          <div class="grid grid-cols-2 gap-2">
+            <div class="rounded-xl bg-accent/60 p-3">
+              <div class="label">You</div>
+              <div class="font-display text-3xl font-bold tabular-nums">84<span class="text-lg">%</span></div>
+              <div class="text-xs text-muted-foreground">accuracy · +6 vs your average</div>
+            </div>
+            <div class="rounded-xl bg-muted/60 p-3">
+              <div class="label">Stockfish 1200</div>
+              <div class="font-display text-3xl font-bold tabular-nums text-muted-foreground">77<span class="text-lg">%</span></div>
+              <div class="text-xs text-muted-foreground">accuracy</div>
+            </div>
+          </div>
+
+          <table class="mt-4 w-full text-sm">
+            <caption class="sr-only">Moves by quality</caption>
+            <thead><tr class="text-xs text-muted-foreground"><th class="pb-1.5 text-left font-medium" scope="col">Move quality</th><th class="pb-1.5 text-right font-medium" scope="col">You</th><th class="pb-1.5 text-right font-medium" scope="col">SF</th></tr></thead>
+            <tbody class="[&_td]:py-1">
+              <tr><td class="flex items-center gap-2"><span class="q q-great">!</span>Great</td><td class="text-right font-semibold tabular-nums">1</td><td class="text-right tabular-nums text-muted-foreground">0</td></tr>
+              <tr><td class="flex items-center gap-2"><span class="q q-best">★</span>Best</td><td class="text-right font-semibold tabular-nums">19</td><td class="text-right tabular-nums text-muted-foreground">18</td></tr>
+              <tr><td class="flex items-center gap-2"><span class="q q-good">✓</span>Good</td><td class="text-right font-semibold tabular-nums">8</td><td class="text-right tabular-nums text-muted-foreground">8</td></tr>
+              <tr><td class="flex items-center gap-2"><span class="q q-book">B</span>Book</td><td class="text-right font-semibold tabular-nums">6</td><td class="text-right tabular-nums text-muted-foreground">6</td></tr>
+              <tr><td class="flex items-center gap-2"><span class="q q-inaccuracy">?!</span>Inaccuracy</td><td class="text-right font-semibold tabular-nums">1</td><td class="text-right tabular-nums text-muted-foreground">2</td></tr>
+              <tr><td class="flex items-center gap-2"><span class="q q-mistake">?</span>Mistake</td><td class="text-right font-semibold tabular-nums">2</td><td class="text-right tabular-nums text-muted-foreground">2</td></tr>
+              <tr><td class="flex items-center gap-2"><span class="q q-blunder">??</span>Blunder</td><td class="text-right font-semibold tabular-nums">0</td><td class="text-right tabular-nums text-muted-foreground">0</td></tr>
+            </tbody>
+          </table>
+
+          <a href="mistakes.html" class="mt-4 flex items-center gap-3 rounded-xl border border-cta/30 bg-cta-soft p-3 transition hover:-translate-y-0.5">
+            <span class="grid size-9 place-items-center rounded-lg bg-card text-cta"><i data-lucide="rotate-ccw"></i></span>
+            <span class="min-w-0 flex-1 leading-tight"><span class="block text-sm font-semibold">3 mistakes added to your Mistake Bank</span><span class="text-xs text-muted-foreground">First replay tomorrow, then in 3 days</span></span>
+            <i data-lucide="chevron-right" class="text-muted-foreground"></i>
+          </a>
+          <p class="mt-3 flex gap-2 text-xs text-muted-foreground"><i data-lucide="sprout" class="mt-px size-3.5 text-primary"></i>Your best stretch: moves 22–37 without a single inaccuracy.</p>
+        </div>
+
+        <!-- key moments -->
+        <div class="min-h-0 flex-1 space-y-3 overflow-auto p-4" data-panel="key" data-group="rv" hidden>
+          <p class="text-xs text-muted-foreground">4 turning points. Play each one again before reading the answer.</p>
+
+          <article class="rounded-xl border p-3">
+            <div class="flex gap-3">
+              <div class="w-[72px] shrink-0 overflow-hidden rounded-md ring-1 ring-border"><div class="vb" data-fen="r2qr1k1/bpp2pp1/p1n1b2p/P2np3/2B5/1QPP1N1P/1P1N1PP1/R1B1R1K1 w - - 0 14" aria-label="Before move 14, White to move"></div></div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5 text-sm font-semibold"><span class="q q-mistake size-4 text-[9px]">?</span>Move 14 · <span class="san">14.Nxe5</span></div>
+                <p class="mt-0.5 text-xs text-muted-foreground">The idea you missed: <span class="font-medium text-foreground">b7 was loose.</span> A free pawn, and your queen gets active.</p>
+              </div>
+            </div>
+            <div class="mt-2.5 flex gap-2"><a href="puzzle.html" class="btn btn-outline btn-sm flex-1"><i data-lucide="rotate-ccw"></i>Retry this position</a><button class="btn btn-ghost btn-sm text-primary" data-ask="Why was 14.Nxe5 a mistake?">Why?</button></div>
+          </article>
+
+          <article class="rounded-xl border border-q-great/40 bg-sky/40 p-3">
+            <div class="flex gap-3">
+              <div class="w-[72px] shrink-0 overflow-hidden rounded-md ring-1 ring-border"><div class="vb" data-fen="r3r1k1/bpp2pp1/p1n1b2p/P2nN3/2B4q/1QPP3P/1P1N1PP1/R1B1R1K1 w - - 1 15" aria-label="Before move 15, White to move"></div></div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5 text-sm font-semibold"><span class="q q-great size-4 text-[9px]">!</span>Move 15 · <span class="san">15.d4!</span></div>
+                <p class="mt-0.5 text-xs text-muted-foreground">Every other move loses material. You found the one pawn that blocks the attack.</p>
+              </div>
+            </div>
+            <div class="mt-2.5 flex gap-2"><a href="puzzle.html" class="btn btn-outline btn-sm flex-1"><i data-lucide="rotate-ccw"></i>Retry this position</a><button class="btn btn-ghost btn-sm text-primary" data-ask="Why was …Qh4 a mistake, and why does d4 work?">Why?</button></div>
+          </article>
+
+          <article class="rounded-xl border p-3">
+            <div class="flex gap-3">
+              <div class="w-[72px] shrink-0 overflow-hidden rounded-md ring-1 ring-border"><div class="vb" data-fen="2rqr1k1/b4pp1/p1Q1b2p/P2nR3/2BP4/2P4P/1P1N1PP1/R1B3K1 w - - 1 19" aria-label="Before move 19, White to move"></div></div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5 text-sm font-semibold"><span class="q q-inaccuracy size-4 text-[9px]">?!</span>Move 19 · <span class="san">19.Qa4</span></div>
+                <p class="mt-0.5 text-xs text-muted-foreground">Safe, but passive. <span class="san">19.Qb7</span> kept the queen close to the action.</p>
+              </div>
+            </div>
+            <div class="mt-2.5 flex gap-2"><a href="puzzle.html" class="btn btn-outline btn-sm flex-1"><i data-lucide="rotate-ccw"></i>Retry this position</a><button class="btn btn-ghost btn-sm text-primary" data-ask="Why was 19.Qa4 an inaccuracy?">Why?</button></div>
+          </article>
+
+          <article class="rounded-xl border p-3">
+            <div class="flex gap-3">
+              <div class="w-[72px] shrink-0 overflow-hidden rounded-md ring-1 ring-border"><div class="vb" data-fen="2rq2k1/b4pp1/p3r2p/P3R3/Q2P1n2/2P4P/1P1N1PP1/R1B3K1 w - - 0 21" aria-label="Before move 21, White to move"></div></div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5 text-sm font-semibold"><span class="q q-mistake size-4 text-[9px]">?</span>Move 21 · <span class="san">21.Kh2</span></div>
+                <p class="mt-0.5 text-xs text-muted-foreground">The idea you missed: <span class="font-medium text-foreground">develop first.</span> <span class="san">21.Nf3</span> brings your last knight into play.</p>
+              </div>
+            </div>
+            <div class="mt-2.5 flex gap-2"><a href="puzzle.html" class="btn btn-outline btn-sm flex-1"><i data-lucide="rotate-ccw"></i>Retry this position</a><button class="btn btn-ghost btn-sm text-primary" data-ask="Why was 21.Kh2 a mistake?">Why?</button></div>
+          </article>
+        </div>
+
+        <!-- moves -->
+        <div class="min-h-0 flex-1 overflow-auto p-2" data-panel="mv" data-group="rv" hidden>
+          <div class="flex items-center gap-2 px-2 pb-2 pt-1"><span class="q q-book size-4 text-[9px]">B</span><span class="text-xs text-muted-foreground">Italian Game · Giuoco Pianissimo (C54) · book until move 6</span></div>
+          <ol class="text-sm">
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">1.</span><span class="mv">e4</span><span class="mv">e5</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">2.</span><span class="mv">Nf3</span><span class="mv">Nc6</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">3.</span><span class="mv">Bc4</span><span class="mv">Bc5</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">4.</span><span class="mv">c3</span><span class="mv">Nf6</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">5.</span><span class="mv">d3</span><span class="mv">d6</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">6.</span><span class="mv">O-O</span><span class="mv">O-O</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">7.</span><span class="mv">a4</span><span class="mv">a6</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">8.</span><span class="mv">Re1</span><span class="mv">Ba7</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">9.</span><span class="mv">h3</span><span class="mv">Be6</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">10.</span><span class="mv">Nbd2</span><span class="mv">h6</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">11.</span><span class="mv">a5</span><span class="mv">Re8</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">12.</span><span class="mv">Qb3</span><span class="mv">d5</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">13.</span><span class="mv">exd5</span><span class="mv">Nxd5<span class="q q-mistake size-4 text-[9px]">?</span></span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">14.</span><span class="mv">Nxe5<span class="q q-mistake size-4 text-[9px]">?</span></span><span class="mv is-current">Qh4<span class="q q-mistake size-4 text-[9px]">?</span></span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">15.</span><span class="mv">d4<span class="q q-great size-4 text-[9px]">!</span></span><span class="mv">Nxe5</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">16.</span><span class="mv">Rxe5</span><span class="mv">c6</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">17.</span><span class="mv">Qxb7</span><span class="mv">Qd8</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">18.</span><span class="mv">Qxc6</span><span class="mv">Rc8</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">19.</span><span class="mv">Qa4<span class="q q-inaccuracy size-4 text-[9px]">?!</span></span><span class="mv">Nf4<span class="q q-inaccuracy size-4 text-[9px]">?!</span></span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">20.</span><span class="mv">Bxe6</span><span class="mv">Rxe6</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">21.</span><span class="mv">Kh2<span class="q q-mistake size-4 text-[9px]">?</span></span><span class="mv">Rxe5</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">22.</span><span class="mv">dxe5</span><span class="mv">Nd3</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">23.</span><span class="mv">Nf3</span><span class="mv">Qc7</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">24.</span><span class="mv">Qe4</span><span class="mv">Nxf2</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">25.</span><span class="mv">Qf5</span><span class="mv">Rd8<span class="q q-inaccuracy size-4 text-[9px]">?!</span></span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">26.</span><span class="mv">Nd4</span><span class="mv">Bxd4</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">27.</span><span class="mv">cxd4</span><span class="mv">Rxd4</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">28.</span><span class="mv">Be3</span><span class="mv">Rd1</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">29.</span><span class="mv">Rxd1</span><span class="mv">Nxd1</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">30.</span><span class="mv">Bd4</span><span class="mv">Nxb2</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">31.</span><span class="mv">Bxb2</span><span class="mv">Qxa5</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">32.</span><span class="mv">Qc8+</span><span class="mv">Kh7</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">33.</span><span class="mv">Qc3</span><span class="mv">Qb6</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">34.</span><span class="mv">e6</span><span class="mv">f6</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">35.</span><span class="mv">Qd3+</span><span class="mv">Kg8</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">36.</span><span class="mv">Qd5</span><span class="mv">Qc7+</span></li>
+            <li class="grid grid-cols-[32px_1fr_1fr] items-center rounded-md px-2 py-1 odd:bg-muted/50"><span class="font-mono text-xs text-muted-foreground">37.</span><span class="mv">Kh1</span><span></span></li>
+          </ol>
+          <p class="px-2 pb-2 pt-3 text-xs text-muted-foreground">1–0 · Stockfish 1200 resigned</p>
+        </div>
+
+        <div class="border-t p-3">
+          <div class="grid grid-cols-4 gap-1">
+            <button class="btn btn-ghost btn-sm" aria-label="First move"><i data-lucide="chevrons-left"></i></button>
+            <button class="btn btn-ghost btn-sm" aria-label="Previous move"><i data-lucide="chevron-left"></i></button>
+            <button class="btn btn-ghost btn-sm" aria-label="Next move"><i data-lucide="chevron-right"></i></button>
+            <button class="btn btn-ghost btn-sm" aria-label="Last move"><i data-lucide="chevrons-right"></i></button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+</body>
+</html>
