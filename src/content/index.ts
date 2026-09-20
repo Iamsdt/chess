@@ -150,3 +150,6 @@ export {
   type ContentValidationReport,
   type PackValidation,
 } from './validate-content'
+
+/* The S05 integration seam: the importer writing into the real database. */
+export { createRepositoryPuzzleSink } from './puzzle-sink-repo'

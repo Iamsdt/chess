@@ -1,8 +1,10 @@
 import { createRootRoute, createRoute, lazyRouteComponent } from '@tanstack/react-router'
 
 import { OnboardingScreen, RootDocument, ShellLayout, ShellNotFound } from './layouts'
+import { importLazy } from './lazy-import'
 import { PlaceholderPage } from './pages/placeholder-page'
 import { RouteErrorPage } from './pages/route-error-page'
+import { SCREEN_COMPONENTS } from './screen-components'
 import { SCREENS, type ScreenId } from './screens'
 
 const rootRoute = createRootRoute({
@@ -29,7 +31,10 @@ function screenRoute<Id extends ScreenId>(id: Id, path: (typeof SCREENS)[Id]['pa
   function ScreenPlaceholder() {
     return <PlaceholderPage screen={screen} />
   }
-  return createRoute({ getParentRoute: () => shellRoute, path, component: ScreenPlaceholder })
+  // A feature sprint claims its screen in `SCREEN_COMPONENTS`; until then the placeholder
+  // stands in, so the route table never waits on a feature to exist.
+  const component = SCREEN_COMPONENTS[id] ?? ScreenPlaceholder
+  return createRoute({ getParentRoute: () => shellRoute, path, component })
 }
 
 const shellRoutes = [
@@ -68,11 +73,19 @@ const onboardingRoute = createRoute({
 const kitchenSinkRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/dev/kitchen-sink',
-  component: lazyRouteComponent(() => import('@/design/dev'), 'KitchenSink'),
+  component: lazyRouteComponent(() => importLazy(() => import('@/design/dev')), 'KitchenSink'),
+})
+
+/** S11's queue inspector. Bare and lazy for the same reasons as the kitchen sink. */
+const jobsDevRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/dev/jobs',
+  component: lazyRouteComponent(() => importLazy(() => import('@/jobs/dev-panel')), 'JobsDevPanel'),
 })
 
 export const routeTree = rootRoute.addChildren([
   shellRoute.addChildren(shellRoutes),
   onboardingRoute,
   kitchenSinkRoute,
+  jobsDevRoute,
 ])

@@ -1,6 +1,7 @@
 import { Outlet } from '@tanstack/react-router'
 import { lazy, Suspense, useEffect } from 'react'
 
+import { importLazy } from './lazy-import'
 import { NotFoundPage } from './pages/not-found-page'
 import { PlaceholderPage } from './pages/placeholder-page'
 import { NOT_FOUND_SCREEN, SCREENS } from './screens'
@@ -14,7 +15,7 @@ import { useDocumentTitle } from './use-document-title'
  * the initial route inside the §5 budget, and the panel opens fast enough that the fallback
  * is rarely seen.
  */
-const importCoachSlot = () => import('./shell/coach-slot')
+const importCoachSlot = () => importLazy(() => import('./shell/coach-slot'))
 
 const CoachSlot = lazy(async () => {
   const module = await importCoachSlot()
