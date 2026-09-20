@@ -94,6 +94,17 @@ which interfaces it adds, and feature work should include screenshots in light a
 
 Husky runs lint-staged on commit, so formatting and lint fixes are applied as you go.
 
+If you use a Node version manager, note that git hooks launched from an IDE or a GUI git
+client do not load your shell profile. The pre-commit hook looks for nvm, fnm, volta and
+asdf installs itself, but if yours lives somewhere else, point husky at it once:
+
+```sh
+mkdir -p ~/.config/husky
+echo 'export PATH="/path/to/your/node/bin:$PATH"' > ~/.config/husky/init.sh
+```
+
+To skip the hook for a single commit, use `HUSKY=0 git commit ...`.
+
 ## Third-party content
 
 Puzzles come from the [Lichess open puzzle database](https://database.lichess.org/#puzzles).

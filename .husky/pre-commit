@@ -1,1 +1,28 @@
-npx lint-staged
+# Hooks started by IDEs and GUI git clients do not load your shell profile, so a
+# version-managed Node (nvm, fnm, volta, asdf) is not on PATH yet. Find one.
+if ! command -v node >/dev/null 2>&1; then
+	nvm_dir="${NVM_DIR:-$HOME/.nvm}"
+	node_bin=""
+
+	# Prefer the version nvm treats as the default, else the newest installed.
+	if [ -r "$nvm_dir/alias/default" ]; then
+		want=$(cat "$nvm_dir/alias/default")
+		node_bin=$(ls -d "$nvm_dir/versions/node/v${want#v}"*/bin 2>/dev/null | sort -V | tail -1)
+	fi
+	[ -z "$node_bin" ] && node_bin=$(ls -d "$nvm_dir/versions/node"/*/bin 2>/dev/null | sort -V | tail -1)
+	[ -z "$node_bin" ] && node_bin=$(ls -d "$HOME/.local/share/fnm/node-versions"/*/installation/bin 2>/dev/null | sort -V | tail -1)
+	[ -z "$node_bin" ] && [ -x "$HOME/.volta/bin/node" ] && node_bin="$HOME/.volta/bin"
+	[ -z "$node_bin" ] && [ -x "$HOME/.asdf/shims/node" ] && node_bin="$HOME/.asdf/shims"
+
+	[ -n "$node_bin" ] && PATH="$node_bin:$PATH" && export PATH
+fi
+
+if ! command -v node >/dev/null 2>&1; then
+	echo "pre-commit: no Node on PATH." >&2
+	echo "Add your Node install to ~/.config/husky/init.sh, or commit with HUSKY=0 to skip." >&2
+	exit 1
+fi
+
+# node_modules/.bin is already on PATH (husky puts it there), so call the binary
+# directly rather than npx, which lives beside node and may not be reachable.
+lint-staged
