@@ -78,4 +78,8 @@ export const SCREEN_COMPONENTS: Partial<Record<ScreenId, FunctionComponent>> = {
     () => importLazy(() => import('@/features/share')),
     'SharedChallengeScreen',
   ),
+  progress: lazyRouteComponent(
+    () => importLazy(() => import('@/features/progress')),
+    'ProgressScreen',
+  ),
 }
