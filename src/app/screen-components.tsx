@@ -74,4 +74,8 @@ export const SCREEN_COMPONENTS: Partial<Record<ScreenId, FunctionComponent>> = {
     'FriendsScreen',
   ),
   live: lazyRouteComponent(() => importLazy(() => import('@/features/friends')), 'LiveGameScreen'),
+  share: lazyRouteComponent(
+    () => importLazy(() => import('@/features/share')),
+    'SharedChallengeScreen',
+  ),
 }
