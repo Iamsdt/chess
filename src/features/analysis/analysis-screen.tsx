@@ -170,13 +170,13 @@ export function AnalysisScreen({ engine, explorerFetch, isOnline }: AnalysisScre
       : `${String(numbering.moveNumber)}${numbering.white ? '.' : '…'} ${current.san}`
 
   return (
-    <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-4 p-4 lg:p-6">
+    <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-3 p-2 sm:gap-4 sm:p-4 lg:p-6">
       <PageHeader
         eyebrow="Analysis board"
         title="Analysis"
         description="A free board with engine lines, a variation tree and position setup."
         actions={
-          <>
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             {opening === null ? null : (
               <Badge variant="soft" className="max-md:hidden">
                 {opening.name}
@@ -192,7 +192,7 @@ export function AnalysisScreen({ engine, explorerFetch, isOnline }: AnalysisScre
               }}
             >
               <ArrowUpDown aria-hidden="true" />
-              Flip
+              <span className="max-sm:hidden">Flip</span>
             </Button>
             <Button
               variant="ghost"
@@ -202,30 +202,31 @@ export function AnalysisScreen({ engine, explorerFetch, isOnline }: AnalysisScre
               }}
             >
               <Grid2x2Plus aria-hidden="true" />
-              Set up
+              <span className="max-sm:hidden">Set up</span>
             </Button>
             <Button asChild size="sm">
               {/* The position rides in the URL so the setup screen can offer it. S12 owns
                   what it does with it; this side of the handover is all S19 can write. */}
               <Link to="/play" search={{ fen: board.fen }}>
                 <Swords aria-hidden="true" />
-                Practice from here
+                <span className="max-sm:hidden">Practice from here</span>
+                <span className="sm:hidden">Practice</span>
               </Link>
             </Button>
-          </>
+          </div>
         }
       />
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_360px]">
         <section className="flex justify-center" aria-label="Analysis board">
-          <div className="w-full max-w-[min(100%,calc(100dvh-220px))]">
-            <div className="flex gap-2.5">
+          <div className="w-full max-w-[min(100%,calc(100dvh-220px))] lg:max-w-[min(100%,70vh)]">
+            <div className="flex gap-2 sm:gap-2.5">
               <EvalBar
                 score={analysis.lines[0]?.score ?? null}
                 sideToMove={sideToMove}
                 orientation={board.settings.orientation}
               />
-              <div className="min-w-0 flex-1 overflow-hidden rounded-xl ring-1 ring-border">
+              <div className="min-w-0 flex-1 overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.25)] ring-1 ring-border">
                 <Board
                   fen={board.fen}
                   orientation={board.settings.orientation}
@@ -256,7 +257,7 @@ export function AnalysisScreen({ engine, explorerFetch, isOnline }: AnalysisScre
           </div>
         </section>
 
-        <div className="flex min-h-0 flex-col gap-4">
+        <div className="flex min-h-0 flex-col gap-4 overflow-auto lg:max-h-[calc(100dvh-56px-48px)]">
           <EnginePanel
             analysis={analysis}
             settings={board.settings}
@@ -269,7 +270,7 @@ export function AnalysisScreen({ engine, explorerFetch, isOnline }: AnalysisScre
           />
 
           <aside
-            className="card flex min-h-[420px] flex-col overflow-hidden"
+            className="card flex min-h-[360px] flex-col overflow-hidden sm:min-h-[420px]"
             aria-label="Moves, explorer and import"
           >
             <Tabs defaultValue="moves" className="min-h-0 flex-1 gap-0">
