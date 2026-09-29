@@ -64,10 +64,12 @@ async function waitForServer(url, timeoutMs = 60_000) {
   throw new Error(`Preview server never came up at ${url}`)
 }
 
+const isWin = process.platform === 'win32'
+const npmCmd = isWin ? 'npm.cmd' : 'npm'
 const preview = spawn(
-  'npm',
+  npmCmd,
   ['run', 'preview', '--', '--host', HOST, '--port', PORT, '--strictPort'],
-  { stdio: 'ignore' },
+  { stdio: 'ignore', shell: isWin },
 )
 
 let browser
