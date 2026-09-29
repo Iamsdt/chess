@@ -96,7 +96,7 @@ export function OnboardingScreen() {
         .sw { background: conic-gradient(var(--vb-dark) 0 25%, var(--vb-light) 0 50%, var(--vb-dark) 0 75%, var(--vb-light) 0) 0 0 / 50% 50%; }
       `}</style>
 
-      <div className="mx-auto flex min-h-dvh w-full max-w-[680px] flex-col px-4 py-8 sm:py-12">
+      <div className="mx-auto flex min-h-dvh w-full max-w-[680px] flex-col px-4 py-6 sm:py-10 md:py-12">
         {/* Header */}
         <header className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
@@ -107,7 +107,7 @@ export function OnboardingScreen() {
           </div>
           <button
             type="button"
-            className="btn btn-ghost btn-icon btn-sm"
+            className="btn btn-ghost btn-icon size-9 min-h-[36px] min-w-[36px] sm:size-8"
             onClick={toggleTheme}
             aria-label="Toggle dark mode"
           >
@@ -120,8 +120,11 @@ export function OnboardingScreen() {
         </header>
 
         {/* Hero Title */}
-        <div className="mt-8 text-center">
-          <h1 aria-label="Welcome" className="text-[34px] leading-tight font-bold tracking-tight">
+        <div className="mt-6 text-center sm:mt-8">
+          <h1
+            aria-label="Welcome"
+            className="text-2xl leading-tight font-bold tracking-tight sm:text-3xl md:text-[34px]"
+          >
             Let&apos;s set you up
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -134,7 +137,10 @@ export function OnboardingScreen() {
           <li>
             <button
               type="button"
-              className={cn('group w-full text-left', currentStep === 1 && 'is-active')}
+              className={cn(
+                'group flex min-h-[44px] w-full flex-col text-left',
+                currentStep === 1 && 'is-active',
+              )}
               aria-current={currentStep === 1 ? 'step' : undefined}
               aria-label="Step 1: Your level"
               onClick={() => {
@@ -143,13 +149,13 @@ export function OnboardingScreen() {
             >
               <span
                 className={cn(
-                  'block h-1.5 rounded-full transition-colors',
+                  'block h-1.5 w-full rounded-full transition-colors',
                   currentStep >= 1 ? 'bg-primary' : 'bg-muted',
                 )}
               />
               <span
                 className={cn(
-                  'mt-2 block text-xs font-medium',
+                  'mt-2 block truncate text-[11px] font-medium sm:text-xs',
                   currentStep >= 1 ? 'text-foreground' : 'text-muted-foreground',
                 )}
               >
@@ -160,7 +166,10 @@ export function OnboardingScreen() {
           <li>
             <button
               type="button"
-              className={cn('group w-full text-left', currentStep === 2 && 'is-active')}
+              className={cn(
+                'group flex min-h-[44px] w-full flex-col text-left',
+                currentStep === 2 && 'is-active',
+              )}
               aria-current={currentStep === 2 ? 'step' : undefined}
               aria-label="Step 2: Goals"
               onClick={() => {
@@ -169,13 +178,13 @@ export function OnboardingScreen() {
             >
               <span
                 className={cn(
-                  'block h-1.5 rounded-full transition-colors',
+                  'block h-1.5 w-full rounded-full transition-colors',
                   currentStep >= 2 ? 'bg-primary' : 'bg-muted',
                 )}
               />
               <span
                 className={cn(
-                  'mt-2 block text-xs font-medium',
+                  'mt-2 block truncate text-[11px] font-medium sm:text-xs',
                   currentStep >= 2 ? 'text-foreground' : 'text-muted-foreground',
                 )}
               >
@@ -186,7 +195,10 @@ export function OnboardingScreen() {
           <li>
             <button
               type="button"
-              className={cn('group w-full text-left', currentStep === 3 && 'is-active')}
+              className={cn(
+                'group flex min-h-[44px] w-full flex-col text-left',
+                currentStep === 3 && 'is-active',
+              )}
               aria-current={currentStep === 3 ? 'step' : undefined}
               aria-label="Step 3: Daily time"
               onClick={() => {
@@ -195,13 +207,13 @@ export function OnboardingScreen() {
             >
               <span
                 className={cn(
-                  'block h-1.5 rounded-full transition-colors',
+                  'block h-1.5 w-full rounded-full transition-colors',
                   currentStep >= 3 ? 'bg-primary' : 'bg-muted',
                 )}
               />
               <span
                 className={cn(
-                  'mt-2 block text-xs font-medium',
+                  'mt-2 block truncate text-[11px] font-medium sm:text-xs',
                   currentStep >= 3 ? 'text-foreground' : 'text-muted-foreground',
                 )}
               >
@@ -212,7 +224,10 @@ export function OnboardingScreen() {
           <li>
             <button
               type="button"
-              className={cn('group w-full text-left', currentStep === 4 && 'is-active')}
+              className={cn(
+                'group flex min-h-[44px] w-full flex-col text-left',
+                currentStep === 4 && 'is-active',
+              )}
               aria-current={currentStep === 4 ? 'step' : undefined}
               aria-label="Step 4: AI coach"
               onClick={() => {
@@ -221,13 +236,13 @@ export function OnboardingScreen() {
             >
               <span
                 className={cn(
-                  'block h-1.5 rounded-full transition-colors',
+                  'block h-1.5 w-full rounded-full transition-colors',
                   currentStep >= 4 ? 'bg-primary' : 'bg-muted',
                 )}
               />
               <span
                 className={cn(
-                  'mt-2 block text-xs font-medium',
+                  'mt-2 block truncate text-[11px] font-medium sm:text-xs',
                   currentStep >= 4 ? 'text-foreground' : 'text-muted-foreground',
                 )}
               >
@@ -238,12 +253,12 @@ export function OnboardingScreen() {
         </ol>
 
         {/* Form Card */}
-        <div className="card mt-5 p-6 sm:p-8">
+        <div className="card mt-5 p-4 sm:p-6 md:p-8">
           {/* STEP 1: LEVEL */}
           {currentStep === 1 && (
             <section aria-labelledby={levelLabelId} className="rise">
               <p className="eyebrow">Step 1 of 4</p>
-              <h2 id={levelLabelId} className="mt-1 text-2xl font-bold">
+              <h2 id={levelLabelId} className="mt-1 text-xl font-bold sm:text-2xl">
                 How well do you know chess?
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -259,7 +274,10 @@ export function OnboardingScreen() {
                   type="button"
                   role="radio"
                   aria-checked={skillLevel === 'never'}
-                  className={cn('option w-full text-left', skillLevel === 'never' && 'is-active')}
+                  className={cn(
+                    'option min-h-[64px] w-full p-3.5 text-left sm:p-4',
+                    skillLevel === 'never' && 'is-active',
+                  )}
                   onClick={() => {
                     setSkillLevel('never')
                   }}
@@ -277,7 +295,10 @@ export function OnboardingScreen() {
                   type="button"
                   role="radio"
                   aria-checked={skillLevel === 'rules'}
-                  className={cn('option w-full text-left', skillLevel === 'rules' && 'is-active')}
+                  className={cn(
+                    'option min-h-[64px] w-full p-3.5 text-left sm:p-4',
+                    skillLevel === 'rules' && 'is-active',
+                  )}
                   onClick={() => {
                     setSkillLevel('rules')
                   }}
@@ -295,7 +316,10 @@ export function OnboardingScreen() {
                   type="button"
                   role="radio"
                   aria-checked={skillLevel === 'club'}
-                  className={cn('option w-full text-left', skillLevel === 'club' && 'is-active')}
+                  className={cn(
+                    'option min-h-[64px] w-full p-3.5 text-left sm:p-4',
+                    skillLevel === 'club' && 'is-active',
+                  )}
                   onClick={() => {
                     setSkillLevel('club')
                   }}
@@ -313,7 +337,10 @@ export function OnboardingScreen() {
                   type="button"
                   role="radio"
                   aria-checked={skillLevel === 'strong'}
-                  className={cn('option w-full text-left', skillLevel === 'strong' && 'is-active')}
+                  className={cn(
+                    'option min-h-[64px] w-full p-3.5 text-left sm:p-4',
+                    skillLevel === 'strong' && 'is-active',
+                  )}
                   onClick={() => {
                     setSkillLevel('strong')
                   }}
@@ -328,7 +355,7 @@ export function OnboardingScreen() {
                 </button>
               </div>
 
-              <div className="mt-4 flex items-center gap-3 rounded-xl border border-dashed p-3 text-sm">
+              <div className="mt-4 flex min-h-[44px] items-center gap-3 rounded-xl border border-dashed p-3 text-sm">
                 <Puzzle className="size-5 shrink-0 text-primary" aria-hidden="true" />
                 <div className="flex-1">
                   <label htmlFor="placement-check" className="block cursor-pointer font-medium">
@@ -352,7 +379,7 @@ export function OnboardingScreen() {
               <div className="mt-7 flex items-center justify-end gap-3">
                 <Button
                   type="button"
-                  className="btn-cta"
+                  className="btn-cta min-h-[44px] w-full sm:w-auto"
                   onClick={() => {
                     setCurrentStep(2)
                   }}
@@ -368,7 +395,7 @@ export function OnboardingScreen() {
           {currentStep === 2 && (
             <section aria-labelledby={goalsLabelId} className="rise">
               <p className="eyebrow">Step 2 of 4</p>
-              <h2 id={goalsLabelId} className="mt-1 text-2xl font-bold">
+              <h2 id={goalsLabelId} className="mt-1 text-xl font-bold sm:text-2xl">
                 What would you like to get better at?
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -384,7 +411,7 @@ export function OnboardingScreen() {
                   type="button"
                   aria-pressed={selectedGoals.includes('tactics')}
                   className={cn(
-                    'inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2.5 text-sm font-medium transition hover:border-ring/60',
+                    'inline-flex min-h-[40px] items-center gap-2 rounded-full border bg-card px-3.5 py-2 text-sm font-medium transition hover:border-ring/60 sm:px-4 sm:py-2.5',
                     selectedGoals.includes('tactics') &&
                       'border-primary bg-accent text-accent-foreground',
                   )}
@@ -400,7 +427,7 @@ export function OnboardingScreen() {
                   type="button"
                   aria-pressed={selectedGoals.includes('openings')}
                   className={cn(
-                    'inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2.5 text-sm font-medium transition hover:border-ring/60',
+                    'inline-flex min-h-[40px] items-center gap-2 rounded-full border bg-card px-3.5 py-2 text-sm font-medium transition hover:border-ring/60 sm:px-4 sm:py-2.5',
                     selectedGoals.includes('openings') &&
                       'border-primary bg-accent text-accent-foreground',
                   )}
@@ -416,7 +443,7 @@ export function OnboardingScreen() {
                   type="button"
                   aria-pressed={selectedGoals.includes('endgames')}
                   className={cn(
-                    'inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2.5 text-sm font-medium transition hover:border-ring/60',
+                    'inline-flex min-h-[40px] items-center gap-2 rounded-full border bg-card px-3.5 py-2 text-sm font-medium transition hover:border-ring/60 sm:px-4 sm:py-2.5',
                     selectedGoals.includes('endgames') &&
                       'border-primary bg-accent text-accent-foreground',
                   )}
@@ -432,7 +459,7 @@ export function OnboardingScreen() {
                   type="button"
                   aria-pressed={selectedGoals.includes('friends')}
                   className={cn(
-                    'inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2.5 text-sm font-medium transition hover:border-ring/60',
+                    'inline-flex min-h-[40px] items-center gap-2 rounded-full border bg-card px-3.5 py-2 text-sm font-medium transition hover:border-ring/60 sm:px-4 sm:py-2.5',
                     selectedGoals.includes('friends') &&
                       'border-primary bg-accent text-accent-foreground',
                   )}
@@ -448,7 +475,7 @@ export function OnboardingScreen() {
                   type="button"
                   aria-pressed={selectedGoals.includes('blunders')}
                   className={cn(
-                    'inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2.5 text-sm font-medium transition hover:border-ring/60',
+                    'inline-flex min-h-[40px] items-center gap-2 rounded-full border bg-card px-3.5 py-2 text-sm font-medium transition hover:border-ring/60 sm:px-4 sm:py-2.5',
                     selectedGoals.includes('blunders') &&
                       'border-primary bg-accent text-accent-foreground',
                   )}
@@ -466,10 +493,11 @@ export function OnboardingScreen() {
                 Good picks. Most players improve fastest by blundering less, so that comes first.
               </p>
 
-              <div className="mt-7 flex items-center justify-between gap-3">
+              <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Button
                   type="button"
                   variant="ghost"
+                  className="min-h-[44px] w-full sm:w-auto"
                   onClick={() => {
                     setCurrentStep(1)
                   }}
@@ -479,7 +507,7 @@ export function OnboardingScreen() {
                 </Button>
                 <Button
                   type="button"
-                  className="btn-cta"
+                  className="btn-cta min-h-[44px] w-full sm:w-auto"
                   onClick={() => {
                     setCurrentStep(3)
                   }}
@@ -495,7 +523,7 @@ export function OnboardingScreen() {
           {currentStep === 3 && (
             <section aria-labelledby={timeLabelId} className="rise">
               <p className="eyebrow">Step 3 of 4</p>
-              <h2 id={timeLabelId} className="mt-1 text-2xl font-bold">
+              <h2 id={timeLabelId} className="mt-1 text-xl font-bold sm:text-2xl">
                 How much time a day?
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -512,14 +540,14 @@ export function OnboardingScreen() {
                   role="radio"
                   aria-checked={dailyMinutes === 5}
                   className={cn(
-                    'option flex-col gap-0.5 p-4 text-center',
+                    'option min-h-[72px] flex-col gap-0.5 p-3 text-center sm:p-4',
                     dailyMinutes === 5 && 'is-active',
                   )}
                   onClick={() => {
                     setDailyMinutes(5)
                   }}
                 >
-                  <span className="font-display text-2xl font-bold">5</span>
+                  <span className="font-display text-xl font-bold sm:text-2xl">5</span>
                   <span className="help">min · a quick habit</span>
                 </button>
 
@@ -528,14 +556,14 @@ export function OnboardingScreen() {
                   role="radio"
                   aria-checked={dailyMinutes === 15}
                   className={cn(
-                    'option flex-col gap-0.5 p-4 text-center',
+                    'option min-h-[72px] flex-col gap-0.5 p-3 text-center sm:p-4',
                     dailyMinutes === 15 && 'is-active',
                   )}
                   onClick={() => {
                     setDailyMinutes(15)
                   }}
                 >
-                  <span className="font-display text-2xl font-bold">15</span>
+                  <span className="font-display text-xl font-bold sm:text-2xl">15</span>
                   <span className="help">min · recommended</span>
                 </button>
 
@@ -544,14 +572,14 @@ export function OnboardingScreen() {
                   role="radio"
                   aria-checked={dailyMinutes === 30}
                   className={cn(
-                    'option flex-col gap-0.5 p-4 text-center',
+                    'option min-h-[72px] flex-col gap-0.5 p-3 text-center sm:p-4',
                     dailyMinutes === 30 && 'is-active',
                   )}
                   onClick={() => {
                     setDailyMinutes(30)
                   }}
                 >
-                  <span className="font-display text-2xl font-bold">30</span>
+                  <span className="font-display text-xl font-bold sm:text-2xl">30</span>
                   <span className="help">min · serious</span>
                 </button>
               </div>
@@ -573,7 +601,7 @@ export function OnboardingScreen() {
                         role="radio"
                         aria-checked={board === swatch.id}
                         data-board-name={swatch.id === 'grove' ? '' : swatch.id}
-                        className="group flex flex-col items-center gap-1 text-[11px] font-medium"
+                        className="group flex min-h-[44px] flex-col items-center gap-1 text-[11px] font-medium"
                         onClick={() => {
                           setBoard(swatch.id)
                         }}
@@ -592,7 +620,7 @@ export function OnboardingScreen() {
                   <p className="help mt-2">Pieces and more in Settings later.</p>
                 </div>
 
-                <div className="mx-auto w-full max-w-[200px] overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.45)] ring-1 ring-border">
+                <div className="mx-auto w-full max-w-[180px] overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.45)] ring-1 ring-border sm:max-w-[200px]">
                   <Board
                     fen={PREVIEW_FEN}
                     movable="none"
@@ -602,10 +630,11 @@ export function OnboardingScreen() {
                 </div>
               </div>
 
-              <div className="mt-7 flex items-center justify-between gap-3">
+              <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Button
                   type="button"
                   variant="ghost"
+                  className="min-h-[44px] w-full sm:w-auto"
                   onClick={() => {
                     setCurrentStep(2)
                   }}
@@ -615,7 +644,7 @@ export function OnboardingScreen() {
                 </Button>
                 <Button
                   type="button"
-                  className="btn-cta"
+                  className="btn-cta min-h-[44px] w-full sm:w-auto"
                   onClick={() => {
                     setCurrentStep(4)
                   }}
@@ -632,11 +661,11 @@ export function OnboardingScreen() {
             <section aria-labelledby="s4-h" className="rise">
               <p className="eyebrow">Step 4 of 4 · optional</p>
               <div className="mt-1 flex items-start gap-3">
-                <span className="sage-av size-11 rounded-2xl">
+                <span className="sage-av size-10 shrink-0 rounded-2xl sm:size-11">
                   <Brain className="size-5" aria-hidden="true" />
                 </span>
                 <div>
-                  <h2 id="s4-h" className="text-2xl font-bold">
+                  <h2 id="s4-h" className="text-xl font-bold sm:text-2xl">
                     Want Sage, your AI coach?
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
@@ -648,9 +677,9 @@ export function OnboardingScreen() {
 
               <Link
                 to="/"
-                className="mt-5 flex items-center gap-3 rounded-2xl border-2 border-primary/30 bg-accent/60 p-4 transition hover:border-primary"
+                className="mt-5 flex min-h-[56px] items-center gap-3 rounded-2xl border-2 border-primary/30 bg-accent/60 p-3.5 transition hover:border-primary sm:p-4"
               >
-                <span className="grid size-10 place-items-center rounded-xl bg-card text-primary ring-1 ring-border">
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-card text-primary ring-1 ring-border">
                   <SkipForward className="size-5" aria-hidden="true" />
                 </span>
                 <span className="flex-1">
@@ -661,7 +690,7 @@ export function OnboardingScreen() {
                     Games, puzzles, lessons, Stockfish review. Add a key later in Settings.
                   </span>
                 </span>
-                <ArrowRight className="size-5 text-primary" aria-hidden="true" />
+                <ArrowRight className="size-5 shrink-0 text-primary" aria-hidden="true" />
               </Link>
 
               <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
@@ -677,7 +706,7 @@ export function OnboardingScreen() {
                   </label>
                   <select
                     id="ob-prov"
-                    className="input"
+                    className="input min-h-[40px]"
                     value={coachProvider}
                     onChange={(e) => {
                       setCoachProvider(e.target.value)
@@ -696,7 +725,7 @@ export function OnboardingScreen() {
                   <input
                     id="ob-key"
                     type="password"
-                    className="input font-mono"
+                    className="input min-h-[40px] font-mono"
                     placeholder="Paste your key"
                     autoComplete="off"
                     spellCheck="false"
@@ -713,10 +742,11 @@ export function OnboardingScreen() {
                 Encrypted in this browser and sent only to your provider. Gemini has a free tier.
               </p>
 
-              <div className="mt-7 flex flex-wrap items-center justify-between gap-3">
+              <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Button
                   type="button"
                   variant="ghost"
+                  className="min-h-[44px] w-full sm:w-auto"
                   onClick={() => {
                     setCurrentStep(3)
                   }}
@@ -724,7 +754,7 @@ export function OnboardingScreen() {
                   <ArrowLeft className="size-4" aria-hidden="true" />
                   Back
                 </Button>
-                <Button asChild className="btn-cta">
+                <Button asChild className="btn-cta min-h-[44px] w-full sm:w-auto">
                   <Link to="/">
                     <Play className="size-[18px]" aria-hidden="true" />
                     Start playing
