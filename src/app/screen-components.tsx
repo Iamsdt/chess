@@ -60,4 +60,5 @@ export const SCREEN_COMPONENTS: Partial<Record<ScreenId, FunctionComponent>> = {
     () => importLazy(() => import('@/features/drills')),
     'EndgamesScreen',
   ),
+  vision: lazyRouteComponent(() => importLazy(() => import('@/features/drills')), 'VisionScreen'),
 }
