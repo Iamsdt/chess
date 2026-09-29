@@ -251,10 +251,10 @@ export function MistakesScreen() {
 
       {/* Due Today Hero */}
       <section
-        className="card @container mt-6 overflow-hidden border-cta/30"
+        className="card @container mt-4 overflow-hidden border-cta/30 sm:mt-6"
         aria-labelledby="due-h"
       >
-        <div className="grid gap-6 p-6 lg:p-7 @[720px]:grid-cols-[minmax(0,1fr)_minmax(0,300px)]">
+        <div className="grid gap-4 p-4 sm:gap-6 sm:p-6 lg:p-7 @[720px]:grid-cols-[minmax(0,1fr)_minmax(0,300px)]">
           <div>
             <span className="badge border-transparent bg-cta-soft text-cta">
               <CalendarCheck className="mr-1 size-3.5" aria-hidden="true" />
@@ -262,16 +262,16 @@ export function MistakesScreen() {
             </span>
             <h2
               id="due-h"
-              className="mt-3 font-display text-[40px] leading-none font-bold tracking-tight"
+              className="mt-2.5 font-display text-3xl leading-none font-bold tracking-tight sm:mt-3 sm:text-[40px]"
             >
-              {dueCount} <span className="text-[30px]">due today</span>
+              {dueCount} <span className="text-2xl sm:text-[30px]">due today</span>
             </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-2 text-xs text-muted-foreground sm:text-sm">
               5 from this week, 2 you've seen before. You play the move; the answer never shows
               first.
             </p>
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <CtaButton asChild className="h-11">
+            <div className="mt-4 flex flex-wrap items-center gap-2.5 sm:mt-5 sm:gap-3">
+              <CtaButton asChild className="h-10 sm:h-11">
                 <Link to="/puzzles/solve">
                   <Play className="size-[18px]" aria-hidden="true" />
                   Start review · ~4 min
@@ -279,7 +279,7 @@ export function MistakesScreen() {
               </CtaButton>
               <Button
                 variant="ghost"
-                className="h-11 text-muted-foreground"
+                className="h-10 text-muted-foreground sm:h-11"
                 onClick={() => {
                   toast('Moved to tomorrow. Your streak is safe.')
                 }}
@@ -292,21 +292,23 @@ export function MistakesScreen() {
           {/* Schedule Strip */}
           <div>
             <p className="label">Coming up</p>
-            <ol className="mt-2 grid grid-cols-4 gap-2 text-center">
-              <li className="rounded-xl border-2 border-cta/40 bg-cta-soft p-2.5">
-                <div className="font-display text-2xl font-bold text-cta">{dueCount}</div>
+            <ol className="mt-2 grid grid-cols-2 gap-2 text-center min-[440px]:grid-cols-4">
+              <li className="rounded-xl border-2 border-cta/40 bg-cta-soft p-2 sm:p-2.5">
+                <div className="font-display text-xl font-bold text-cta sm:text-2xl">
+                  {dueCount}
+                </div>
                 <div className="text-[11px] font-medium text-cta">Today</div>
               </li>
-              <li className="rounded-xl bg-muted/70 p-2.5">
-                <div className="font-display text-2xl font-bold">3</div>
+              <li className="rounded-xl bg-muted/70 p-2 sm:p-2.5">
+                <div className="font-display text-xl font-bold sm:text-2xl">3</div>
                 <div className="text-[11px] text-muted-foreground">Tomorrow</div>
               </li>
-              <li className="rounded-xl bg-muted/70 p-2.5">
-                <div className="font-display text-2xl font-bold">5</div>
+              <li className="rounded-xl bg-muted/70 p-2 sm:p-2.5">
+                <div className="font-display text-xl font-bold sm:text-2xl">5</div>
                 <div className="text-[11px] text-muted-foreground">In 3 days</div>
               </li>
-              <li className="rounded-xl bg-muted/70 p-2.5">
-                <div className="font-display text-2xl font-bold">12</div>
+              <li className="rounded-xl bg-muted/70 p-2 sm:p-2.5">
+                <div className="font-display text-xl font-bold sm:text-2xl">12</div>
                 <div className="text-[11px] text-muted-foreground">This week</div>
               </li>
             </ol>
@@ -318,23 +320,25 @@ export function MistakesScreen() {
       </section>
 
       {/* Mastery Pipeline */}
-      <section className="card mt-4 p-5" aria-labelledby="pipe-h">
+      <section className="card mt-3.5 p-4 sm:mt-4 sm:p-5" aria-labelledby="pipe-h">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 id="pipe-h" className="font-display text-lg font-bold">
+          <h2 id="pipe-h" className="font-display text-base font-bold sm:text-lg">
             From missed to mastered
           </h2>
           <span className="text-xs text-muted-foreground">
             57 positions · 3 more mastered this week
           </span>
         </div>
-        <ol className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-4">
+        <ol className="mt-3.5 grid grid-cols-2 gap-2 sm:mt-4 md:grid-cols-4">
           {/* New */}
-          <li className="relative rounded-xl bg-lilac/70 p-4">
-            <div className="flex items-center gap-2 text-xs font-semibold text-lilac-ink">
+          <li className="relative rounded-xl bg-lilac/70 p-3 sm:p-4">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-lilac-ink sm:gap-2">
               <Sparkle className="size-3.5" aria-hidden="true" />
               New
             </div>
-            <div className="mt-1 font-display text-3xl font-bold tabular-nums">{newCount}</div>
+            <div className="mt-1 font-display text-2xl font-bold tabular-nums sm:text-3xl">
+              {newCount}
+            </div>
             <div className="text-xs text-muted-foreground">Not tried yet</div>
             <ChevronRight
               className="absolute top-1/2 -right-2.5 z-10 hidden size-5 -translate-y-1/2 rounded-full bg-card p-0.5 text-muted-foreground ring-1 ring-border md:block"
@@ -343,12 +347,14 @@ export function MistakesScreen() {
           </li>
 
           {/* Learning */}
-          <li className="relative rounded-xl bg-cta-soft p-4">
-            <div className="flex items-center gap-2 text-xs font-semibold text-cta">
+          <li className="relative rounded-xl bg-cta-soft p-3 sm:p-4">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-cta sm:gap-2">
               <Sprout className="size-3.5" aria-hidden="true" />
               Learning
             </div>
-            <div className="mt-1 font-display text-3xl font-bold tabular-nums">{learningCount}</div>
+            <div className="mt-1 font-display text-2xl font-bold tabular-nums sm:text-3xl">
+              {learningCount}
+            </div>
             <div className="text-xs text-muted-foreground">Back in 1 to 3 days</div>
             <ChevronRight
               className="absolute top-1/2 -right-2.5 z-10 hidden size-5 -translate-y-1/2 rounded-full bg-card p-0.5 text-muted-foreground ring-1 ring-border md:block"
@@ -357,12 +363,12 @@ export function MistakesScreen() {
           </li>
 
           {/* Reviewing */}
-          <li className="relative rounded-xl bg-sky/70 p-4">
-            <div className="flex items-center gap-2 text-xs font-semibold text-sky-ink">
+          <li className="relative rounded-xl bg-sky/70 p-3 sm:p-4">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-sky-ink sm:gap-2">
               <Repeat className="size-3.5" aria-hidden="true" />
               Reviewing
             </div>
-            <div className="mt-1 font-display text-3xl font-bold tabular-nums">
+            <div className="mt-1 font-display text-2xl font-bold tabular-nums sm:text-3xl">
               {reviewingCount}
             </div>
             <div className="text-xs text-muted-foreground">Back in 7 to 21 days</div>
@@ -373,21 +379,23 @@ export function MistakesScreen() {
           </li>
 
           {/* Mastered */}
-          <li className="rounded-xl bg-accent p-4">
-            <div className="flex items-center gap-2 text-xs font-semibold text-primary">
+          <li className="rounded-xl bg-accent p-3 sm:p-4">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-primary sm:gap-2">
               <BadgeCheck className="size-3.5" aria-hidden="true" />
               Mastered
             </div>
-            <div className="mt-1 font-display text-3xl font-bold tabular-nums">{masteredCount}</div>
+            <div className="mt-1 font-display text-2xl font-bold tabular-nums sm:text-3xl">
+              {masteredCount}
+            </div>
             <div className="text-xs text-muted-foreground">Recalled 3 times in a row</div>
           </li>
         </ol>
       </section>
 
       {/* Positions List */}
-      <section className="mt-8" aria-labelledby="list-h">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 id="list-h" className="font-display text-xl font-bold">
+      <section className="mt-6 sm:mt-8" aria-labelledby="list-h">
+        <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">
+          <h2 id="list-h" className="font-display text-lg font-bold sm:text-xl">
             Your positions
           </h2>
           <div className="seg text-xs" role="tablist" aria-label="Sort order">
@@ -428,7 +436,11 @@ export function MistakesScreen() {
         </div>
 
         {/* Theme Chips Filter */}
-        <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Filter by theme">
+        <div
+          className="mt-3 flex flex-wrap gap-1.5 sm:gap-2"
+          role="group"
+          aria-label="Filter by theme"
+        >
           {THEME_CHIPS.map((chip) => {
             const isActive = selectedTheme === chip.id
             return (
@@ -438,7 +450,7 @@ export function MistakesScreen() {
                 onClick={() => {
                   setSelectedTheme(chip.id)
                 }}
-                className={`badge cursor-pointer px-3 py-1 transition-colors ${
+                className={`badge cursor-pointer px-2.5 py-0.5 text-xs transition-colors sm:px-3 sm:py-1 ${
                   isActive ? 'border-primary bg-primary text-primary-foreground' : 'hover:bg-accent'
                 }`}
               >
@@ -449,14 +461,14 @@ export function MistakesScreen() {
         </div>
 
         {/* Cards Grid */}
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-4 grid gap-3.5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {filteredMistakes.map((mistake) => {
             const isRevealed = revealedIds.has(mistake.id)
             return (
               <article key={mistake.id} className="card flex flex-col overflow-hidden">
                 <Link
                   to="/puzzles/solve"
-                  className="block bg-muted/40 p-3"
+                  className="block bg-muted/40 p-2.5 sm:p-3"
                   aria-label={`Try this position: ${mistake.origin}`}
                 >
                   <div className="overflow-hidden rounded-lg ring-1 ring-border">
@@ -470,7 +482,7 @@ export function MistakesScreen() {
                   </div>
                 </Link>
 
-                <div className="flex flex-1 flex-col p-4">
+                <div className="flex flex-1 flex-col p-3.5 sm:p-4">
                   <div className="flex items-center justify-between gap-2">
                     <span className={`badge border-transparent ${mistake.themeColorClass}`}>
                       {mistake.theme}
