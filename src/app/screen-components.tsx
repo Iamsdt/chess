@@ -82,4 +82,8 @@ export const SCREEN_COMPONENTS: Partial<Record<ScreenId, FunctionComponent>> = {
     () => importLazy(() => import('@/features/progress')),
     'ProgressScreen',
   ),
+  settings: lazyRouteComponent(
+    () => importLazy(() => import('@/features/settings')),
+    'SettingsScreen',
+  ),
 }
