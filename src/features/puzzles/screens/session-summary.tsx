@@ -55,7 +55,7 @@ export function SessionSummary({ navigate }: SessionSummaryProps) {
 
   if (state.status === 'loading') {
     return (
-      <div className="mx-auto w-full max-w-[860px] p-6 lg:p-8">
+      <div className="mx-auto w-full max-w-[860px] p-4 sm:p-6 lg:p-8">
         <PageHeader title="Session complete" />
         <p className="mt-6 text-sm text-muted-foreground" role="status">
           Adding up what you just did…
@@ -68,7 +68,7 @@ export function SessionSummary({ navigate }: SessionSummaryProps) {
 
   if (state.status === 'error' || summary === null) {
     return (
-      <div className="mx-auto w-full max-w-[860px] p-6 lg:p-8">
+      <div className="mx-auto w-full max-w-[860px] p-4 sm:p-6 lg:p-8">
         <PageHeader title="Session complete" />
         <EmptyState
           className="mt-6"
@@ -99,13 +99,15 @@ export function SessionSummary({ navigate }: SessionSummaryProps) {
   const best = summary.bestMoment
 
   return (
-    <div className="mx-auto w-full max-w-[860px] p-6 lg:p-8">
+    <div className="mx-auto w-full max-w-[860px] p-4 sm:p-6 lg:p-8">
       <section className="card overflow-hidden" aria-labelledby="summary-heading">
-        <div className="grid items-center gap-6 bg-accent/50 p-6 sm:grid-cols-[132px_minmax(0,1fr)] lg:p-8">
-          <div className="mx-auto grid size-[132px] place-items-center rounded-full bg-card">
+        <div className="grid items-center gap-4 bg-accent/50 p-4 sm:grid-cols-[120px_minmax(0,1fr)] sm:gap-6 sm:p-6 lg:grid-cols-[132px_minmax(0,1fr)] lg:p-8">
+          <div className="mx-auto grid size-[100px] place-items-center rounded-full bg-card sm:size-[120px] lg:size-[132px]">
             <div className="text-center leading-tight">
-              <Check aria-hidden className="mx-auto size-8 text-primary" />
-              <p className="mt-0.5 text-[11px] font-semibold text-primary">Session done</p>
+              <Check aria-hidden className="mx-auto size-7 text-primary sm:size-8" />
+              <p className="mt-0.5 text-[10px] font-semibold text-primary sm:text-[11px]">
+                Session done
+              </p>
             </div>
           </div>
           <div className="text-center sm:text-left">
@@ -122,31 +124,34 @@ export function SessionSummary({ navigate }: SessionSummaryProps) {
         </div>
 
         <dl className="grid grid-cols-2 border-t md:grid-cols-4">
-          <div className="border-b p-5 md:border-r md:border-b-0">
+          <div className="border-b p-3.5 sm:p-5 md:border-r md:border-b-0">
             <dt className="label">Puzzle rating</dt>
-            <dd className="mt-1 font-display text-3xl font-bold tabular-nums">
+            <dd className="mt-1 font-display text-2xl font-bold text-success tabular-nums sm:text-3xl">
               {formatDelta(summary.ratingDelta)}
             </dd>
             <dd className="text-xs text-muted-foreground">across this session</dd>
           </div>
-          <div className="border-b border-l p-5 md:border-r md:border-b-0 md:border-l-0">
+          <div className="border-b border-l p-3.5 sm:p-5 md:border-r md:border-b-0 md:border-l-0">
             <dt className="label">Solved</dt>
-            <dd className="mt-1 font-display text-3xl font-bold tabular-nums">
+            <dd className="mt-1 font-display text-2xl font-bold tabular-nums sm:text-3xl">
               {summary.solved}
-              <span className="text-lg text-muted-foreground"> of {summary.attempted}</span>
+              <span className="text-base text-muted-foreground sm:text-lg">
+                {' '}
+                of {summary.attempted}
+              </span>
             </dd>
             <dd className="text-xs text-muted-foreground">{summary.firstTry} first try</dd>
           </div>
-          <div className="p-5 md:border-r">
+          <div className="p-3.5 sm:p-5 md:border-r">
             <dt className="label">Accuracy</dt>
-            <dd className="mt-1 font-display text-3xl font-bold tabular-nums">
+            <dd className="mt-1 font-display text-2xl font-bold tabular-nums sm:text-3xl">
               {formatPercent(summary.accuracy)}
             </dd>
             <dd className="text-xs text-muted-foreground">right in the zone at 75%</dd>
           </div>
-          <div className="border-l p-5 md:border-l-0">
+          <div className="border-l p-3.5 sm:p-5 md:border-l-0">
             <dt className="label">Best streak</dt>
-            <dd className="mt-1 font-display text-3xl font-bold tabular-nums">
+            <dd className="mt-1 font-display text-2xl font-bold tabular-nums sm:text-3xl">
               {summary.bestStreak}
             </dd>
             <dd className="text-xs text-muted-foreground">
@@ -156,14 +161,14 @@ export function SessionSummary({ navigate }: SessionSummaryProps) {
         </dl>
       </section>
 
-      <div className="mt-4 grid gap-4">
-        <section className="card p-5" aria-labelledby="best-heading">
+      <div className="mt-3.5 grid gap-3.5 sm:mt-4 sm:gap-4">
+        <section className="card p-4 sm:p-5" aria-labelledby="best-heading">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2
               id="best-heading"
-              className="flex items-center gap-2 font-display text-lg font-bold"
+              className="flex items-center gap-2 font-display text-base font-bold sm:text-lg"
             >
-              <Sparkles aria-hidden className="size-5 text-reward-ink" />
+              <Sparkles aria-hidden className="size-4.5 text-reward-ink sm:size-5" />
               Best moment
             </h2>
             {best === null ? null : (
@@ -173,13 +178,13 @@ export function SessionSummary({ navigate }: SessionSummaryProps) {
             )}
           </div>
           {best === null ? (
-            <p className="mt-3 text-sm text-muted-foreground">
+            <p className="mt-2.5 text-sm text-muted-foreground sm:mt-3">
               No first-try solve this time. The ones that took a second look are the ones that teach
               the most.
             </p>
           ) : (
             <>
-              <p className="mt-3 text-sm leading-relaxed">
+              <p className="mt-2.5 text-sm leading-relaxed sm:mt-3">
                 You found the {best.theme} in {formatDuration(best.durationMs)}, with no hints.
               </p>
               {data?.bestPuzzle === null || data?.bestPuzzle === undefined ? null : (
@@ -189,8 +194,8 @@ export function SessionSummary({ navigate }: SessionSummaryProps) {
           )}
         </section>
 
-        <section className="card p-5" aria-labelledby="coming-back-heading">
-          <h2 id="coming-back-heading" className="font-display text-lg font-bold">
+        <section className="card p-4 sm:p-5" aria-labelledby="coming-back-heading">
+          <h2 id="coming-back-heading" className="font-display text-base font-bold sm:text-lg">
             Coming back
           </h2>
           {data === undefined || data.missed.length === 0 ? (
@@ -215,14 +220,17 @@ export function SessionSummary({ navigate }: SessionSummaryProps) {
         </section>
       </div>
 
-      <section className="card mt-4 flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:text-left">
+      <section className="card mt-3.5 flex flex-col items-center gap-3.5 p-4 text-center sm:mt-4 sm:flex-row sm:gap-4 sm:p-6 sm:text-left">
         <div className="flex-1">
-          <h2 className="font-display text-lg font-bold">Still in the flow?</h2>
-          <p className="text-sm text-muted-foreground">A short set now makes tomorrow easier.</p>
+          <h2 className="font-display text-base font-bold sm:text-lg">Still in the flow?</h2>
+          <p className="text-xs text-muted-foreground sm:text-sm">
+            A short set now makes tomorrow easier.
+          </p>
         </div>
-        <div className="flex flex-col items-center gap-2 sm:flex-row">
+        <div className="flex w-full flex-col items-center gap-2 sm:w-auto sm:flex-row">
           <Button
             variant="ghost"
+            className="w-full sm:w-auto"
             onClick={() => {
               navigate('/puzzles')
             }}
@@ -230,7 +238,7 @@ export function SessionSummary({ navigate }: SessionSummaryProps) {
             Done for today
           </Button>
           <Button
-            className="btn btn-cta"
+            className="btn btn-cta w-full sm:w-auto"
             onClick={() => {
               navigate('/puzzles/solve')
             }}
