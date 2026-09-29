@@ -181,41 +181,44 @@ export function LessonScreen() {
   return (
     <main className="min-h-full">
       {/* Sticky Header */}
-      <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur lg:px-6">
-        <Button asChild variant="ghost" size="sm">
+      <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background/85 px-3 backdrop-blur sm:px-4 lg:px-6">
+        <Button asChild variant="ghost" size="sm" className="h-9 px-2.5 text-xs sm:px-3 sm:text-sm">
           <Link to="/learn">
             <X className="mr-1 size-4" aria-hidden="true" />
             Exit
           </Link>
         </Button>
-        <div className="mx-1 h-5 w-px bg-border" />
-        <h1 aria-label="Lesson" className="flex min-w-0 items-center gap-2 text-base font-bold">
-          <Sprout className="size-4 text-cta" aria-hidden="true" />
+        <div className="mx-0.5 h-5 w-px bg-border sm:mx-1" />
+        <h1
+          aria-label="Lesson"
+          className="flex min-w-0 items-center gap-1.5 text-sm font-bold sm:gap-2 sm:text-base"
+        >
+          <Sprout className="size-4 shrink-0 text-cta" aria-hidden="true" />
           <span className="truncate">Royal fork</span>
         </h1>
         <span className="badge max-md:hidden">Double attacks</span>
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
           <div
             className="flex items-center gap-1 max-sm:hidden"
             role="group"
             aria-label="Step 3 of 7 progress"
           >
-            <span className="h-1.5 w-6 rounded-full bg-primary" />
-            <span className="h-1.5 w-6 rounded-full bg-primary" />
-            <span className="h-1.5 w-6 rounded-full bg-cta" />
-            <span className="h-1.5 w-6 rounded-full bg-muted" />
-            <span className="h-1.5 w-6 rounded-full bg-muted" />
-            <span className="h-1.5 w-6 rounded-full bg-muted" />
-            <span className="h-1.5 w-6 rounded-full bg-muted" />
+            <span className="h-1.5 w-4 rounded-full bg-primary sm:w-6" />
+            <span className="h-1.5 w-4 rounded-full bg-primary sm:w-6" />
+            <span className="h-1.5 w-4 rounded-full bg-cta sm:w-6" />
+            <span className="h-1.5 w-4 rounded-full bg-muted sm:w-6" />
+            <span className="h-1.5 w-4 rounded-full bg-muted sm:w-6" />
+            <span className="h-1.5 w-4 rounded-full bg-muted sm:w-6" />
+            <span className="h-1.5 w-4 rounded-full bg-muted sm:w-6" />
           </div>
-          <span className="text-sm font-medium tabular-nums">
+          <span className="shrink-0 text-xs font-medium tabular-nums sm:text-sm">
             Step 3 <span className="text-muted-foreground">of 7</span>
           </span>
           <Button
             asChild
             variant="ghost"
             size="sm"
-            className="size-9 px-0"
+            className="size-8 shrink-0 px-0 sm:size-9"
             title="Board & pieces"
             aria-label="Board and piece settings"
           >
@@ -227,21 +230,22 @@ export function LessonScreen() {
       </header>
 
       {/* Main Grid: Board Column & Side Panel */}
-      <div className="grid gap-5 p-4 lg:p-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid gap-4 p-3 sm:gap-5 sm:p-4 lg:grid-cols-[minmax(0,1fr)_340px] lg:p-6 xl:grid-cols-[minmax(0,1fr)_380px]">
         {/* Left Column: Playable Board */}
         <section className="flex justify-center" aria-label="Lesson board">
-          <div className="w-full max-w-[620px] space-y-2.5">
-            <div className="flex items-center justify-between gap-3 text-sm">
-              <span className="inline-flex items-center gap-2 font-medium">
+          <div className="w-full max-w-[min(100%,calc(100dvh-200px),620px)] space-y-2 sm:space-y-2.5">
+            <div className="flex items-center justify-between gap-2 text-xs sm:text-sm">
+              <span className="inline-flex items-center gap-1.5 font-medium sm:gap-2">
                 <span
-                  className="size-3 rounded-full bg-white ring-1 ring-border"
+                  className="size-2.5 rounded-full bg-white ring-1 ring-border sm:size-3"
                   aria-hidden="true"
                 />
                 White to move
               </span>
               <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                <MousePointerClick className="size-3.5" aria-hidden="true" />
-                Click a piece, then a square
+                <MousePointerClick className="size-3.5 shrink-0" aria-hidden="true" />
+                <span className="hidden min-[380px]:inline">Click a piece, then a square</span>
+                <span className="min-[380px]:hidden">Tap to move</span>
               </span>
             </div>
 
@@ -260,7 +264,7 @@ export function LessonScreen() {
 
             <p className="flex items-center gap-2 text-xs text-muted-foreground">
               <span
-                className="inline-block size-3 rounded-full ring-2 ring-cta"
+                className="inline-block size-2.5 shrink-0 rounded-full ring-2 ring-cta sm:size-3"
                 aria-hidden="true"
               />
               Circled: the two targets. Your job is to hit both at once.
@@ -270,16 +274,16 @@ export function LessonScreen() {
 
         {/* Right Column: Step Instructions & Feedback Side Panel */}
         <aside
-          className="card flex min-h-0 flex-col overflow-hidden xl:max-h-[calc(100dvh-56px-48px)]"
+          className="card flex min-h-0 flex-col overflow-hidden lg:max-h-[calc(100dvh-56px-48px)]"
           aria-label="Lesson step"
         >
-          <div className="min-h-0 flex-1 space-y-4 overflow-auto p-5">
+          <div className="min-h-0 flex-1 space-y-3.5 overflow-auto p-4 sm:space-y-4 sm:p-5">
             <div>
               <p className="eyebrow">Step 3 · Your turn</p>
-              <h2 className="mt-1.5 text-xl leading-snug font-bold">
+              <h2 className="mt-1.5 text-lg leading-snug font-bold sm:text-xl">
                 Your move: find the knight jump that attacks king and queen
               </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="mt-1.5 text-xs text-muted-foreground sm:mt-2 sm:text-sm">
                 A knight check can&apos;t be blocked. If the same jump also lands on the queen,
                 Black has to save the king first.
               </p>
@@ -293,8 +297,8 @@ export function LessonScreen() {
                   {String(hintsUnlocked)} of 3 used
                 </span>
               </div>
-              <ol className="mt-2 space-y-1.5 text-sm">
-                <li className="flex items-start gap-2.5 rounded-lg bg-muted/60 p-2.5">
+              <ol className="mt-2 space-y-1.5 text-xs sm:text-sm">
+                <li className="flex items-start gap-2.5 rounded-lg bg-muted/60 p-2 sm:p-2.5">
                   <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
                     1
                   </span>
@@ -307,7 +311,7 @@ export function LessonScreen() {
                 </li>
 
                 {hintsUnlocked >= 2 ? (
-                  <li className="flex items-start gap-2.5 rounded-lg bg-muted/60 p-2.5">
+                  <li className="flex items-start gap-2.5 rounded-lg bg-muted/60 p-2 sm:p-2.5">
                     <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
                       2
                     </span>
@@ -322,7 +326,7 @@ export function LessonScreen() {
                   <li>
                     <button
                       type="button"
-                      className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg border border-dashed p-2.5 text-left transition-colors hover:bg-muted/50"
+                      className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg border border-dashed p-2 text-left transition-colors hover:bg-muted/50 sm:p-2.5"
                       onClick={handleUnlockHint2}
                     >
                       <span className="grid size-5 shrink-0 place-items-center rounded-full border text-[10px] font-bold text-muted-foreground">
@@ -335,7 +339,7 @@ export function LessonScreen() {
                 )}
 
                 {hintsUnlocked >= 3 ? (
-                  <li className="flex items-start gap-2.5 rounded-lg bg-muted/60 p-2.5">
+                  <li className="flex items-start gap-2.5 rounded-lg bg-muted/60 p-2 sm:p-2.5">
                     <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
                       3
                     </span>
@@ -351,7 +355,7 @@ export function LessonScreen() {
                   <li>
                     <button
                       type="button"
-                      className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg border border-dashed p-2.5 text-left transition-colors hover:bg-muted/50"
+                      className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg border border-dashed p-2 text-left transition-colors hover:bg-muted/50 sm:p-2.5"
                       onClick={handleUnlockHint3}
                     >
                       <span className="grid size-5 shrink-0 place-items-center rounded-full border text-[10px] font-bold text-muted-foreground">
@@ -374,7 +378,7 @@ export function LessonScreen() {
                     type="button"
                     role="tab"
                     aria-selected={feedbackTab === 'ok'}
-                    className={`cursor-pointer rounded-md px-3 py-1 transition ${
+                    className={`cursor-pointer rounded-md px-2.5 py-1 transition sm:px-3 ${
                       feedbackTab === 'ok' ? 'bg-card font-semibold text-foreground shadow-xs' : ''
                     }`}
                     onClick={() => {
@@ -387,7 +391,7 @@ export function LessonScreen() {
                     type="button"
                     role="tab"
                     aria-selected={feedbackTab === 'miss'}
-                    className={`cursor-pointer rounded-md px-3 py-1 transition ${
+                    className={`cursor-pointer rounded-md px-2.5 py-1 transition sm:px-3 ${
                       feedbackTab === 'miss'
                         ? 'bg-card font-semibold text-foreground shadow-xs'
                         : ''
@@ -402,12 +406,12 @@ export function LessonScreen() {
               </div>
 
               {feedbackTab === 'ok' ? (
-                <div className="mt-2 rounded-xl border border-primary/25 bg-accent/60 p-3.5">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-                    <Sparkles className="size-4" aria-hidden="true" />
+                <div className="mt-2 rounded-xl border border-primary/25 bg-accent/60 p-3 sm:p-3.5">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-primary sm:text-sm">
+                    <Sparkles className="size-4 shrink-0" aria-hidden="true" />
                     That&apos;s the royal fork
                   </div>
-                  <div className="mt-2.5 grid grid-cols-[104px_1fr] items-start gap-3">
+                  <div className="mt-2.5 grid grid-cols-[88px_1fr] items-start gap-2.5 sm:grid-cols-[104px_1fr] sm:gap-3">
                     <div className="overflow-hidden rounded-lg ring-1 ring-border">
                       <Board
                         fen={AFTER_MOVE_FEN}
@@ -418,7 +422,7 @@ export function LessonScreen() {
                         label="Knight on e7 attacks g8 and c8"
                       />
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">
                       <span className="san">Ne7+</span> checks the king on g8 and hits the queen on
                       c8. After <span className="san">…Kh8</span>, <span className="san">Nxc8</span>{' '}
                       wins the queen.
@@ -426,12 +430,12 @@ export function LessonScreen() {
                   </div>
                 </div>
               ) : (
-                <div className="mt-2 rounded-xl border border-reward/40 bg-reward-soft p-3.5">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-reward-ink">
-                    <Lightbulb className="size-4" aria-hidden="true" />
+                <div className="mt-2 rounded-xl border border-reward/40 bg-reward-soft p-3 sm:p-3.5">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-reward-ink sm:text-sm">
+                    <Lightbulb className="size-4 shrink-0" aria-hidden="true" />
                     Close. Good eye for forks.
                   </div>
-                  <p className="mt-1.5 text-sm text-muted-foreground">
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
                     <span className="san">Nb6</span> attacks the queen and the rook. But it
                     isn&apos;t check, so Black simply moves the queen. Can you find a jump that{' '}
                     <b className="font-semibold text-foreground">gives check</b> too?
@@ -439,7 +443,7 @@ export function LessonScreen() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="mt-2.5 text-xs"
+                    className="mt-2.5 h-8 text-xs sm:h-9"
                     onClick={handleResetPosition}
                   >
                     <RotateCcw className="mr-1 size-3.5" aria-hidden="true" />
@@ -450,11 +454,11 @@ export function LessonScreen() {
             </div>
 
             {/* Key Idea */}
-            <div className="flex gap-3 rounded-xl bg-lilac/60 p-3.5">
+            <div className="flex gap-2.5 rounded-xl bg-lilac/60 p-3 sm:gap-3 sm:p-3.5">
               <KeyRound className="mt-0.5 size-4 shrink-0 text-lilac-ink" aria-hidden="true" />
               <div>
-                <div className="text-sm font-semibold text-lilac-ink">Key idea</div>
-                <p className="mt-0.5 text-sm text-muted-foreground">
+                <div className="text-xs font-semibold text-lilac-ink sm:text-sm">Key idea</div>
+                <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
                   Check first, collect later. A fork with check leaves the opponent no time to save
                   both pieces.
                 </p>
@@ -465,23 +469,24 @@ export function LessonScreen() {
             <Button
               variant="ghost"
               size="sm"
-              className="w-full text-xs text-muted-foreground"
+              className="h-auto w-full px-3 py-2 text-center text-xs whitespace-normal text-muted-foreground sm:py-2.5"
               aria-label="Ask Sage to explain the royal fork in a different way"
               onClick={() => {
                 handleAskSage('Can you explain the royal fork in a different way? No spoilers.')
               }}
             >
-              <MessageCircle className="mr-1.5 size-3.5" aria-hidden="true" />
+              <MessageCircle className="mr-1.5 size-3.5 shrink-0" aria-hidden="true" />
               Still fuzzy? Ask Sage to explain it differently
             </Button>
           </div>
 
           {/* Bottom Navigation & Complete Trigger */}
-          <div className="space-y-2 border-t p-3">
+          <div className="space-y-2 border-t p-3 sm:p-4">
             <div className="grid grid-cols-2 gap-2">
               <Button
                 variant="outline"
                 size="sm"
+                className="h-9 min-h-[44px] text-xs sm:h-10 sm:min-h-0 sm:text-sm"
                 onClick={() => {
                   toast('Step 2 · How a knight moves in an L')
                 }}
@@ -489,7 +494,12 @@ export function LessonScreen() {
                 <ChevronLeft className="mr-1 size-4" aria-hidden="true" />
                 Prev step
               </Button>
-              <Button variant="default" size="sm" onClick={handleNextStep}>
+              <Button
+                variant="default"
+                size="sm"
+                className="h-9 min-h-[44px] text-xs sm:h-10 sm:min-h-0 sm:text-sm"
+                onClick={handleNextStep}
+              >
                 Next step
                 <ChevronRight className="ml-1 size-4" aria-hidden="true" />
               </Button>
@@ -497,7 +507,7 @@ export function LessonScreen() {
             <Button
               variant="ghost"
               size="sm"
-              className="w-full text-xs text-muted-foreground"
+              className="h-9 w-full text-xs text-muted-foreground"
               onClick={() => {
                 setDoneModalOpen(true)
               }}
@@ -511,40 +521,42 @@ export function LessonScreen() {
 
       {/* Lesson Complete Dialog */}
       <Dialog open={doneModalOpen} onOpenChange={setDoneModalOpen}>
-        <DialogContent className="max-w-md overflow-hidden p-0 text-center">
-          <div className="relative p-6">
+        <DialogContent className="max-h-[92dvh] max-w-md overflow-y-auto p-0 text-center">
+          <div className="relative p-4 sm:p-6">
             <div className="absolute inset-x-0 top-0 h-24 bg-reward-soft" />
-            <div className="relative mx-auto grid size-16 place-items-center rounded-2xl bg-primary text-reward shadow-lg">
-              <Sprout className="size-8" aria-hidden="true" />
+            <div className="relative mx-auto grid size-14 place-items-center rounded-2xl bg-primary text-reward shadow-lg sm:size-16">
+              <Sprout className="size-7 sm:size-8" aria-hidden="true" />
             </div>
-            <DialogHeader className="relative mt-4">
+            <DialogHeader className="relative mt-3 sm:mt-4">
               <p className="eyebrow mx-auto">Lesson complete</p>
-              <DialogTitle className="mt-1 text-2xl font-bold">
+              <DialogTitle className="mt-1 text-xl font-bold sm:text-2xl">
                 You found the royal fork
               </DialogTitle>
-              <DialogDescription className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+              <DialogDescription className="mx-auto mt-2 max-w-sm text-xs text-muted-foreground sm:text-sm">
                 Seven steps in 6 minutes. You solved 5 of 6 without the final hint.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="mt-5 grid grid-cols-3 gap-2 text-left">
-              <div className="rounded-xl bg-muted/60 p-3">
-                <div className="font-display text-xl font-bold">5/6</div>
-                <div className="text-xs text-muted-foreground">first try</div>
+            <div className="mt-4 grid grid-cols-3 gap-1.5 text-left sm:mt-5 sm:gap-2">
+              <div className="rounded-xl bg-muted/60 p-2.5 sm:p-3">
+                <div className="font-display text-lg font-bold sm:text-xl">5/6</div>
+                <div className="text-[11px] text-muted-foreground sm:text-xs">first try</div>
               </div>
-              <div className="rounded-xl bg-muted/60 p-3">
-                <div className="font-display text-xl font-bold">{String(hintsUnlocked)}</div>
-                <div className="text-xs text-muted-foreground">
+              <div className="rounded-xl bg-muted/60 p-2.5 sm:p-3">
+                <div className="font-display text-lg font-bold sm:text-xl">
+                  {String(hintsUnlocked)}
+                </div>
+                <div className="text-[11px] text-muted-foreground sm:text-xs">
                   {hintsUnlocked === 1 ? 'hint used' : 'hints used'}
                 </div>
               </div>
-              <div className="rounded-xl bg-reward-soft p-3">
-                <div className="font-display text-xl font-bold text-reward-ink">+1</div>
-                <div className="text-xs text-muted-foreground">leaf grown</div>
+              <div className="rounded-xl bg-reward-soft p-2.5 sm:p-3">
+                <div className="font-display text-lg font-bold text-reward-ink sm:text-xl">+1</div>
+                <div className="text-[11px] text-muted-foreground sm:text-xs">leaf grown</div>
               </div>
             </div>
 
-            <div className="mt-4 rounded-xl border p-3 text-left text-sm">
+            <div className="mt-3.5 rounded-xl border p-3 text-left text-sm sm:mt-4">
               <div className="label">Take-away</div>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                 Before every move, ask:{' '}
@@ -555,8 +567,11 @@ export function LessonScreen() {
               </p>
             </div>
 
-            <div className="mt-6 flex flex-col items-center gap-2">
-              <Button asChild className="btn-cta w-full bg-cta text-white hover:bg-cta/90">
+            <div className="mt-5 flex flex-col items-center gap-2 sm:mt-6">
+              <Button
+                asChild
+                className="btn-cta h-10 w-full bg-cta text-white hover:bg-cta/90 sm:h-11"
+              >
                 <Link to="/puzzles">
                   <Target className="mr-1.5 size-4" aria-hidden="true" />
                   Practice 5 puzzles
@@ -566,7 +581,7 @@ export function LessonScreen() {
                 asChild
                 variant="ghost"
                 size="sm"
-                className="text-muted-foreground"
+                className="h-9 text-muted-foreground"
                 onClick={() => {
                   setDoneModalOpen(false)
                 }}
