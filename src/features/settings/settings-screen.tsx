@@ -161,11 +161,11 @@ export function SettingsScreen() {
           aria-label="Settings sections"
           className="@[780px]:sticky @[780px]:top-6 @[780px]:self-start"
         >
-          <ul className="flex [scrollbar-width:none] gap-1 overflow-x-auto pb-1 @[780px]:flex-col @[780px]:overflow-visible">
+          <ul className="-mx-4 flex [scrollbar-width:none] gap-1 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0 @[780px]:flex-col @[780px]:overflow-visible">
             <li>
               <a
                 href="#profile"
-                className="sub-link nav-item h-9 shrink-0 whitespace-nowrap"
+                className="sub-link nav-item h-10 min-h-[40px] shrink-0 whitespace-nowrap sm:h-9 sm:min-h-0"
                 aria-current={activeSection === 'profile' ? 'true' : undefined}
                 onClick={() => {
                   setActiveSection('profile')
@@ -178,7 +178,7 @@ export function SettingsScreen() {
             <li>
               <a
                 href="#board"
-                className="sub-link nav-item h-9 shrink-0 whitespace-nowrap"
+                className="sub-link nav-item h-10 min-h-[40px] shrink-0 whitespace-nowrap sm:h-9 sm:min-h-0"
                 aria-current={activeSection === 'board' ? 'true' : undefined}
                 onClick={() => {
                   setActiveSection('board')
@@ -191,7 +191,7 @@ export function SettingsScreen() {
             <li>
               <a
                 href="#coach"
-                className="sub-link nav-item h-9 shrink-0 whitespace-nowrap"
+                className="sub-link nav-item h-10 min-h-[40px] shrink-0 whitespace-nowrap sm:h-9 sm:min-h-0"
                 aria-current={activeSection === 'coach' ? 'true' : undefined}
                 onClick={() => {
                   setActiveSection('coach')
@@ -204,7 +204,7 @@ export function SettingsScreen() {
             <li>
               <a
                 href="#sound"
-                className="sub-link nav-item h-9 shrink-0 whitespace-nowrap"
+                className="sub-link nav-item h-10 min-h-[40px] shrink-0 whitespace-nowrap sm:h-9 sm:min-h-0"
                 aria-current={activeSection === 'sound' ? 'true' : undefined}
                 onClick={() => {
                   setActiveSection('sound')
@@ -217,7 +217,7 @@ export function SettingsScreen() {
             <li>
               <a
                 href="#data"
-                className="sub-link nav-item h-9 shrink-0 whitespace-nowrap"
+                className="sub-link nav-item h-10 min-h-[40px] shrink-0 whitespace-nowrap sm:h-9 sm:min-h-0"
                 aria-current={activeSection === 'data' ? 'true' : undefined}
                 onClick={() => {
                   setActiveSection('data')
@@ -230,7 +230,7 @@ export function SettingsScreen() {
             <li>
               <a
                 href="#about"
-                className="sub-link nav-item h-9 shrink-0 whitespace-nowrap"
+                className="sub-link nav-item h-10 min-h-[40px] shrink-0 whitespace-nowrap sm:h-9 sm:min-h-0"
                 aria-current={activeSection === 'about' ? 'true' : undefined}
                 onClick={() => {
                   setActiveSection('about')
@@ -246,13 +246,13 @@ export function SettingsScreen() {
         <div className="min-w-0 space-y-6">
           {/* PROFILE */}
           <section id="profile" className="card" aria-labelledby="profile-h">
-            <div className="border-b px-6 py-4">
+            <div className="border-b p-4 sm:px-6 sm:py-4">
               <h2 id="profile-h" className="text-lg font-bold">
                 Profile
               </h2>
               <p className="help">A local profile. No account, no email.</p>
             </div>
-            <div className="grid gap-5 p-6 sm:grid-cols-2">
+            <div className="grid gap-5 p-4 sm:grid-cols-2 sm:p-6">
               <div className="space-y-1.5">
                 <label htmlFor="name" className="field-label">
                   Display name
@@ -292,10 +292,10 @@ export function SettingsScreen() {
                 <span className="field-label block" id={goalLabelId}>
                   Daily goal
                 </span>
-                <div className="seg" role="group" aria-labelledby={goalLabelId}>
+                <div className="seg flex w-full" role="group" aria-labelledby={goalLabelId}>
                   <button
                     type="button"
-                    className={cn(dailyGoal === 5 && 'is-active')}
+                    className={cn('min-h-[36px] flex-1 sm:min-h-0', dailyGoal === 5 && 'is-active')}
                     onClick={() => {
                       setDailyGoal(5)
                     }}
@@ -304,7 +304,10 @@ export function SettingsScreen() {
                   </button>
                   <button
                     type="button"
-                    className={cn(dailyGoal === 15 && 'is-active')}
+                    className={cn(
+                      'min-h-[36px] flex-1 sm:min-h-0',
+                      dailyGoal === 15 && 'is-active',
+                    )}
                     onClick={() => {
                       setDailyGoal(15)
                     }}
@@ -313,7 +316,10 @@ export function SettingsScreen() {
                   </button>
                   <button
                     type="button"
-                    className={cn(dailyGoal === 30 && 'is-active')}
+                    className={cn(
+                      'min-h-[36px] flex-1 sm:min-h-0',
+                      dailyGoal === 30 && 'is-active',
+                    )}
                     onClick={() => {
                       setDailyGoal(30)
                     }}
@@ -332,7 +338,7 @@ export function SettingsScreen() {
                   <input
                     id="remind"
                     type="time"
-                    className="input w-36"
+                    className="input w-32 sm:w-36"
                     value={reminderTime}
                     onChange={(e) => {
                       setReminderTime(e.target.value)
@@ -356,14 +362,14 @@ export function SettingsScreen() {
 
           {/* BOARD & PIECES */}
           <section id="board" className="card" aria-labelledby="board-h">
-            <div className="border-b px-6 py-4">
+            <div className="border-b p-4 sm:px-6 sm:py-4">
               <h2 id="board-h" className="text-lg font-bold">
                 Board &amp; pieces
               </h2>
               <p className="help">Changes apply everywhere, right away.</p>
             </div>
 
-            <div className="grid gap-6 p-6 @[640px]:grid-cols-[minmax(0,1fr)_200px] @[1000px]:grid-cols-[minmax(0,1fr)_260px]">
+            <div className="grid gap-6 p-4 sm:p-6 @[640px]:grid-cols-[minmax(0,1fr)_200px] @[1000px]:grid-cols-[minmax(0,1fr)_260px]">
               <div className="min-w-0 space-y-6">
                 {/* Theme / Appearance */}
                 <div>
@@ -405,7 +411,7 @@ export function SettingsScreen() {
                     Board colours
                   </span>
                   <div
-                    className="mt-2 flex flex-wrap gap-3"
+                    className="mt-2 flex flex-wrap gap-2.5 sm:gap-3"
                     role="radiogroup"
                     aria-labelledby={boardThemesLabelId}
                     id="board-swatches"
@@ -424,7 +430,7 @@ export function SettingsScreen() {
                       >
                         <span
                           className={cn(
-                            'sw block size-14 rounded-xl ring-1 ring-border transition group-aria-checked:ring-[3px] group-aria-checked:ring-primary',
+                            'sw block size-12 rounded-xl ring-1 ring-border transition group-aria-checked:ring-[3px] group-aria-checked:ring-primary sm:size-14',
                             swatch.id === 'grove' && 'sw-green',
                           )}
                           data-board={swatch.id !== 'grove' ? swatch.id : undefined}
@@ -453,7 +459,7 @@ export function SettingsScreen() {
                         role="radio"
                         aria-checked={pieceSet === opt.id}
                         data-set-name={opt.id}
-                        className="option flex-col gap-1 p-3 aria-checked:border-primary aria-checked:bg-accent/50 aria-checked:ring-2 aria-checked:ring-primary/20"
+                        className="option min-h-[44px] flex-col gap-1 p-3 aria-checked:border-primary aria-checked:bg-accent/50 aria-checked:ring-2 aria-checked:ring-primary/20"
                         onClick={() => {
                           setPieceSet(opt.id)
                         }}
@@ -480,7 +486,7 @@ export function SettingsScreen() {
 
                 {/* Board Toggles */}
                 <div className="divide-y rounded-xl border">
-                  <div className="flex items-center gap-3 p-3 text-sm">
+                  <div className="flex min-h-[44px] items-center gap-3 p-3 text-sm">
                     <div className="flex-1">
                       <label htmlFor="opt-coords" className="block cursor-pointer font-medium">
                         Coordinates
@@ -500,7 +506,7 @@ export function SettingsScreen() {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 text-sm">
+                  <div className="flex min-h-[44px] items-center gap-3 p-3 text-sm">
                     <div className="flex-1">
                       <label htmlFor="opt-hl" className="block cursor-pointer font-medium">
                         Highlight last move
@@ -520,14 +526,18 @@ export function SettingsScreen() {
                     </span>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3 p-3 text-sm">
+                  <div className="flex min-h-[44px] flex-wrap items-center gap-3 p-3 text-sm">
                     <span className="flex-1">
                       <span className="block font-medium" id={animLabelId}>
                         Move animation
                       </span>
                       <span className="help">How fast pieces slide</span>
                     </span>
-                    <div className="seg" role="group" aria-labelledby={animLabelId}>
+                    <div
+                      className="seg flex [&>button]:min-h-[36px]"
+                      role="group"
+                      aria-labelledby={animLabelId}
+                    >
                       <button
                         type="button"
                         className={cn(animationSpeed === 'off' && 'is-active')}
@@ -558,7 +568,7 @@ export function SettingsScreen() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 text-sm">
+                  <div className="flex min-h-[44px] items-center gap-3 p-3 text-sm">
                     <div className="flex-1">
                       <label htmlFor="opt-premoves" className="block cursor-pointer font-medium">
                         Premoves
@@ -578,7 +588,7 @@ export function SettingsScreen() {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 text-sm">
+                  <div className="flex min-h-[44px] items-center gap-3 p-3 text-sm">
                     <div className="flex-1">
                       <label htmlFor="opt-promo" className="block cursor-pointer font-medium">
                         Always ask on promotion
@@ -602,7 +612,7 @@ export function SettingsScreen() {
 
               {/* Live Preview */}
               <figure className="self-start @max-[640px]:-order-1 @[640px]:sticky @[640px]:top-6">
-                <div className="mx-auto max-w-[300px] overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.45)] ring-1 ring-border">
+                <div className="mx-auto w-full max-w-[260px] overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.45)] ring-1 ring-border sm:max-w-[300px]">
                   <Board
                     fen={PREVIEW_FEN}
                     coordinates={coordinates}
@@ -620,7 +630,7 @@ export function SettingsScreen() {
 
           {/* AI COACH · SAGE */}
           <section id="coach" className="card" aria-labelledby="coach-h">
-            <div className="flex flex-wrap items-center gap-3 border-b px-6 py-4">
+            <div className="flex flex-wrap items-center gap-3 border-b p-4 sm:px-6 sm:py-4">
               <span className="sage-av size-9 rounded-xl">
                 <Brain className="size-4" aria-hidden="true" />
               </span>
@@ -636,7 +646,7 @@ export function SettingsScreen() {
               </span>
             </div>
 
-            <div className="space-y-6 p-6">
+            <div className="space-y-6 p-4 sm:p-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <label htmlFor="provider" className="field-label">
@@ -701,7 +711,7 @@ export function SettingsScreen() {
                       <button
                         type="button"
                         id="reveal"
-                        className="btn btn-ghost btn-icon btn-sm absolute top-1/2 right-1 -translate-y-1/2"
+                        className="btn btn-ghost btn-icon btn-sm absolute top-1/2 right-1 min-h-[36px] min-w-[36px] -translate-y-1/2"
                         aria-label={showKey ? 'Hide key' : 'Show key'}
                         aria-pressed={showKey}
                         onClick={() => {
@@ -716,26 +726,30 @@ export function SettingsScreen() {
                       </button>
                     </div>
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        toast('Key works · Gemini 2.5 Flash')
-                      }}
-                    >
-                      <PlugZap className="size-4" aria-hidden="true" />
-                      Test key
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      onClick={() => {
-                        setRemoveKeyModalOpen(true)
-                      }}
-                    >
-                      <Trash2 className="size-4" aria-hidden="true" />
-                      Remove key
-                    </Button>
+                    <div className="flex w-full items-center gap-2 sm:w-auto">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="min-h-[40px] flex-1 sm:flex-initial"
+                        onClick={() => {
+                          toast('Key works · Gemini 2.5 Flash')
+                        }}
+                      >
+                        <PlugZap className="size-4" aria-hidden="true" />
+                        Test key
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        className="min-h-[40px] flex-1 sm:flex-initial"
+                        onClick={() => {
+                          setRemoveKeyModalOpen(true)
+                        }}
+                      >
+                        <Trash2 className="size-4" aria-hidden="true" />
+                        Remove key
+                      </Button>
+                    </div>
                   </div>
                   <p className="help">
                     Get a free key at aistudio.google.com. Added 3 Sep · last used 6 min ago.
@@ -744,7 +758,7 @@ export function SettingsScreen() {
               </div>
 
               {/* Security Explainer */}
-              <div className="rounded-2xl bg-accent/60 p-5">
+              <div className="rounded-2xl bg-accent/60 p-4 sm:p-5">
                 <h3 className="flex items-center gap-2 text-base font-bold">
                   <ShieldCheck className="size-4 text-primary" aria-hidden="true" />
                   How your key is protected
@@ -796,7 +810,7 @@ export function SettingsScreen() {
 
                 <label
                   htmlFor="opt-passphrase"
-                  className="mt-4 flex items-center gap-3 rounded-xl border bg-card p-3 text-sm"
+                  className="mt-4 flex min-h-[44px] cursor-pointer items-center gap-3 rounded-xl border bg-card p-3 text-sm"
                 >
                   <LockKeyhole className="size-4 shrink-0 text-foreground" aria-hidden="true" />
                   <span className="flex-1">
@@ -831,7 +845,7 @@ export function SettingsScreen() {
                       role="radio"
                       aria-checked={coachTone === 'friendly'}
                       className={cn(
-                        'option w-full p-3 text-left',
+                        'option min-h-[44px] w-full p-3 text-left',
                         coachTone === 'friendly' && 'is-active',
                       )}
                       onClick={() => {
@@ -852,7 +866,7 @@ export function SettingsScreen() {
                       role="radio"
                       aria-checked={coachTone === 'blunt'}
                       className={cn(
-                        'option w-full p-3 text-left',
+                        'option min-h-[44px] w-full p-3 text-left',
                         coachTone === 'blunt' && 'is-active',
                       )}
                       onClick={() => {
@@ -873,7 +887,7 @@ export function SettingsScreen() {
                       role="radio"
                       aria-checked={coachTone === 'socratic'}
                       className={cn(
-                        'option w-full p-3 text-left',
+                        'option min-h-[44px] w-full p-3 text-left',
                         coachTone === 'socratic' && 'is-active',
                       )}
                       onClick={() => {
@@ -894,7 +908,7 @@ export function SettingsScreen() {
                 <div className="space-y-4">
                   <label
                     htmlFor="opt-spoiler"
-                    className="flex items-center gap-3 rounded-xl border p-3 text-sm"
+                    className="flex min-h-[44px] cursor-pointer items-center gap-3 rounded-xl border p-3 text-sm"
                   >
                     <EyeOff className="size-4 shrink-0 text-primary" aria-hidden="true" />
                     <span className="flex-1">
@@ -916,7 +930,7 @@ export function SettingsScreen() {
 
                   <label
                     htmlFor="opt-engine"
-                    className="flex items-center gap-3 rounded-xl border p-3 text-sm"
+                    className="flex min-h-[44px] cursor-pointer items-center gap-3 rounded-xl border p-3 text-sm"
                   >
                     <Cpu className="size-4 shrink-0 text-foreground" aria-hidden="true" />
                     <span className="flex-1">
@@ -969,13 +983,16 @@ export function SettingsScreen() {
 
           {/* SOUND */}
           <section id="sound" className="card" aria-labelledby="sound-h">
-            <div className="border-b px-6 py-4">
+            <div className="border-b p-4 sm:px-6 sm:py-4">
               <h2 id="sound-h" className="text-lg font-bold">
                 Sound
               </h2>
             </div>
-            <div className="divide-y px-6">
-              <label htmlFor="opt-movesounds" className="flex items-center gap-3 py-3 text-sm">
+            <div className="divide-y px-4 sm:px-6">
+              <label
+                htmlFor="opt-movesounds"
+                className="flex min-h-[44px] cursor-pointer items-center gap-3 py-3 text-sm"
+              >
                 <span className="flex-1 font-medium">Move sounds</span>
                 <span className="switch">
                   <input
@@ -1003,7 +1020,7 @@ export function SettingsScreen() {
                   onChange={(e) => {
                     setVolume(Number(e.target.value))
                   }}
-                  className="w-48 accent-[var(--primary)]"
+                  className="w-full accent-[var(--primary)] sm:w-48"
                 />
               </div>
 
@@ -1011,7 +1028,11 @@ export function SettingsScreen() {
                 <span className="flex-1 font-medium" id={soundStyleLabelId}>
                   Sound style
                 </span>
-                <div className="seg" role="group" aria-labelledby={soundStyleLabelId}>
+                <div
+                  className="seg flex [&>button]:min-h-[36px]"
+                  role="group"
+                  aria-labelledby={soundStyleLabelId}
+                >
                   <button
                     type="button"
                     className={cn(soundStyle === 'wood' && 'is-active')}
@@ -1042,7 +1063,7 @@ export function SettingsScreen() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 py-3 text-sm">
+              <div className="flex min-h-[44px] items-center gap-3 py-3 text-sm">
                 <div className="flex-1">
                   <label htmlFor="opt-lowtime" className="block cursor-pointer font-medium">
                     Low-time warning
@@ -1062,7 +1083,7 @@ export function SettingsScreen() {
                 </span>
               </div>
 
-              <div className="flex items-center gap-3 py-3 text-sm">
+              <div className="flex min-h-[44px] items-center gap-3 py-3 text-sm">
                 <div className="flex-1">
                   <label htmlFor="opt-celebrations" className="block cursor-pointer font-medium">
                     Celebration sounds
@@ -1086,14 +1107,14 @@ export function SettingsScreen() {
 
           {/* DATA */}
           <section id="data" className="card" aria-labelledby="data-h">
-            <div className="border-b px-6 py-4">
+            <div className="border-b p-4 sm:px-6 sm:py-4">
               <h2 id="data-h" className="text-lg font-bold">
                 Your data
               </h2>
               <p className="help">It all lives in this browser. Back it up now and then.</p>
             </div>
 
-            <div className="space-y-5 p-6">
+            <div className="space-y-5 p-4 sm:p-6">
               <div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium">Storage used</span>
@@ -1134,7 +1155,7 @@ export function SettingsScreen() {
               <div className="grid gap-2 sm:grid-cols-3">
                 <Button
                   variant="outline"
-                  className="h-auto flex-col items-start gap-0.5 p-3 text-left whitespace-normal"
+                  className="h-auto min-h-[52px] flex-col items-start gap-0.5 p-3 text-left whitespace-normal"
                   onClick={() => {
                     toast('Backup saved · chess-king-2026-09-19.json')
                   }}
@@ -1150,7 +1171,7 @@ export function SettingsScreen() {
 
                 <Button
                   variant="outline"
-                  className="h-auto flex-col items-start gap-0.5 p-3 text-left whitespace-normal"
+                  className="h-auto min-h-[52px] flex-col items-start gap-0.5 p-3 text-left whitespace-normal"
                   onClick={() => {
                     toast('Choose a backup file to import')
                   }}
@@ -1166,7 +1187,7 @@ export function SettingsScreen() {
 
                 <Button
                   variant="outline"
-                  className="h-auto flex-col items-start gap-0.5 p-3 text-left whitespace-normal"
+                  className="h-auto min-h-[52px] flex-col items-start gap-0.5 p-3 text-left whitespace-normal"
                   onClick={() => {
                     toast('142 games exported · my-games.pgn')
                   }}
@@ -1181,7 +1202,7 @@ export function SettingsScreen() {
                 </Button>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 rounded-xl border border-destructive/30 p-4">
+              <div className="flex flex-col gap-3 rounded-xl border border-destructive/30 p-4 sm:flex-row sm:items-center">
                 <div className="flex-1">
                   <div className="text-sm font-medium">Clear all data</div>
                   <p className="help">
@@ -1190,6 +1211,7 @@ export function SettingsScreen() {
                 </div>
                 <Button
                   variant="destructive"
+                  className="min-h-[44px] w-full sm:w-auto"
                   onClick={() => {
                     setClearDataModalOpen(true)
                   }}
@@ -1203,7 +1225,7 @@ export function SettingsScreen() {
 
           {/* ABOUT */}
           <section id="about" className="card bg-accent/40" aria-labelledby="about-h">
-            <div className="flex flex-wrap items-start gap-4 p-6">
+            <div className="flex flex-wrap items-start gap-4 p-4 sm:p-6">
               <span className="grid size-12 -rotate-6 place-items-center rounded-2xl bg-primary text-reward shadow-sm">
                 <Crown className="size-6" aria-hidden="true" />
               </span>
@@ -1223,7 +1245,7 @@ export function SettingsScreen() {
                 <div className="mt-4 flex flex-wrap gap-2">
                   <a
                     href="https://github.com/"
-                    className="btn btn-outline btn-sm"
+                    className="btn btn-outline btn-sm min-h-[36px]"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -1233,6 +1255,7 @@ export function SettingsScreen() {
                   <Button
                     variant="ghost"
                     size="sm"
+                    className="min-h-[36px]"
                     onClick={() => {
                       toast('Up to date · v0.9.2')
                     }}
@@ -1240,7 +1263,7 @@ export function SettingsScreen() {
                     <RefreshCw className="size-3.5" aria-hidden="true" />
                     Check for updates
                   </Button>
-                  <Button asChild variant="ghost" size="sm">
+                  <Button asChild variant="ghost" size="sm" className="min-h-[36px]">
                     <Link to="/onboarding">
                       <RotateCcw className="size-3.5" aria-hidden="true" />
                       Replay first-run setup
@@ -1261,7 +1284,7 @@ export function SettingsScreen() {
           aria-labelledby="rk-h"
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
         >
-          <div className="card w-full max-w-md p-6 shadow-xl">
+          <div className="card w-full max-w-[min(440px,calc(100vw-32px))] p-5 shadow-xl sm:p-6">
             <h2 id="rk-h" className="text-xl font-bold">
               Remove your Gemini key?
             </h2>
@@ -1269,9 +1292,10 @@ export function SettingsScreen() {
               Sage goes quiet until you add a key again. Your games, puzzles and progress stay
               exactly as they are.
             </p>
-            <div className="mt-6 flex justify-end gap-2">
+            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button
                 variant="outline"
+                className="min-h-[44px] w-full sm:w-auto"
                 onClick={() => {
                   setRemoveKeyModalOpen(false)
                 }}
@@ -1280,6 +1304,7 @@ export function SettingsScreen() {
               </Button>
               <Button
                 variant="destructive"
+                className="min-h-[44px] w-full sm:w-auto"
                 onClick={() => {
                   setApiKey('')
                   setRemoveKeyModalOpen(false)
@@ -1301,7 +1326,7 @@ export function SettingsScreen() {
           aria-labelledby="cd-h"
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
         >
-          <div className="card w-full max-w-md p-6 shadow-xl">
+          <div className="card w-full max-w-[min(440px,calc(100vw-32px))] p-5 shadow-xl sm:p-6">
             <span className="grid size-11 place-items-center rounded-xl bg-destructive-soft text-destructive">
               <AlertTriangle className="size-5" aria-hidden="true" />
             </span>
@@ -1315,7 +1340,7 @@ export function SettingsScreen() {
             <Button
               variant="outline"
               size="sm"
-              className="mt-4"
+              className="mt-4 min-h-[36px]"
               onClick={() => {
                 toast('Backup saved · chess-king-2026-09-19.json')
               }}
@@ -1323,9 +1348,10 @@ export function SettingsScreen() {
               <Download className="size-3.5" aria-hidden="true" />
               Export a backup first
             </Button>
-            <div className="mt-6 flex justify-end gap-2">
+            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button
                 variant="outline"
+                className="min-h-[44px] w-full sm:w-auto"
                 onClick={() => {
                   setClearDataModalOpen(false)
                 }}
@@ -1334,6 +1360,7 @@ export function SettingsScreen() {
               </Button>
               <Button
                 variant="destructive"
+                className="min-h-[44px] w-full sm:w-auto"
                 onClick={() => {
                   setClearDataModalOpen(false)
                   toast('All data cleared')
