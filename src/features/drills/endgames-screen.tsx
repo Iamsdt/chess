@@ -323,24 +323,29 @@ export function EndgamesScreen() {
   return (
     <main className="min-h-full">
       {/* Sticky Header */}
-      <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur lg:px-6">
-        <Button asChild variant="ghost" size="sm">
+      <header className="sticky top-0 z-10 flex h-14 items-center gap-1.5 border-b bg-background/85 px-3 backdrop-blur sm:gap-2 sm:px-4 lg:px-6">
+        <Button asChild variant="ghost" size="sm" className="h-9 px-2 text-xs sm:px-3 sm:text-sm">
           <Link to="/learn">
             <ArrowLeft className="mr-1 size-4" aria-hidden="true" />
             <span className="max-sm:hidden">Learn</span>
           </Link>
         </Button>
-        <div className="mx-1 h-5 w-px bg-border" />
+        <div className="mx-0.5 h-5 w-px bg-border sm:mx-1" />
         <h1
           aria-label="Endgame drills"
-          className="flex min-w-0 items-center gap-2 text-base font-bold"
+          className="flex min-w-0 items-center gap-1.5 text-sm font-bold sm:gap-2 sm:text-base"
         >
           <Flag className="size-4 shrink-0 text-cta" aria-hidden="true" />
           <span className="truncate">Endgame drills</span>
         </h1>
         <span className="badge max-sm:hidden">4 of 7 mastered</span>
         <div className="ml-auto flex items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={handleFlip}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-9 px-2 text-xs sm:px-3 sm:text-sm"
+            onClick={handleFlip}
+          >
             <ArrowUpDown className="mr-1 size-4" aria-hidden="true" />
             <span className="max-sm:hidden">Flip</span>
           </Button>
@@ -348,7 +353,7 @@ export function EndgamesScreen() {
             asChild
             variant="ghost"
             size="sm"
-            className="size-9 px-0"
+            className="size-8 shrink-0 px-0 sm:size-9"
             title="Board & pieces"
             aria-label="Board and piece settings"
           >
@@ -360,10 +365,10 @@ export function EndgamesScreen() {
       </header>
 
       {/* Main Grid: Left Nav, Center Board, Right Side Panel */}
-      <div className="grid gap-5 p-4 lg:grid-cols-[230px_minmax(0,1fr)] lg:p-6 2xl:grid-cols-[240px_minmax(0,1fr)_290px]">
+      <div className="grid gap-4 p-3 sm:gap-5 sm:p-4 lg:grid-cols-[210px_minmax(0,1fr)] lg:p-6 xl:grid-cols-[220px_minmax(0,1fr)_300px] 2xl:grid-cols-[240px_minmax(0,1fr)_320px]">
         {/* Column 1: Drill Navigation */}
         <nav className="card h-fit overflow-hidden max-lg:order-3" aria-label="Endgame drills list">
-          <div className="border-b px-4 py-3">
+          <div className="border-b px-3.5 py-2.5 sm:px-4 sm:py-3">
             <h2 className="text-sm font-bold">All drills</h2>
             <p className="text-xs text-muted-foreground">Stars for beating par</p>
           </div>
@@ -377,7 +382,7 @@ export function EndgamesScreen() {
                   key={drill.id}
                   type="button"
                   aria-pressed={isActive}
-                  className={`flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-left text-sm transition-colors ${
+                  className={`flex min-h-[44px] w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs transition-colors sm:px-2 sm:text-sm ${
                     isActive ? 'bg-cta-soft font-semibold ring-1 ring-cta/30' : 'hover:bg-muted/60'
                   }`}
                   onClick={() => {
@@ -425,7 +430,7 @@ export function EndgamesScreen() {
                   key={drill.id}
                   type="button"
                   aria-pressed={isActive}
-                  className={`flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-left text-sm transition-colors ${
+                  className={`flex min-h-[44px] w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs transition-colors sm:px-2 sm:text-sm ${
                     isActive ? 'bg-cta-soft font-semibold ring-1 ring-cta/30' : 'hover:bg-muted/60'
                   }`}
                   onClick={() => {
@@ -470,7 +475,7 @@ export function EndgamesScreen() {
                   key={drill.id}
                   type="button"
                   aria-pressed={isActive}
-                  className={`flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-left text-sm transition-colors ${
+                  className={`flex min-h-[44px] w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs transition-colors sm:px-2 sm:text-sm ${
                     isActive ? 'bg-cta-soft font-semibold ring-1 ring-cta/30' : 'hover:bg-muted/60'
                   }`}
                   onClick={() => {
@@ -513,20 +518,22 @@ export function EndgamesScreen() {
 
         {/* Column 2: Drill Board */}
         <section className="flex justify-center" aria-label="Drill board">
-          <div className="w-full max-w-[620px] space-y-2.5">
+          <div className="w-full max-w-[min(100%,calc(100dvh-220px),620px)] space-y-2 sm:space-y-2.5">
             {/* Opponent Status Bar */}
-            <div className="flex items-center gap-3">
-              <span className="avatar size-9 rounded-xl bg-[#3b4a44] text-[#cfe0d6]">
-                <Cpu className="size-4" aria-hidden="true" />
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <span className="avatar size-8 rounded-xl bg-[#3b4a44] text-[#cfe0d6] sm:size-9">
+                <Cpu className="size-4 shrink-0" aria-hidden="true" />
               </span>
-              <div className="leading-tight">
-                <div className="text-sm font-semibold">
+              <div className="min-w-0 leading-tight">
+                <div className="truncate text-xs font-semibold sm:text-sm">
                   Stockfish <span className="font-normal text-muted-foreground">defends</span>
                 </div>
-                <div className="text-xs text-muted-foreground">Full strength · runs longest</div>
+                <div className="truncate text-[11px] text-muted-foreground sm:text-xs">
+                  Full strength · runs longest
+                </div>
               </div>
               <span
-                className="ml-auto rounded-lg bg-muted px-3 py-1 font-mono text-sm font-semibold text-muted-foreground tabular-nums"
+                className="ml-auto shrink-0 rounded-lg bg-muted px-2.5 py-1 font-mono text-xs font-semibold text-muted-foreground tabular-nums sm:px-3 sm:text-sm"
                 aria-label={`Move ${String(movesUsed + 1)}, par ${String(activeDrill.par)}`}
               >
                 {String(movesUsed + 1)}{' '}
@@ -549,20 +556,20 @@ export function EndgamesScreen() {
             </div>
 
             {/* Player Status Bar */}
-            <div className="flex items-center gap-3">
-              <span className="avatar size-9 rounded-xl bg-primary font-bold text-primary-foreground">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <span className="avatar size-8 rounded-xl bg-primary text-xs font-bold text-primary-foreground sm:size-9 sm:text-sm">
                 SK
               </span>
-              <div className="leading-tight">
-                <div className="text-sm font-semibold">
+              <div className="min-w-0 leading-tight">
+                <div className="truncate text-xs font-semibold sm:text-sm">
                   You <span className="font-normal text-muted-foreground">· White</span>
                 </div>
-                <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                <div className="truncate text-[11px] font-medium text-emerald-600 sm:text-xs dark:text-emerald-400">
                   Your move · the box is holding
                 </div>
               </div>
-              <span className="badge ml-auto border-transparent bg-accent text-accent-foreground">
-                <TrendingUp className="mr-1 size-3.5" aria-hidden="true" />
+              <span className="badge ml-auto shrink-0 border-transparent bg-accent text-xs text-accent-foreground sm:text-sm">
+                <TrendingUp className="mr-1 size-3.5 shrink-0" aria-hidden="true" />
                 On pace for 15
               </span>
             </div>
@@ -571,10 +578,10 @@ export function EndgamesScreen() {
 
         {/* Column 3: Drill Details Panel */}
         <aside
-          className="card flex h-fit flex-col overflow-hidden lg:col-start-2 2xl:col-start-3 2xl:max-h-[calc(100dvh-56px-48px)]"
+          className="card flex h-fit flex-col overflow-hidden lg:col-start-2 xl:col-start-3 xl:max-h-[calc(100dvh-56px-48px)]"
           aria-label="Drill details"
         >
-          <div className="border-b p-4">
+          <div className="border-b p-3.5 sm:p-4">
             <p className="eyebrow">
               {activeDrill.category === 'basic'
                 ? 'Basic mates'
@@ -583,19 +590,21 @@ export function EndgamesScreen() {
                   : 'Rook endgames'}{' '}
               · drill
             </p>
-            <h2 className="mt-1 text-lg leading-snug font-bold">{activeDrill.headline}</h2>
+            <h2 className="mt-1 text-base leading-snug font-bold sm:text-lg">
+              {activeDrill.headline}
+            </h2>
             <div className="mt-2 flex flex-wrap gap-1.5">
-              <span className="badge badge-reward">Par {String(activeDrill.par)}</span>
-              <span className="badge">Attempt 3</span>
+              <span className="badge badge-reward text-xs">Par {String(activeDrill.par)}</span>
+              <span className="badge text-xs">Attempt 3</span>
               {activeDrill.bestMoves ? (
-                <span className="badge text-muted-foreground">
+                <span className="badge text-xs text-muted-foreground">
                   Best {String(activeDrill.bestMoves)}
                 </span>
               ) : null}
             </div>
           </div>
 
-          <div className="min-h-0 flex-1 space-y-4 overflow-auto p-4">
+          <div className="min-h-0 flex-1 space-y-3.5 overflow-auto p-3.5 sm:space-y-4 sm:p-4">
             {/* Move Progress Bar */}
             <div>
               <div className="flex items-center justify-between text-xs">
@@ -634,20 +643,22 @@ export function EndgamesScreen() {
 
             {/* Technique Card */}
             {activeDrill.techniqueTitle ? (
-              <div className="rounded-xl bg-lilac/60 p-3.5">
-                <div className="flex items-center gap-2 text-sm font-semibold text-lilac-ink">
-                  <Box className="size-4" aria-hidden="true" />
+              <div className="rounded-xl bg-lilac/60 p-3 sm:p-3.5">
+                <div className="flex items-center gap-2 text-xs font-semibold text-lilac-ink sm:text-sm">
+                  <Box className="size-4 shrink-0" aria-hidden="true" />
                   {activeDrill.techniqueTitle}
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">{activeDrill.techniqueText}</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                  {activeDrill.techniqueText}
+                </p>
                 {activeDrill.techniqueSteps ? (
-                  <ol className="mt-2.5 space-y-1.5 text-sm">
+                  <ol className="mt-2.5 space-y-1.5 text-xs sm:text-sm">
                     {activeDrill.techniqueSteps.map((step, idx) => (
                       <li key={idx} className="flex gap-2">
                         <span className="grid size-5 shrink-0 place-items-center rounded-full bg-card text-[10px] font-bold">
                           {String(idx + 1)}
                         </span>
-                        <span>{step}</span>
+                        <span className="leading-snug">{step}</span>
                       </li>
                     ))}
                   </ol>
@@ -659,26 +670,26 @@ export function EndgamesScreen() {
                     handleAskSage('Explain the box technique for K+R vs K')
                   }}
                 >
-                  <MessageCircle className="size-3.5" aria-hidden="true" />
+                  <MessageCircle className="size-3.5 shrink-0" aria-hidden="true" />
                   Ask Sage about the box
                 </button>
               </div>
             ) : null}
 
             {/* Stat Counters */}
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-lg bg-muted/60 p-2.5">
-                <div className="font-display text-lg font-bold">3</div>
+            <div className="grid grid-cols-3 gap-1.5 text-center sm:gap-2">
+              <div className="rounded-lg bg-muted/60 p-2 sm:p-2.5">
+                <div className="font-display text-base font-bold sm:text-lg">3</div>
                 <div className="text-[11px] text-muted-foreground">attempts</div>
               </div>
-              <div className="rounded-lg bg-muted/60 p-2.5">
-                <div className="font-display text-lg font-bold">
+              <div className="rounded-lg bg-muted/60 p-2 sm:p-2.5">
+                <div className="font-display text-base font-bold sm:text-lg">
                   {String(activeDrill.bestMoves ?? '-')}
                 </div>
                 <div className="text-[11px] text-muted-foreground">best so far</div>
               </div>
-              <div className="rounded-lg bg-reward-soft p-2.5">
-                <div className="font-display text-lg font-bold text-reward-ink">
+              <div className="rounded-lg bg-reward-soft p-2 sm:p-2.5">
+                <div className="font-display text-base font-bold text-reward-ink sm:text-lg">
                   {String(activeDrill.par - 1)}
                 </div>
                 <div className="text-[11px] text-muted-foreground">perfect play</div>
@@ -687,16 +698,21 @@ export function EndgamesScreen() {
           </div>
 
           {/* Drill Action Buttons */}
-          <div className="space-y-2 border-t p-3">
+          <div className="space-y-2 border-t p-3 sm:p-4">
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" size="sm" onClick={handleTakeBack}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 min-h-[44px] text-xs sm:h-10 sm:min-h-0 sm:text-sm"
+                onClick={handleTakeBack}
+              >
                 <Undo2 className="mr-1 size-4" aria-hidden="true" />
                 Take back
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="border-cta/30 bg-cta-soft text-cta hover:bg-cta hover:text-white"
+                className="h-9 min-h-[44px] border-cta/30 bg-cta-soft text-xs text-cta hover:bg-cta hover:text-white sm:h-10 sm:min-h-0 sm:text-sm"
                 onClick={() => {
                   handleAskSage("Give me a hint for the box, but don't tell me the move")
                 }}
@@ -708,7 +724,7 @@ export function EndgamesScreen() {
             <Button
               variant="ghost"
               size="sm"
-              className="w-full text-xs text-muted-foreground"
+              className="h-9 w-full text-xs text-muted-foreground"
               onClick={handleRestart}
             >
               <RotateCcw className="mr-1 size-3.5" aria-hidden="true" />
