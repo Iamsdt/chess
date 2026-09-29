@@ -120,13 +120,16 @@ export function FriendsScreen() {
 
       {/* Hero */}
       <section className="card mt-6 overflow-hidden" aria-labelledby="invite-h">
-        <div className="grid gap-6 p-6 md:grid-cols-[minmax(0,1fr)_220px] md:p-8">
+        <div className="grid gap-6 p-4 sm:p-6 md:grid-cols-[minmax(0,1fr)_220px] md:p-8">
           <div>
             <span className="badge border-transparent bg-lilac text-lilac-ink">
               <LinkIcon className="size-3.5" aria-hidden="true" />
               Play anyone, anywhere
             </span>
-            <h2 id="invite-h" className="mt-3 text-[30px] leading-[1.05] font-bold">
+            <h2
+              id="invite-h"
+              className="mt-3 text-2xl leading-tight font-bold sm:text-[30px] sm:leading-[1.05]"
+            >
               Send a link. Play a friend.
             </h2>
             <p className="mt-2 max-w-[46ch] text-sm text-muted-foreground">
@@ -134,11 +137,15 @@ export function FriendsScreen() {
               network.
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-3">
-              <Button className="btn-cta" onClick={handleOpenInvite}>
+              <Button className="btn-cta min-h-[44px] w-full sm:w-auto" onClick={handleOpenInvite}>
                 <UserPlus className="size-[18px]" aria-hidden="true" />
                 Invite a friend
               </Button>
-              <Button asChild variant="ghost" className="h-11 text-muted-foreground">
+              <Button
+                asChild
+                variant="ghost"
+                className="h-11 min-h-[44px] w-full text-muted-foreground sm:w-auto"
+              >
                 <a href="#how">
                   <HelpCircle className="size-4" aria-hidden="true" />
                   How it works
@@ -177,13 +184,13 @@ export function FriendsScreen() {
             {hasActiveInvite ? '2 open' : '1 open'}
           </span>
         </div>
-        <div className="mt-4 grid gap-3 @[760px]:grid-cols-2">
+        <div className="mt-4 grid gap-3 sm:grid-cols-1 md:grid-cols-2 @[760px]:grid-cols-2">
           {/* Ongoing game vs Rafi */}
           <Link
             to="/friends/live"
-            className="card card-hover flex items-center gap-4 border-cta/30 p-4 transition-all"
+            className="card card-hover flex items-center gap-3.5 border-cta/30 p-3.5 transition-all sm:gap-4 sm:p-4"
           >
-            <div className="w-20 shrink-0 overflow-hidden rounded-lg ring-1 ring-border">
+            <div className="w-16 shrink-0 overflow-hidden rounded-lg ring-1 ring-border sm:w-20">
               <Board
                 fen={RAFI_GAME_FEN}
                 coordinates={false}
@@ -194,11 +201,11 @@ export function FriendsScreen() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className="avatar size-6 bg-[#e9a15a] text-[10px] font-bold text-[#3b1d00]">
+                <span className="avatar size-6 shrink-0 bg-[#e9a15a] text-[10px] font-bold text-[#3b1d00]">
                   RA
                 </span>
-                <span className="text-sm font-semibold">Your move vs Rafi</span>
-                <span className="badge badge-cta ml-auto">Your move</span>
+                <span className="truncate text-sm font-semibold">Your move vs Rafi</span>
+                <span className="badge badge-cta ml-auto shrink-0">Your move</span>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
                 Najdorf, Poisoned Pawn · he played{' '}
@@ -219,14 +226,14 @@ export function FriendsScreen() {
 
           {/* Pending Invite Card */}
           {hasActiveInvite ? (
-            <div className="card flex items-center gap-4 p-4">
-              <span className="grid size-20 shrink-0 place-items-center rounded-lg border border-dashed bg-muted/40 text-muted-foreground">
-                <Hourglass className="size-6" aria-hidden="true" />
+            <div className="card flex items-center gap-3.5 p-3.5 sm:gap-4 sm:p-4">
+              <span className="grid size-16 shrink-0 place-items-center rounded-lg border border-dashed bg-muted/40 text-muted-foreground sm:size-20">
+                <Hourglass className="size-5 sm:size-6" aria-hidden="true" />
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold">Invite waiting</span>
-                  <span className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className="truncate text-sm font-semibold">Invite waiting</span>
+                  <span className="ml-auto flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
                     <span
                       className="size-2 animate-pulse rounded-full bg-reward"
                       aria-hidden="true"
@@ -244,6 +251,7 @@ export function FriendsScreen() {
                   <Button
                     size="sm"
                     variant="outline"
+                    className="min-h-[36px]"
                     onClick={() => {
                       handleCopy('https://chessking.app/play/k7x9q', 'Link copied')
                     }}
@@ -254,7 +262,7 @@ export function FriendsScreen() {
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="text-muted-foreground"
+                    className="min-h-[36px] text-muted-foreground"
                     onClick={handleCancelInvite}
                   >
                     Cancel
@@ -263,7 +271,7 @@ export function FriendsScreen() {
               </div>
             </div>
           ) : (
-            <div className="card flex items-center justify-center p-8 text-center text-sm text-muted-foreground">
+            <div className="card flex items-center justify-center p-6 text-center text-sm text-muted-foreground sm:p-8">
               No other active invites. Send one below!
             </div>
           )}
@@ -278,9 +286,9 @@ export function FriendsScreen() {
           </h2>
           <span className="text-xs text-muted-foreground">Everything lives inside the link</span>
         </div>
-        <div className="mt-4 grid gap-3 @[640px]:grid-cols-3">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-3 @[640px]:grid-cols-3">
           {/* A position */}
-          <article className="card flex flex-col p-5">
+          <article className="card flex flex-col p-4 sm:p-5">
             <span className="grid size-10 place-items-center rounded-xl bg-sky text-sky-ink">
               <LayoutGrid className="size-5" aria-hidden="true" />
             </span>
@@ -292,6 +300,7 @@ export function FriendsScreen() {
               <Button
                 size="sm"
                 variant="outline"
+                className="min-h-[36px] w-full sm:w-auto"
                 onClick={() => {
                   handleCopy('https://chessking.app/share#pos=sample', 'Position link copied')
                 }}
@@ -303,7 +312,7 @@ export function FriendsScreen() {
           </article>
 
           {/* A challenge */}
-          <article className="card flex flex-col bg-reward-soft/60 p-5">
+          <article className="card flex flex-col bg-reward-soft/60 p-4 sm:p-5">
             <span className="grid size-10 place-items-center rounded-xl bg-reward text-[#5a3f00]">
               <Zap className="size-5" aria-hidden="true" />
             </span>
@@ -315,6 +324,7 @@ export function FriendsScreen() {
               <Button
                 size="sm"
                 variant="outline"
+                className="min-h-[36px] flex-1 sm:flex-initial"
                 onClick={() => {
                   handleCopy(
                     'https://chessking.app/share#rush=23',
@@ -325,14 +335,14 @@ export function FriendsScreen() {
                 <Copy className="size-3.5" aria-hidden="true" />
                 Copy challenge
               </Button>
-              <Button asChild size="sm" variant="ghost">
+              <Button asChild size="sm" variant="ghost" className="min-h-[36px]">
                 <Link to="/share">Preview</Link>
               </Button>
             </div>
           </article>
 
           {/* An annotated game */}
-          <article className="card flex flex-col p-5">
+          <article className="card flex flex-col p-4 sm:col-span-2 sm:p-5 md:col-span-1">
             <span className="grid size-10 place-items-center rounded-xl bg-lilac text-lilac-ink">
               <MessageSquareText className="size-5" aria-hidden="true" />
             </span>
@@ -341,10 +351,15 @@ export function FriendsScreen() {
               Your game with your notes and Sage's, as a link anyone can step through.
             </p>
             <div className="mt-auto flex flex-wrap gap-2 pt-4">
-              <Button asChild size="sm" variant="outline">
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="min-h-[36px] flex-1 sm:flex-initial"
+              >
                 <Link to="/games">Pick a game</Link>
               </Button>
-              <Button asChild size="sm" variant="ghost">
+              <Button asChild size="sm" variant="ghost" className="min-h-[36px]">
                 <Link to="/share">Preview</Link>
               </Button>
             </div>
@@ -355,7 +370,11 @@ export function FriendsScreen() {
       {/* Explainer + Recent friends */}
       <div className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         {/* Correspondence explainer */}
-        <section id="how" className="card scroll-mt-6 bg-accent/50 p-6" aria-labelledby="how-h">
+        <section
+          id="how"
+          className="card scroll-mt-6 bg-accent/50 p-4 sm:p-6"
+          aria-labelledby="how-h"
+        >
           <h2 id="how-h" className="text-lg font-bold">
             Correspondence, by link
           </h2>
@@ -395,7 +414,7 @@ export function FriendsScreen() {
         </section>
 
         {/* Recent friends */}
-        <section className="card p-6" aria-labelledby="rf-h">
+        <section className="card p-4 sm:p-6" aria-labelledby="rf-h">
           <div className="flex items-center justify-between">
             <h2 id="rf-h" className="text-lg font-bold">
               Recent friends
@@ -408,14 +427,16 @@ export function FriendsScreen() {
                 <span className={cn('avatar text-xs font-bold', friend.colorClass)}>
                   {friend.initials}
                 </span>
-                <span className="flex-1">
-                  <span className="block font-medium">{friend.name}</span>
-                  <span className="text-xs text-muted-foreground">{friend.subtitle}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-medium">{friend.name}</span>
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {friend.subtitle}
+                  </span>
                 </span>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-8"
+                  className="size-9 shrink-0 sm:size-8"
                   aria-label={`Invite ${friend.name}`}
                   onClick={handleOpenInvite}
                 >
@@ -432,7 +453,7 @@ export function FriendsScreen() {
 
       {/* Invite Modal Dialog */}
       <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
-        <DialogContent className="max-w-[560px]">
+        <DialogContent className="max-h-[92dvh] max-w-[min(560px,calc(100vw-32px))] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">Invite a friend</DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
@@ -447,10 +468,13 @@ export function FriendsScreen() {
                 <span className="field-label block text-xs font-medium" id="tc-label">
                   Time control
                 </span>
-                <div className="seg flex-wrap" role="group" aria-labelledby="tc-label">
+                <div className="seg flex-wrap gap-1" role="group" aria-labelledby="tc-label">
                   <button
                     type="button"
-                    className={cn(inviteTimeControl === '5+3' && 'is-active')}
+                    className={cn(
+                      inviteTimeControl === '5+3' && 'is-active',
+                      'min-h-[36px] flex-1 sm:flex-initial',
+                    )}
                     onClick={() => {
                       setInviteTimeControl('5+3')
                     }}
@@ -459,7 +483,10 @@ export function FriendsScreen() {
                   </button>
                   <button
                     type="button"
-                    className={cn(inviteTimeControl === '10+5' && 'is-active')}
+                    className={cn(
+                      inviteTimeControl === '10+5' && 'is-active',
+                      'min-h-[36px] flex-1 sm:flex-initial',
+                    )}
                     onClick={() => {
                       setInviteTimeControl('10+5')
                     }}
@@ -468,7 +495,10 @@ export function FriendsScreen() {
                   </button>
                   <button
                     type="button"
-                    className={cn(inviteTimeControl === '15+10' && 'is-active')}
+                    className={cn(
+                      inviteTimeControl === '15+10' && 'is-active',
+                      'min-h-[36px] flex-1 sm:flex-initial',
+                    )}
                     onClick={() => {
                       setInviteTimeControl('15+10')
                     }}
@@ -477,7 +507,10 @@ export function FriendsScreen() {
                   </button>
                   <button
                     type="button"
-                    className={cn(inviteTimeControl === 'link' && 'is-active')}
+                    className={cn(
+                      inviteTimeControl === 'link' && 'is-active',
+                      'min-h-[36px] flex-1 sm:flex-initial',
+                    )}
                     onClick={() => {
                       setInviteTimeControl('link')
                     }}
@@ -492,10 +525,13 @@ export function FriendsScreen() {
                 <span className="field-label block text-xs font-medium" id="side-label">
                   You play
                 </span>
-                <div className="seg" role="group" aria-labelledby="side-label">
+                <div className="seg flex-wrap gap-1" role="group" aria-labelledby="side-label">
                   <button
                     type="button"
-                    className={cn(inviteColor === 'white' && 'is-active')}
+                    className={cn(
+                      inviteColor === 'white' && 'is-active',
+                      'min-h-[36px] flex-1 sm:flex-initial',
+                    )}
                     onClick={() => {
                       setInviteColor('white')
                     }}
@@ -504,7 +540,10 @@ export function FriendsScreen() {
                   </button>
                   <button
                     type="button"
-                    className={cn(inviteColor === 'black' && 'is-active')}
+                    className={cn(
+                      inviteColor === 'black' && 'is-active',
+                      'min-h-[36px] flex-1 sm:flex-initial',
+                    )}
                     onClick={() => {
                       setInviteColor('black')
                     }}
@@ -513,7 +552,10 @@ export function FriendsScreen() {
                   </button>
                   <button
                     type="button"
-                    className={cn(inviteColor === 'random' && 'is-active')}
+                    className={cn(
+                      inviteColor === 'random' && 'is-active',
+                      'min-h-[36px] flex-1 sm:flex-initial',
+                    )}
                     onClick={() => {
                       setInviteColor('random')
                     }}
@@ -534,13 +576,13 @@ export function FriendsScreen() {
                 <div className="flex gap-2">
                   <Input
                     id="invite-link-input"
-                    className="font-mono text-[13px]"
+                    className="min-h-[40px] font-mono text-[13px]"
                     value="chessking.app/play/k7x9q"
                     readOnly
                   />
                   <Button
                     type="button"
-                    className="shrink-0"
+                    className="min-h-[40px] shrink-0 px-4"
                     onClick={() => {
                       handleCopy(
                         'https://chessking.app/play/k7x9q',
@@ -559,7 +601,7 @@ export function FriendsScreen() {
             <figure className="text-center">
               <svg
                 viewBox="0 0 21 21"
-                className="mx-auto size-[132px] rounded-lg bg-card p-1.5 ring-1 ring-border"
+                className="mx-auto size-[120px] rounded-lg bg-card p-1.5 ring-1 ring-border sm:size-[132px]"
                 shapeRendering="crispEdges"
                 role="img"
                 aria-label="QR code for the invite link"
