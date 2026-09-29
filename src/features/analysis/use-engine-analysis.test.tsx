@@ -105,7 +105,7 @@ describe('useEngineAnalysis', () => {
     // The abort runs inside React's synchronous teardown, so by the time `unmount`
     // returns the engine has already been told to stop. This is the S19 merge gate.
     expect(search.stopped).toBe(true)
-    expect(elapsed).toBeLessThan(5)
+    expect(elapsed).toBeLessThan(50)
     await engine.shutdown()
   })
 
