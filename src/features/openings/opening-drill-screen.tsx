@@ -153,17 +153,17 @@ export function OpeningDrillScreen() {
   return (
     <main className="min-h-full">
       {/* Sticky Header */}
-      <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur lg:px-6">
-        <Button asChild variant="ghost" size="sm">
+      <header className="sticky top-0 z-10 flex h-14 items-center gap-1.5 border-b bg-background/85 px-3 backdrop-blur sm:gap-2 sm:px-4 lg:px-6">
+        <Button asChild variant="ghost" size="sm" className="h-9 px-2 text-xs sm:px-3 sm:text-sm">
           <Link to="/openings">
             <ArrowLeft className="mr-1 size-4" aria-hidden="true" />
             <span className="max-sm:hidden">Repertoire</span>
           </Link>
         </Button>
-        <div className="mx-1 h-5 w-px bg-border" />
+        <div className="mx-0.5 h-5 w-px bg-border sm:mx-1" />
         <h1
           aria-label="Opening drill"
-          className="flex min-w-0 items-center gap-2 text-base font-bold"
+          className="flex min-w-0 items-center gap-1.5 text-sm font-bold sm:gap-2 sm:text-base"
         >
           <BookOpen className="size-4 shrink-0 text-cta" aria-hidden="true" />
           <span className="truncate">
@@ -184,7 +184,7 @@ export function OpeningDrillScreen() {
             asChild
             variant="ghost"
             size="icon"
-            className="size-8"
+            className="size-8 sm:size-9"
             title="Board & pieces"
             aria-label="Board and piece settings"
           >
@@ -195,24 +195,24 @@ export function OpeningDrillScreen() {
         </div>
       </header>
 
-      <div className="grid gap-5 p-4 lg:p-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid gap-4 p-3 sm:gap-5 sm:p-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:p-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         {/* Board column */}
         <section className="flex justify-center" aria-label="Drill board">
-          <div className="w-full max-w-[540px] space-y-2.5">
+          <div className="w-full max-w-[min(100%,calc(100dvh-200px),540px)] space-y-2 sm:space-y-2.5">
             {/* White Opponent Card */}
-            <div className="flex items-center gap-3">
-              <span className="avatar size-9 rounded-xl bg-sky text-sky-ink">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <span className="avatar size-8 rounded-xl bg-sky text-sky-ink sm:size-9">
                 <BookOpen className="size-4" aria-hidden="true" />
               </span>
-              <div className="leading-tight">
-                <div className="text-sm font-semibold">
+              <div className="min-w-0 leading-tight">
+                <div className="truncate text-xs font-semibold sm:text-sm">
                   White <span className="font-normal text-muted-foreground">· plays the book</span>
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="truncate text-[11px] text-muted-foreground sm:text-xs">
                   Last move <span className="font-mono">3.e5</span>
                 </div>
               </div>
-              <span className="badge ml-auto">No clock</span>
+              <span className="badge ml-auto shrink-0 text-xs">No clock</span>
             </div>
 
             {/* Chessboard */}
@@ -231,17 +231,17 @@ export function OpeningDrillScreen() {
             </div>
 
             {/* Black Player Card */}
-            <div className="flex items-center gap-3">
-              <span className="avatar size-9 rounded-xl bg-primary font-bold text-primary-foreground">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <span className="avatar size-8 rounded-xl bg-primary text-xs font-bold text-primary-foreground sm:size-9 sm:text-sm">
                 SK
               </span>
-              <div className="leading-tight">
-                <div className="text-sm font-semibold">
+              <div className="min-w-0 leading-tight">
+                <div className="truncate text-xs font-semibold sm:text-sm">
                   You <span className="font-normal text-muted-foreground">· Black</span>
                 </div>
                 <div
                   className={cn(
-                    'text-xs font-medium',
+                    'truncate text-[11px] font-medium sm:text-xs',
                     moveState === 'correct' && 'text-emerald-600 dark:text-emerald-400',
                     moveState === 'alternative' && 'text-cta',
                     moveState === 'wrong' && 'text-destructive',
@@ -261,7 +261,7 @@ export function OpeningDrillScreen() {
 
             {/* Line Progress Card */}
             <div
-              className="card flex flex-wrap items-center gap-x-1.5 gap-y-1.5 px-3 py-2.5"
+              className="card flex flex-wrap items-center gap-x-1.5 gap-y-1.5 px-2.5 py-2 sm:px-3 sm:py-2.5"
               aria-label="Line progress"
             >
               <span className="font-mono text-xs text-muted-foreground">1.e4</span>
@@ -289,7 +289,7 @@ export function OpeningDrillScreen() {
               >
                 {moveState === 'correct' ? '3…Bf5' : playedMoveSan}
               </span>
-              <span className="font-mono text-[13px] text-muted-foreground/60">
+              <span className="font-mono text-[11px] text-muted-foreground/60 sm:text-[13px]">
                 4.··· ··· 5.··· ··· 6.··· ··· 7.··· ···
               </span>
             </div>
@@ -298,11 +298,11 @@ export function OpeningDrillScreen() {
 
         {/* Side Panel */}
         <aside
-          className="card flex min-h-0 flex-col overflow-hidden xl:max-h-[calc(100dvh-56px-48px)]"
+          className="card flex min-h-0 flex-col overflow-hidden lg:max-h-[calc(100dvh-56px-48px)]"
           aria-label="Drill panel"
         >
-          <div className="border-b px-4 py-3">
-            <div className="flex items-center justify-between text-sm">
+          <div className="border-b px-3.5 py-2.5 sm:px-4 sm:py-3">
+            <div className="flex items-center justify-between text-xs sm:text-sm">
               <span className="font-semibold">Short System</span>
               <span className="text-xs text-muted-foreground">
                 Your move <span className="font-medium text-foreground">3 of 7</span>
@@ -319,10 +319,13 @@ export function OpeningDrillScreen() {
             </div>
           </div>
 
-          <div className="min-h-0 flex-1 space-y-4 overflow-auto p-4">
+          <div className="min-h-0 flex-1 space-y-3.5 overflow-auto p-3.5 sm:space-y-4 sm:p-4">
             {/* Feedback Box */}
-            <div className="rounded-xl border border-reward/40 bg-reward-soft p-3.5" role="status">
-              <div className="flex items-center gap-2 text-sm font-semibold text-reward-ink">
+            <div
+              className="rounded-xl border border-reward/40 bg-reward-soft p-3 sm:p-3.5"
+              role="status"
+            >
+              <div className="flex items-center gap-2 text-xs font-semibold text-reward-ink sm:text-sm">
                 <span>✓</span>
                 {moveState === 'correct'
                   ? 'You played 3…Bf5'
@@ -330,21 +333,21 @@ export function OpeningDrillScreen() {
                     ? 'Move attempted'
                     : 'You played 3…c5'}
               </div>
-              <p className="mt-1.5 text-sm">
+              <p className="mt-1 text-xs leading-relaxed sm:text-sm">
                 {moveState === 'correct'
                   ? 'Core repertoire move. The bishop gets out before …e6 locks it in.'
                   : moveState === 'wrong'
                     ? "That's not in your repertoire. Look for an active bishop developing move."
                     : "That's playable, but your repertoire move is 3…Bf5."}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                 {moveState === 'correct'
                   ? 'Line mastered for today. Next spaced rehearsal in 3 days.'
                   : 'Bishop out first, then …e6 and …c5. This line comes back tomorrow so it sticks.'}
               </p>
               <button
                 type="button"
-                className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                className="mt-2 inline-flex cursor-pointer items-center gap-1.5 text-xs font-medium text-primary hover:underline"
                 onClick={() => {
                   handleAskSage('Why is 3...Bf5 my move here and not 3...c5?')
                 }}
@@ -356,11 +359,11 @@ export function OpeningDrillScreen() {
 
             {/* Advance lines list */}
             <div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between text-xs">
                 <span className="label">Advance lines · mastery</span>
-                <span className="text-xs text-muted-foreground">next review</span>
+                <span className="text-muted-foreground">next review</span>
               </div>
-              <ul className="mt-2 space-y-1 text-sm">
+              <ul className="mt-2 space-y-1 text-xs sm:text-sm">
                 {ADVANCE_LINES.map((line) => {
                   const isActive = line.number === activeLineNumber
                   return (
@@ -368,7 +371,7 @@ export function OpeningDrillScreen() {
                       <button
                         type="button"
                         className={cn(
-                          'flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors',
+                          'flex min-h-[38px] w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors',
                           isActive ? 'bg-cta-soft ring-1 ring-cta/30' : 'hover:bg-muted/50',
                         )}
                         onClick={() => {
@@ -377,7 +380,7 @@ export function OpeningDrillScreen() {
                       >
                         <span
                           className={cn(
-                            'w-4 text-xs',
+                            'w-4 shrink-0 text-xs',
                             isActive ? 'font-semibold text-cta' : 'text-muted-foreground',
                           )}
                         >
@@ -385,7 +388,7 @@ export function OpeningDrillScreen() {
                         </span>
                         <span
                           className={cn(
-                            'min-w-0 flex-1 truncate font-mono text-[12px]',
+                            'min-w-0 flex-1 truncate font-mono text-[11px] sm:text-[12px]',
                             isActive && 'font-medium',
                           )}
                         >
@@ -421,15 +424,15 @@ export function OpeningDrillScreen() {
               </ul>
             </div>
 
-            <p className="flex gap-2 rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
+            <p className="flex gap-2 rounded-lg border border-dashed p-2.5 text-xs text-muted-foreground sm:p-3">
               <Info className="mt-px size-3.5 shrink-0" aria-hidden="true" />
               Get a line right and its next review moves further out: 1, 3, 7, then 14 days.
             </p>
           </div>
 
           {/* Action buttons */}
-          <div className="space-y-2 border-t p-3">
-            <Button className="btn-cta w-full" onClick={handleResetMove}>
+          <div className="space-y-2 border-t p-3 sm:p-4">
+            <Button className="btn-cta h-10 w-full font-semibold sm:h-11" onClick={handleResetMove}>
               <RotateCcw className="size-[18px]" aria-hidden="true" />
               Try the move again
             </Button>
@@ -437,7 +440,7 @@ export function OpeningDrillScreen() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-muted-foreground"
+                className="h-9 min-h-[40px] text-xs text-muted-foreground sm:min-h-0 sm:text-sm"
                 onClick={handleSkipLine}
               >
                 <SkipForward className="size-3.5" aria-hidden="true" />
@@ -446,7 +449,7 @@ export function OpeningDrillScreen() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-muted-foreground"
+                className="h-9 min-h-[40px] text-xs text-muted-foreground sm:min-h-0 sm:text-sm"
                 onClick={handleKeepC5}
               >
                 <GitBranch className="size-3.5" aria-hidden="true" />
