@@ -327,11 +327,14 @@ export function LearnScreen() {
         </header>
 
         {/* Track Selector */}
-        <section className="mt-7" aria-labelledby="tracks-h">
+        <section className="mt-5 sm:mt-7" aria-labelledby="tracks-h">
           <h2 id="tracks-h" className="sr-only">
             Tracks
           </h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5" role="tablist">
+          <div
+            className="grid grid-cols-1 gap-2.5 min-[440px]:grid-cols-2 sm:gap-3 lg:grid-cols-5"
+            role="tablist"
+          >
             {TRACKS.map((track) => {
               const isSelected = track.id === activeTrackId
               return (
@@ -340,7 +343,7 @@ export function LearnScreen() {
                   type="button"
                   role="tab"
                   aria-selected={isSelected}
-                  className={`option flex-col items-start gap-2 p-4 ${
+                  className={`option flex-col items-start gap-2 p-3 sm:p-4 ${
                     isSelected ? 'is-active' : ''
                   }`}
                   onClick={() => {
@@ -349,7 +352,7 @@ export function LearnScreen() {
                 >
                   <span className="flex w-full items-center justify-between">
                     <span
-                      className={`grid size-9 place-items-center rounded-lg ${track.colorBg} ${track.colorText}`}
+                      className={`grid size-8 place-items-center rounded-lg sm:size-9 ${track.colorBg} ${track.colorText}`}
                     >
                       {track.icon === 'zap' && <Zap className="size-4" aria-hidden="true" />}
                       {track.icon === 'crown' && <Crown className="size-4" aria-hidden="true" />}
@@ -364,7 +367,7 @@ export function LearnScreen() {
                     {track.isCurrent ? <span className="badge badge-soft">Current</span> : null}
                     {track.isNew ? <span className="badge text-muted-foreground">New</span> : null}
                   </span>
-                  <span className="font-display text-[15px] leading-tight font-bold">
+                  <span className="font-display text-sm leading-tight font-bold sm:text-[15px]">
                     {track.title}
                   </span>
                   <span className="flex w-full items-center gap-2">
@@ -398,20 +401,20 @@ export function LearnScreen() {
         </section>
 
         {/* Main Content: Track Path + Side Column */}
-        <div className="mt-8 grid gap-6 min-[1500px]:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="mt-6 grid gap-4 sm:mt-8 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
           {/* Left Column: Track Path */}
           <section aria-labelledby="path-h" className="min-w-0">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 id="path-h" className="font-display text-xl font-bold">
+              <h2 id="path-h" className="font-display text-lg font-bold sm:text-xl">
                 {activeTrack.title}
               </h2>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-xs text-muted-foreground sm:text-sm">
                 <span className="font-medium text-foreground">{activeTrack.unitHeader}</span> ·{' '}
                 {activeTrack.timeLeft}
               </div>
             </div>
 
-            <ol className="relative mt-4 space-y-3 before:absolute before:top-6 before:bottom-6 before:left-[19px] before:w-0.5 before:rounded before:bg-[repeating-linear-gradient(to_bottom,var(--border)_0_6px,transparent_6px_12px)]">
+            <ol className="relative mt-4 space-y-3 before:absolute before:top-6 before:bottom-6 before:left-[15px] before:w-0.5 before:rounded before:bg-[repeating-linear-gradient(to_bottom,var(--border)_0_6px,transparent_6px_12px)] sm:before:left-[19px]">
               {TACTICS_UNITS.map((unit) => {
                 if (unit.status === 'completed') {
                   return (
@@ -455,18 +458,20 @@ export function LearnScreen() {
 
                 if (unit.status === 'in-progress') {
                   return (
-                    <li key={unit.id} className="relative flex items-start gap-4">
-                      <span className="z-10 mt-5 grid size-10 shrink-0 place-items-center rounded-full border-[2.5px] border-cta bg-card font-display font-bold text-cta shadow-[0_0_0_6px_rgba(224,103,60,.12)]">
+                    <li key={unit.id} className="relative flex items-start gap-3 sm:gap-4">
+                      <span className="z-10 mt-5 grid size-8 shrink-0 place-items-center rounded-full border-[2.5px] border-cta bg-card font-display text-sm font-bold text-cta shadow-[0_0_0_6px_rgba(224,103,60,.12)] sm:size-10 sm:text-base">
                         {unit.unitNumber}
                       </span>
                       <div className="card @container min-w-0 flex-1 overflow-hidden border-cta/30">
                         {/* Unit Header */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 border-b px-5 py-3.5">
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3 sm:px-5 sm:py-3.5">
                           <div>
                             <div className="text-xs text-muted-foreground">
                               Unit {unit.unitNumber} · in progress
                             </div>
-                            <h3 className="font-display text-lg font-bold">{unit.title}</h3>
+                            <h3 className="font-display text-base font-bold sm:text-lg">
+                              {unit.title}
+                            </h3>
                           </div>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <span>
@@ -480,12 +485,12 @@ export function LearnScreen() {
                               role="group"
                               aria-label={`${String(unit.completedLessons)} of ${String(unit.totalLessons)} lessons finished`}
                             >
-                              <span className="h-1.5 w-5 rounded-full bg-primary" />
-                              <span className="h-1.5 w-5 rounded-full bg-primary" />
-                              <span className="h-1.5 w-5 rounded-full bg-primary" />
-                              <span className="h-1.5 w-5 rounded-full bg-cta" />
-                              <span className="h-1.5 w-5 rounded-full bg-muted" />
-                              <span className="h-1.5 w-5 rounded-full bg-muted" />
+                              <span className="h-1.5 w-4 rounded-full bg-primary sm:w-5" />
+                              <span className="h-1.5 w-4 rounded-full bg-primary sm:w-5" />
+                              <span className="h-1.5 w-4 rounded-full bg-primary sm:w-5" />
+                              <span className="h-1.5 w-4 rounded-full bg-cta sm:w-5" />
+                              <span className="h-1.5 w-4 rounded-full bg-muted sm:w-5" />
+                              <span className="h-1.5 w-4 rounded-full bg-muted sm:w-5" />
                             </div>
                           </div>
                         </div>
@@ -497,7 +502,7 @@ export function LearnScreen() {
                             .map((lesson) => (
                               <li
                                 key={lesson.id}
-                                className="flex items-center gap-3 px-5 py-2.5 text-muted-foreground"
+                                className="flex items-center gap-3 px-4 py-2 text-muted-foreground sm:px-5 sm:py-2.5"
                               >
                                 <CheckCircle2 className="size-4 text-primary" aria-hidden="true" />
                                 <span className="flex-1">{lesson.title}</span>
@@ -509,20 +514,20 @@ export function LearnScreen() {
                         </ul>
 
                         {/* The Current Lesson Hero Card */}
-                        <div className="grid gap-5 border-y border-cta/20 bg-cta-soft/50 p-5 @[560px]:grid-cols-[minmax(0,1fr)_180px]">
+                        <div className="grid gap-4 border-y border-cta/20 bg-cta-soft/50 p-4 sm:gap-5 sm:p-5 @[560px]:grid-cols-[minmax(0,1fr)_180px]">
                           <div>
                             <span className="badge border-transparent bg-reward-soft text-reward-ink">
                               <Sparkles className="size-3.5" aria-hidden="true" />
                               Next up · picked for you
                             </span>
-                            <h4 className="mt-3 font-display text-[26px] leading-[1.05] font-bold tracking-tight">
+                            <h4 className="mt-2.5 font-display text-xl leading-[1.05] font-bold tracking-tight sm:mt-3 sm:text-2xl md:text-[26px]">
                               Royal fork
                             </h4>
-                            <p className="mt-2 text-sm text-muted-foreground">
+                            <p className="mt-2 text-xs text-muted-foreground sm:text-sm">
                               One knight jump, two targets: the king and the queen. The king has to
                               move, and the queen falls.
                             </p>
-                            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                            <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground sm:mt-3 sm:gap-x-4">
                               <span className="inline-flex items-center gap-1.5">
                                 <Footprints className="size-3.5" aria-hidden="true" />
                                 Step 3 of 7
@@ -536,20 +541,23 @@ export function LearnScreen() {
                               </span>
                             </div>
                             <div
-                              className="mt-4 flex items-center gap-1.5"
+                              className="mt-3.5 flex items-center gap-1.5 sm:mt-4"
                               role="group"
                               aria-label="Step 3 of 7"
                             >
-                              <span className="h-1.5 w-7 rounded-full bg-primary" />
-                              <span className="h-1.5 w-7 rounded-full bg-primary" />
-                              <span className="h-1.5 w-7 rounded-full bg-cta" />
-                              <span className="h-1.5 w-7 rounded-full bg-card" />
-                              <span className="h-1.5 w-7 rounded-full bg-card" />
-                              <span className="h-1.5 w-7 rounded-full bg-card" />
-                              <span className="h-1.5 w-7 rounded-full bg-card" />
+                              <span className="h-1.5 w-6 rounded-full bg-primary sm:w-7" />
+                              <span className="h-1.5 w-6 rounded-full bg-primary sm:w-7" />
+                              <span className="h-1.5 w-6 rounded-full bg-cta sm:w-7" />
+                              <span className="h-1.5 w-6 rounded-full bg-card sm:w-7" />
+                              <span className="h-1.5 w-6 rounded-full bg-card sm:w-7" />
+                              <span className="h-1.5 w-6 rounded-full bg-card sm:w-7" />
+                              <span className="h-1.5 w-6 rounded-full bg-card sm:w-7" />
                             </div>
-                            <div className="mt-5 flex flex-wrap items-center gap-3">
-                              <Button asChild className="btn-cta bg-cta text-white hover:bg-cta/90">
+                            <div className="mt-4 flex flex-wrap items-center gap-2.5 sm:mt-5 sm:gap-3">
+                              <Button
+                                asChild
+                                className="btn-cta h-10 bg-cta text-white hover:bg-cta/90 sm:h-11"
+                              >
                                 <Link to="/learn/lesson">
                                   <Play className="mr-1.5 size-4" aria-hidden="true" />
                                   Continue: Royal fork
@@ -557,7 +565,7 @@ export function LearnScreen() {
                               </Button>
                               <Button
                                 variant="ghost"
-                                className="h-11 text-muted-foreground"
+                                className="h-10 text-muted-foreground sm:h-11"
                                 aria-label="Ask Sage about royal fork"
                                 onClick={() => {
                                   handleAskSage(
@@ -707,7 +715,7 @@ export function LearnScreen() {
           {/* Right Column: Practice Rooms, Packs, Order Insights */}
           <div className="grid content-start gap-4 md:max-[1499px]:grid-cols-2">
             {/* Practice Rooms */}
-            <section className="card p-5" aria-labelledby="short-h">
+            <section className="card p-4 sm:p-5" aria-labelledby="short-h">
               <h2 id="short-h" className="label">
                 Practice rooms
               </h2>
@@ -746,7 +754,7 @@ export function LearnScreen() {
             </section>
 
             {/* Content Packs */}
-            <section className="card p-5" aria-labelledby="packs-h">
+            <section className="card p-4 sm:p-5" aria-labelledby="packs-h">
               <div className="flex items-center justify-between gap-2">
                 <h2 id="packs-h" className="font-display text-base font-bold">
                   Content packs
@@ -804,7 +812,7 @@ export function LearnScreen() {
             </section>
 
             {/* Why This Order Insight Card */}
-            <section className="card bg-accent/50 p-5">
+            <section className="card bg-accent/50 p-4 sm:p-5">
               <div className="flex items-center gap-2 text-xs font-semibold text-primary">
                 <Brain className="size-3.5" aria-hidden="true" />
                 Why this order?
