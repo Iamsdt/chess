@@ -403,6 +403,7 @@ export function TodayScreen() {
               <Button
                 variant="outline"
                 className="h-8 px-3 text-xs"
+                aria-label="Ask Sage about knight forks"
                 onClick={() => {
                   handleAskSage('Why do knight forks keep happening after I castle?')
                 }}

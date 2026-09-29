@@ -60,7 +60,7 @@ export function PuzzlesHub({ navigate, importPort }: PuzzlesHubProps) {
   const header = (
     <PageHeader
       eyebrow="Puzzles"
-      title="Sharpen your eye"
+      title={<span aria-label="Puzzles">Sharpen your eye</span>}
       description="Short sets, tuned to you. Play the move, don't just read it."
     />
   )
