@@ -128,142 +128,146 @@ export function GamesTable({ rows, sort, onSortChange, onExport, now }: GamesTab
       aria-rowcount={rows.length}
       className="card overflow-hidden"
     >
-      <div role="rowgroup" className="border-b bg-muted/40">
-        <div role="row" className={cn(GRID, 'py-2.5 text-xs text-muted-foreground')}>
-          {COLUMNS.map((column) => {
-            const active = sort.column === column.id
-            return (
-              <div
-                key={column.id}
-                role="columnheader"
-                aria-sort={
-                  active ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'
-                }
-                className={column.align === 'right' ? 'text-right' : undefined}
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSortChange(column.id)
-                  }}
-                  className={cn(
-                    'inline-flex items-center gap-1 rounded-sm font-medium transition hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none',
-                    active && 'text-foreground',
-                  )}
-                >
-                  {column.label}
-                  <SortIcon state={active ? sort.direction : null} />
-                </button>
+      <div className="overflow-x-auto">
+        <div className="min-w-[880px]">
+          <div role="rowgroup" className="border-b bg-muted/40">
+            <div role="row" className={cn(GRID, 'py-2.5 text-xs text-muted-foreground')}>
+              {COLUMNS.map((column) => {
+                const active = sort.column === column.id
+                return (
+                  <div
+                    key={column.id}
+                    role="columnheader"
+                    aria-sort={
+                      active ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'
+                    }
+                    className={column.align === 'right' ? 'text-right' : undefined}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSortChange(column.id)
+                      }}
+                      className={cn(
+                        'inline-flex items-center gap-1 rounded-sm font-medium transition hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none',
+                        active && 'text-foreground',
+                      )}
+                    >
+                      {column.label}
+                      <SortIcon state={active ? sort.direction : null} />
+                    </button>
+                  </div>
+                )
+              })}
+              <div role="columnheader" aria-sort="none">
+                Mistakes
               </div>
-            )
-          })}
-          <div role="columnheader" aria-sort="none">
-            Mistakes
+              <div role="columnheader" aria-sort="none" className="text-right">
+                <span className="sr-only">Actions</span>
+              </div>
+            </div>
           </div>
-          <div role="columnheader" aria-sort="none" className="text-right">
-            <span className="sr-only">Actions</span>
-          </div>
-        </div>
-      </div>
 
-      <div ref={scrollRef} role="rowgroup" className="max-h-[560px] overflow-auto">
-        <div style={{ height: `${String(totalSize)}px` }} className="relative">
-          {items.map((item) => {
-            const row = rows[item.index]
-            if (row === undefined) return null
-            const outcome = outcomeOf(row)
-            const badge = OUTCOME_BADGE[outcome]
-            const opponent = opponentOf(row)
-            const accuracy = yourAccuracy(row)
-            return (
-              <div
-                key={row.id}
-                role="row"
-                aria-rowindex={item.index + 1}
-                className={cn(
-                  GRID,
-                  'absolute top-0 left-0 w-full border-b text-sm hover:bg-muted/40',
-                )}
-                style={{
-                  height: `${String(ROW_HEIGHT)}px`,
-                  transform: `translateY(${String(item.start)}px)`,
-                }}
-              >
-                <div role="cell">
-                  <Badge variant={badge.variant}>{badge.label}</Badge>
-                </div>
-                <div role="cell" className="flex min-w-0 items-center gap-2">
-                  <span
-                    aria-hidden
-                    className="avatar size-7 rounded-lg bg-muted text-[10px] text-muted-foreground"
-                  >
-                    {opponent.kind === 'engine' ? (
-                      <Cpu className="size-3.5" />
-                    ) : opponent.kind === 'human' ? (
-                      initials(opponent.name)
-                    ) : (
-                      <User className="size-3.5" />
+          <div ref={scrollRef} role="rowgroup" className="max-h-[560px] overflow-auto">
+            <div style={{ height: `${String(totalSize)}px` }} className="relative">
+              {items.map((item) => {
+                const row = rows[item.index]
+                if (row === undefined) return null
+                const outcome = outcomeOf(row)
+                const badge = OUTCOME_BADGE[outcome]
+                const opponent = opponentOf(row)
+                const accuracy = yourAccuracy(row)
+                return (
+                  <div
+                    key={row.id}
+                    role="row"
+                    aria-rowindex={item.index + 1}
+                    className={cn(
+                      GRID,
+                      'absolute top-0 left-0 w-full border-b text-sm hover:bg-muted/40',
                     )}
-                  </span>
-                  <span className="min-w-0 leading-tight">
-                    <span className="block truncate font-medium">{opponent.name}</span>
-                    <span className="block truncate text-xs text-muted-foreground">
-                      {[
-                        row.youPlay === 'white' ? 'White' : 'Black',
-                        SOURCE_LABELS[row.source],
-                        formatClock(row.timeControl),
-                      ]
-                        .filter((part): part is string => part !== null)
-                        .join(' · ')}
-                    </span>
-                  </span>
-                </div>
-                <div role="cell" className="truncate text-muted-foreground">
-                  {row.opening === undefined
-                    ? 'Unknown opening'
-                    : row.opening.variation === undefined
-                      ? row.opening.name
-                      : `${row.opening.name} · ${row.opening.variation}`}
-                </div>
-                <div role="cell" className="text-right tabular-nums">
-                  {Math.ceil(row.plyCount / 2)}
-                </div>
-                <div role="cell" className="text-right font-medium tabular-nums">
-                  {accuracy === undefined ? '—' : `${String(Math.round(accuracy))}%`}
-                </div>
-                <div role="cell">
-                  {row.mistakeCount > 0 ? (
-                    <Badge variant="cta">{row.mistakeCount} to review</Badge>
-                  ) : row.reviewState === 'reviewed' ? (
-                    <Badge variant="soft">Clean</Badge>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">Not reviewed</span>
-                  )}
-                </div>
-                <div role="cell" className="truncate whitespace-nowrap text-muted-foreground">
-                  {formatDate(row.startedAt, today)}
-                </div>
-                <div role="cell" className="flex items-center justify-end gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => {
-                      onExport(row)
+                    style={{
+                      height: `${String(ROW_HEIGHT)}px`,
+                      transform: `translateY(${String(item.start)}px)`,
                     }}
-                    aria-label={`Download ${opponent.name} game as PGN`}
                   >
-                    <Download aria-hidden />
-                  </Button>
-                  <a
-                    href={`/games/review?id=${encodeURIComponent(row.id)}`}
-                    className="inline-flex h-8 items-center rounded-md border bg-card px-3 text-sm font-medium shadow-xs transition hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
-                  >
-                    Review
-                  </a>
-                </div>
-              </div>
-            )
-          })}
+                    <div role="cell">
+                      <Badge variant={badge.variant}>{badge.label}</Badge>
+                    </div>
+                    <div role="cell" className="flex min-w-0 items-center gap-2">
+                      <span
+                        aria-hidden
+                        className="avatar size-7 rounded-lg bg-muted text-[10px] text-muted-foreground"
+                      >
+                        {opponent.kind === 'engine' ? (
+                          <Cpu className="size-3.5" />
+                        ) : opponent.kind === 'human' ? (
+                          initials(opponent.name)
+                        ) : (
+                          <User className="size-3.5" />
+                        )}
+                      </span>
+                      <span className="min-w-0 leading-tight">
+                        <span className="block truncate font-medium">{opponent.name}</span>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {[
+                            row.youPlay === 'white' ? 'White' : 'Black',
+                            SOURCE_LABELS[row.source],
+                            formatClock(row.timeControl),
+                          ]
+                            .filter((part): part is string => part !== null)
+                            .join(' · ')}
+                        </span>
+                      </span>
+                    </div>
+                    <div role="cell" className="truncate text-muted-foreground">
+                      {row.opening === undefined
+                        ? 'Unknown opening'
+                        : row.opening.variation === undefined
+                          ? row.opening.name
+                          : `${row.opening.name} · ${row.opening.variation}`}
+                    </div>
+                    <div role="cell" className="text-right tabular-nums">
+                      {Math.ceil(row.plyCount / 2)}
+                    </div>
+                    <div role="cell" className="text-right font-medium tabular-nums">
+                      {accuracy === undefined ? '—' : `${String(Math.round(accuracy))}%`}
+                    </div>
+                    <div role="cell">
+                      {row.mistakeCount > 0 ? (
+                        <Badge variant="cta">{row.mistakeCount} to review</Badge>
+                      ) : row.reviewState === 'reviewed' ? (
+                        <Badge variant="soft">Clean</Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Not reviewed</span>
+                      )}
+                    </div>
+                    <div role="cell" className="truncate whitespace-nowrap text-muted-foreground">
+                      {formatDate(row.startedAt, today)}
+                    </div>
+                    <div role="cell" className="flex items-center justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => {
+                          onExport(row)
+                        }}
+                        aria-label={`Download ${opponent.name} game as PGN`}
+                      >
+                        <Download aria-hidden />
+                      </Button>
+                      <a
+                        href={`/games/review?id=${encodeURIComponent(row.id)}`}
+                        className="inline-flex h-8 items-center rounded-md border bg-card px-3 text-sm font-medium shadow-xs transition hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                      >
+                        Review
+                      </a>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </div>
