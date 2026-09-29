@@ -27,6 +27,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  SimpleTooltip,
   toast,
 } from '@/design'
 import {
@@ -214,18 +215,19 @@ export function LessonScreen() {
           <span className="shrink-0 text-xs font-medium tabular-nums sm:text-sm">
             Step 3 <span className="text-muted-foreground">of 7</span>
           </span>
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className="size-8 shrink-0 px-0 sm:size-9"
-            title="Board & pieces"
-            aria-label="Board and piece settings"
-          >
-            <Link to="/settings">
-              <Palette className="size-4" aria-hidden="true" />
-            </Link>
-          </Button>
+          <SimpleTooltip content="Board and piece settings">
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="size-8 shrink-0 px-0 sm:size-9"
+              aria-label="Board and piece settings"
+            >
+              <Link to="/settings">
+                <Palette className="size-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          </SimpleTooltip>
         </div>
       </header>
 

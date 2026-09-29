@@ -13,7 +13,7 @@ import {
 import { useMemo, useState } from 'react'
 
 import { Board } from '@/board'
-import { Button, Input, toast } from '@/design'
+import { Button, Input, SimpleTooltip, toast } from '@/design'
 import {
   emptyBoardShapes,
   toFen,
@@ -193,15 +193,18 @@ export function VisionScreen() {
               As Black
             </button>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-9 px-2 text-xs text-muted-foreground sm:px-3 sm:text-sm"
-            onClick={handleRestart}
-          >
-            <RotateCcw className="mr-1 size-4" aria-hidden="true" />
-            <span className="max-sm:hidden">Restart</span>
-          </Button>
+          <SimpleTooltip content="Restart drill">
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Restart drill"
+              className="h-9 px-2 text-xs text-muted-foreground sm:px-3 sm:text-sm"
+              onClick={handleRestart}
+            >
+              <RotateCcw className="mr-1 size-4" aria-hidden="true" />
+              <span className="max-sm:hidden">Restart</span>
+            </Button>
+          </SimpleTooltip>
         </div>
       </header>
 

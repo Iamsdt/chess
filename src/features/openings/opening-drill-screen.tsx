@@ -14,7 +14,7 @@ import { useContext, useMemo, useRef, useState } from 'react'
 
 import { ChatPanelContext } from '@/app/shell/shell-contexts'
 import { Board, type BoardHandle, type BoardMove, type LegalMoveMap } from '@/board'
-import { Button, cn, toast } from '@/design'
+import { Button, cn, SimpleTooltip, toast } from '@/design'
 import {
   emptyBoardShapes,
   toFen,
@@ -180,18 +180,19 @@ export function OpeningDrillScreen() {
         </span>
         <div className="ml-auto flex items-center gap-1">
           <span className="text-xs text-muted-foreground max-md:hidden">7 due today</span>
-          <Button
-            asChild
-            variant="ghost"
-            size="icon"
-            className="size-8 sm:size-9"
-            title="Board & pieces"
-            aria-label="Board and piece settings"
-          >
-            <Link to="/settings" hash="board">
-              <Palette className="size-4" aria-hidden="true" />
-            </Link>
-          </Button>
+          <SimpleTooltip content="Board and piece settings">
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              className="size-8 sm:size-9"
+              aria-label="Board and piece settings"
+            >
+              <Link to="/settings" hash="board">
+                <Palette className="size-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          </SimpleTooltip>
         </div>
       </header>
 

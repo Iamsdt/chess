@@ -2,6 +2,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { Slot } from 'radix-ui'
 import * as React from 'react'
 
+import { Spinner } from '@/design/components/spinner'
 import { cn } from '@/design/lib/utils'
 
 const buttonVariants = cva(
@@ -35,27 +36,53 @@ const buttonVariants = cva(
   },
 )
 
+interface ButtonProps extends React.ComponentProps<'button'>, VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+  loading?: boolean
+}
+
 function Button({
   className,
   variant = 'default',
   size = 'default',
   asChild = false,
+  loading = false,
+  disabled,
+  children,
   ...props
-}: React.ComponentProps<'button'> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
+}: ButtonProps) {
   const Comp = asChild ? Slot.Root : 'button'
+  const isDisabled = disabled ? true : loading
 
   return (
     <Comp
       data-slot="button"
       data-variant={variant}
       data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
+      disabled={isDisabled}
+      aria-busy={loading ? 'true' : undefined}
+      className={cn(
+        buttonVariants({ variant, size, className }),
+        loading && 'cursor-wait opacity-85',
+      )}
       {...props}
-    />
+    >
+      {asChild ? (
+        children
+      ) : (
+        <>
+          {loading && (
+            <Spinner
+              size={size === 'xs' || size === 'icon-xs' ? 'xs' : 'sm'}
+              tone="current"
+              aria-hidden="true"
+            />
+          )}
+          {children}
+        </>
+      )}
+    </Comp>
   )
 }
 
-export { Button, buttonVariants }
+export { Button, buttonVariants, type ButtonProps }

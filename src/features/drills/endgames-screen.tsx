@@ -17,7 +17,7 @@ import { useContext, useMemo, useRef, useState } from 'react'
 
 import { ChatPanelContext } from '@/app/shell/shell-contexts'
 import { Board, type BoardHandle, type BoardMove, type LegalMoveMap } from '@/board'
-import { Button, toast } from '@/design'
+import { Button, SimpleTooltip, toast } from '@/design'
 import {
   emptyBoardShapes,
   toFen,
@@ -340,27 +340,31 @@ export function EndgamesScreen() {
         </h1>
         <span className="badge max-sm:hidden">4 of 7 mastered</span>
         <div className="ml-auto flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-9 px-2 text-xs sm:px-3 sm:text-sm"
-            onClick={handleFlip}
-          >
-            <ArrowUpDown className="mr-1 size-4" aria-hidden="true" />
-            <span className="max-sm:hidden">Flip</span>
-          </Button>
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className="size-8 shrink-0 px-0 sm:size-9"
-            title="Board & pieces"
-            aria-label="Board and piece settings"
-          >
-            <Link to="/settings">
-              <Palette className="size-4" aria-hidden="true" />
-            </Link>
-          </Button>
+          <SimpleTooltip content="Flip board orientation">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 px-2 text-xs sm:px-3 sm:text-sm"
+              onClick={handleFlip}
+              aria-label="Flip board"
+            >
+              <ArrowUpDown className="mr-1 size-4" aria-hidden="true" />
+              <span className="max-sm:hidden">Flip</span>
+            </Button>
+          </SimpleTooltip>
+          <SimpleTooltip content="Board and piece settings">
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="size-8 shrink-0 px-0 sm:size-9"
+              aria-label="Board and piece settings"
+            >
+              <Link to="/settings">
+                <Palette className="size-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          </SimpleTooltip>
         </div>
       </header>
 

@@ -17,6 +17,7 @@ import {
   Badge,
   Button,
   PageHeader,
+  SimpleTooltip,
   Tabs,
   TabsContent,
   TabsList,
@@ -182,28 +183,34 @@ export function AnalysisScreen({ engine, explorerFetch, isOnline }: AnalysisScre
                 {opening.name}
               </Badge>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                board.updateSettings({
-                  orientation: board.settings.orientation === 'white' ? 'black' : 'white',
-                })
-              }}
-            >
-              <ArrowUpDown aria-hidden="true" />
-              <span className="max-sm:hidden">Flip</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setSetupOpen(true)
-              }}
-            >
-              <Grid2x2Plus aria-hidden="true" />
-              <span className="max-sm:hidden">Set up</span>
-            </Button>
+            <SimpleTooltip content="Flip board orientation">
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-label="Flip board"
+                onClick={() => {
+                  board.updateSettings({
+                    orientation: board.settings.orientation === 'white' ? 'black' : 'white',
+                  })
+                }}
+              >
+                <ArrowUpDown aria-hidden="true" />
+                <span className="max-sm:hidden">Flip</span>
+              </Button>
+            </SimpleTooltip>
+            <SimpleTooltip content="Set up custom position">
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-label="Set up position"
+                onClick={() => {
+                  setSetupOpen(true)
+                }}
+              >
+                <Grid2x2Plus aria-hidden="true" />
+                <span className="max-sm:hidden">Set up</span>
+              </Button>
+            </SimpleTooltip>
             <Button asChild size="sm">
               {/* The position rides in the URL so the setup screen can offer it. S12 owns
                   what it does with it; this side of the handover is all S19 can write. */}
@@ -313,18 +320,26 @@ export function AnalysisScreen({ engine, explorerFetch, isOnline }: AnalysisScre
 
             <div className="border-t p-3">
               <div className="grid grid-cols-4 gap-1">
-                <Button variant="ghost" size="sm" aria-label="Start position" onClick={toStart}>
-                  <ChevronsLeft aria-hidden="true" />
-                </Button>
-                <Button variant="ghost" size="sm" aria-label="Previous move" onClick={back}>
-                  <ChevronLeft aria-hidden="true" />
-                </Button>
-                <Button variant="ghost" size="sm" aria-label="Next move" onClick={forward}>
-                  <ChevronRight aria-hidden="true" />
-                </Button>
-                <Button variant="ghost" size="sm" aria-label="Last move" onClick={toEnd}>
-                  <ChevronsRight aria-hidden="true" />
-                </Button>
+                <SimpleTooltip content="Start position (Home)">
+                  <Button variant="ghost" size="sm" aria-label="Start position" onClick={toStart}>
+                    <ChevronsLeft aria-hidden="true" />
+                  </Button>
+                </SimpleTooltip>
+                <SimpleTooltip content="Previous move (←)">
+                  <Button variant="ghost" size="sm" aria-label="Previous move" onClick={back}>
+                    <ChevronLeft aria-hidden="true" />
+                  </Button>
+                </SimpleTooltip>
+                <SimpleTooltip content="Next move (→)">
+                  <Button variant="ghost" size="sm" aria-label="Next move" onClick={forward}>
+                    <ChevronRight aria-hidden="true" />
+                  </Button>
+                </SimpleTooltip>
+                <SimpleTooltip content="Last move (End)">
+                  <Button variant="ghost" size="sm" aria-label="Last move" onClick={toEnd}>
+                    <ChevronsRight aria-hidden="true" />
+                  </Button>
+                </SimpleTooltip>
               </div>
             </div>
           </aside>

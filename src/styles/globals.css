@@ -6,6 +6,7 @@
    should self-host these so the app still looks right offline. */
 @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -450,6 +451,13 @@
   .rise {
     animation: rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
+
+  .animate-shimmer {
+    background: linear-gradient(90deg, transparent 0%, currentColor 50%, transparent 100%);
+    opacity: 0.12;
+    background-size: 200% 100%;
+    animation: shimmer 1.8s infinite linear;
+  }
 }
 
 @keyframes rise {
@@ -460,5 +468,24 @@
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .animate-shimmer,
+  .animate-pulse,
+  .animate-spin {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

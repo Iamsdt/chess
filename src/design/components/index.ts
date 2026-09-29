@@ -9,5 +9,6 @@ export {
 } from './quality-glyph'
 export { RingProgress, type RingProgressProps } from './ring-progress'
 export { SectionHeader, type SectionHeaderProps } from './section-header'
+export { Spinner, type SpinnerProps } from './spinner'
 export { StatCard, type StatCardProps, type StatTrend } from './stat-card'
 export { ThemeToggle, type ThemeToggleProps } from './theme-toggle'

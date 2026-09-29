@@ -29,6 +29,7 @@ export {
   QualityGlyph,
   RingProgress,
   SectionHeader,
+  Spinner,
   StatCard,
   ThemeToggle,
   type CtaButtonProps,
@@ -38,6 +39,7 @@ export {
   type QualityGlyphProps,
   type RingProgressProps,
   type SectionHeaderProps,
+  type SpinnerProps,
   type StatCardProps,
   type StatTrend,
   type ThemeToggleProps,
@@ -118,12 +120,20 @@ export {
   SheetTitle,
   SheetTrigger,
 } from './ui/sheet'
+export { Skeleton, type SkeletonProps } from './ui/skeleton'
 export { Slider } from './ui/slider'
 export { Toaster } from './ui/sonner'
 export { Switch } from './ui/switch'
 export { Tabs, TabsContent, TabsList, tabsListVariants, TabsTrigger } from './ui/tabs'
 export { Textarea } from './ui/textarea'
-export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip'
+export {
+  SimpleTooltip,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+  type SimpleTooltipProps,
+} from './ui/tooltip'
 
 /* `toast()` is re-exported so features never import sonner directly. */
 export { toast } from 'sonner'

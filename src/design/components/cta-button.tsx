@@ -3,6 +3,8 @@ import { Slot } from 'radix-ui'
 
 import { cn } from '@/design/lib/utils'
 
+import { Spinner } from './spinner'
+
 import type * as React from 'react'
 
 const ctaButtonVariants = cva(
@@ -24,19 +26,46 @@ export interface CtaButtonProps
   extends React.ComponentProps<'button'>, VariantProps<typeof ctaButtonVariants> {
   /** Render the styling onto the child (a link, usually) instead of a `<button>`. */
   asChild?: boolean
+  loading?: boolean
 }
 
 /** The one loud call to action per screen. Separate from `Button` because its raised
  *  clay slab — and the "only one of these is on screen" rule — is a design decision,
  *  not a variant someone should reach for by accident. */
-export function CtaButton({ className, size, block, asChild = false, ...props }: CtaButtonProps) {
+export function CtaButton({
+  className,
+  size,
+  block,
+  asChild = false,
+  loading = false,
+  disabled,
+  children,
+  ...props
+}: CtaButtonProps) {
   const Comp = asChild ? Slot.Root : 'button'
+  const isDisabled = disabled ? true : loading
+
   return (
     <Comp
       data-slot="cta-button"
-      className={cn(ctaButtonVariants({ size, block }), className)}
+      disabled={isDisabled}
+      aria-busy={loading ? 'true' : undefined}
+      className={cn(
+        ctaButtonVariants({ size, block }),
+        loading && 'cursor-wait opacity-85 active:translate-y-0',
+        className,
+      )}
       {...props}
-    />
+    >
+      {asChild ? (
+        children
+      ) : (
+        <>
+          {loading && <Spinner size="sm" tone="white" aria-hidden="true" />}
+          {children}
+        </>
+      )}
+    </Comp>
   )
 }
 

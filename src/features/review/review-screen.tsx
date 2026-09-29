@@ -20,7 +20,7 @@ import { useContext, useMemo, useState } from 'react'
 
 import { ChatPanelContext } from '@/app/shell/shell-contexts'
 import { Board } from '@/board'
-import { Button, QualityGlyph, toast } from '@/design'
+import { Button, QualityGlyph, SimpleTooltip, toast } from '@/design'
 import {
   emptyBoardShapes,
   toFen,
@@ -276,26 +276,31 @@ export function ReviewScreen() {
           1–0 · resigned on move 37
         </span>
         <div className="ml-auto flex items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={handleFlip}>
-            <ArrowUpDown className="size-4" aria-hidden="true" />
-            <span className="max-sm:hidden">Flip</span>
-          </Button>
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/analysis">
-              <Microscope className="size-4" aria-hidden="true" />
-              <span className="max-sm:hidden">Analyse</span>
-            </Link>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="size-9 px-0"
-            title="Copy PGN"
-            aria-label="Copy PGN"
-            onClick={handleCopyPgn}
-          >
-            <ClipboardCopy className="size-4" aria-hidden="true" />
-          </Button>
+          <SimpleTooltip content="Flip board orientation">
+            <Button variant="ghost" size="sm" aria-label="Flip board" onClick={handleFlip}>
+              <ArrowUpDown className="size-4" aria-hidden="true" />
+              <span className="max-sm:hidden">Flip</span>
+            </Button>
+          </SimpleTooltip>
+          <SimpleTooltip content="Analyse in deep engine">
+            <Button asChild variant="ghost" size="sm" aria-label="Analyse in deep engine">
+              <Link to="/analysis">
+                <Microscope className="size-4" aria-hidden="true" />
+                <span className="max-sm:hidden">Analyse</span>
+              </Link>
+            </Button>
+          </SimpleTooltip>
+          <SimpleTooltip content="Copy PGN to clipboard">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="size-9 px-0"
+              aria-label="Copy PGN"
+              onClick={handleCopyPgn}
+            >
+              <ClipboardCopy className="size-4" aria-hidden="true" />
+            </Button>
+          </SimpleTooltip>
         </div>
       </header>
 
@@ -784,23 +789,36 @@ export function ReviewScreen() {
             {/* Bottom Controls for Stepping */}
             <div className="border-t p-3">
               <div className="grid grid-cols-4 gap-1">
-                <Button variant="ghost" size="sm" aria-label="First move" onClick={handleStepFirst}>
-                  <ChevronsLeft className="size-4" aria-hidden="true" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Previous move"
-                  onClick={handleStepPrev}
-                >
-                  <ChevronLeft className="size-4" aria-hidden="true" />
-                </Button>
-                <Button variant="ghost" size="sm" aria-label="Next move" onClick={handleStepNext}>
-                  <ChevronRight className="size-4" aria-hidden="true" />
-                </Button>
-                <Button variant="ghost" size="sm" aria-label="Last move" onClick={handleStepLast}>
-                  <ChevronsRight className="size-4" aria-hidden="true" />
-                </Button>
+                <SimpleTooltip content="First move (Home)">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-label="First move"
+                    onClick={handleStepFirst}
+                  >
+                    <ChevronsLeft className="size-4" aria-hidden="true" />
+                  </Button>
+                </SimpleTooltip>
+                <SimpleTooltip content="Previous move (←)">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Previous move"
+                    onClick={handleStepPrev}
+                  >
+                    <ChevronLeft className="size-4" aria-hidden="true" />
+                  </Button>
+                </SimpleTooltip>
+                <SimpleTooltip content="Next move (→)">
+                  <Button variant="ghost" size="sm" aria-label="Next move" onClick={handleStepNext}>
+                    <ChevronRight className="size-4" aria-hidden="true" />
+                  </Button>
+                </SimpleTooltip>
+                <SimpleTooltip content="Last move (End)">
+                  <Button variant="ghost" size="sm" aria-label="Last move" onClick={handleStepLast}>
+                    <ChevronsRight className="size-4" aria-hidden="true" />
+                  </Button>
+                </SimpleTooltip>
               </div>
             </div>
           </aside>

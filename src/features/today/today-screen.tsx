@@ -23,7 +23,7 @@ import { useContext, useMemo } from 'react'
 import { ChatPanelContext, CommandPaletteContext } from '@/app/shell/shell-contexts'
 import { Board } from '@/board'
 import { useProfile, useStreak } from '@/data'
-import { Button, CtaButton, ThemeToggle, toast } from '@/design'
+import { Button, CtaButton, SimpleTooltip, ThemeToggle, toast } from '@/design'
 import { emptyBoardShapes, toFen, toSquare, type BoardShapes } from '@/domain'
 
 const MISTAKE_FEN = toFen('r4rk1/pp3ppp/2p5/6n1/3P4/2P5/PP3P1P/R3Q1K1 b - - 0 17')
@@ -119,14 +119,16 @@ export function TodayScreen() {
         </div>
         <div className="flex items-center gap-2">
           {/* Full search button on sm+, icon-only on mobile */}
-          <button
-            type="button"
-            onClick={handleSearchClick}
-            className="btn btn-outline btn-icon size-10 rounded-full font-normal text-muted-foreground sm:hidden"
-            aria-label="Search"
-          >
-            <Search className="size-4" aria-hidden="true" />
-          </button>
+          <SimpleTooltip content="Search (⌘K)">
+            <button
+              type="button"
+              onClick={handleSearchClick}
+              className="btn btn-outline btn-icon size-10 rounded-full font-normal text-muted-foreground sm:hidden"
+              aria-label="Search"
+            >
+              <Search className="size-4" aria-hidden="true" />
+            </button>
+          </SimpleTooltip>
           <button
             type="button"
             onClick={handleSearchClick}

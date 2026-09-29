@@ -16,6 +16,7 @@ import {
   DialogTitle,
   EmptyState,
   PageHeader,
+  SimpleTooltip,
   Tabs,
   TabsContent,
   TabsList,
@@ -189,17 +190,20 @@ export function PlayGameScreen({ storage }: PlayGameScreenProps = {}) {
               {evalLabel}
             </Badge>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            aria-pressed={flipped}
-            onClick={() => {
-              setFlipped((previous) => !previous)
-            }}
-          >
-            <ArrowUpDown aria-hidden="true" />
-            <span className="max-sm:hidden">Flip</span>
-          </Button>
+          <SimpleTooltip content="Flip board orientation">
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Flip board"
+              aria-pressed={flipped}
+              onClick={() => {
+                setFlipped((previous) => !previous)
+              }}
+            >
+              <ArrowUpDown aria-hidden="true" />
+              <span className="max-sm:hidden">Flip</span>
+            </Button>
+          </SimpleTooltip>
         </>
       }
       subtitle={`vs Stockfish ${String(state.config.opponentRating)} · ${state.config.personality}`}
