@@ -252,13 +252,13 @@ export function PlaySetupScreen({ storage = defaultPlayStorage }: PlaySetupScree
         }
       />
 
-      <div className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <div className="space-y-5">
+      <div className="mt-5 grid gap-6 sm:mt-7 md:grid-cols-[minmax(0,1fr)_260px] lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="space-y-4 sm:space-y-5">
           <Card>
-            <CardContent className="p-5 sm:p-6">
+            <CardContent className="p-4 sm:p-5 md:p-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-lg font-bold">Opponent strength</h2>
+                  <h2 className="text-base font-bold sm:text-lg">Opponent strength</h2>
                   <p className="mt-0.5 text-xs text-muted-foreground">
                     Stockfish, tuned to play like a human at this rating.
                   </p>
@@ -266,10 +266,10 @@ export function PlaySetupScreen({ storage = defaultPlayStorage }: PlaySetupScree
                 <Badge variant="secondary">{plan.movetimeMs} ms per move</Badge>
               </div>
 
-              <div className="mt-5 flex items-end gap-3">
+              <div className="mt-4 flex items-end gap-3 sm:mt-5">
                 <output
                   htmlFor={ratingId}
-                  className="font-display text-5xl leading-none font-bold tabular-nums"
+                  className="font-display text-4xl leading-none font-bold tabular-nums sm:text-5xl"
                 >
                   {rating}
                 </output>
@@ -295,14 +295,14 @@ export function PlaySetupScreen({ storage = defaultPlayStorage }: PlaySetupScree
                 style={{
                   background: `linear-gradient(to right, var(--primary) 0 ${String(fillPercent)}%, var(--muted) ${String(fillPercent)}% 100%)`,
                 }}
-                className="mt-6 h-2 w-full cursor-pointer appearance-none rounded-full focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                className="mt-5 h-2 w-full cursor-pointer appearance-none rounded-full focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none sm:mt-6"
               />
               <p className="mt-2 text-xs text-muted-foreground">{BAND_COPY[band].hint}</p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="space-y-6 p-5 sm:p-6">
+            <CardContent className="space-y-6 p-4 sm:p-5 md:p-6">
               <OptionGroup
                 legend="Your colour"
                 name="colour"
@@ -332,7 +332,7 @@ export function PlaySetupScreen({ storage = defaultPlayStorage }: PlaySetupScree
           </Card>
 
           <Card>
-            <CardContent className="p-5 sm:p-6">
+            <CardContent className="p-4 sm:p-5 md:p-6">
               <OptionGroup
                 legend="Opponent personality"
                 name="personality"
@@ -344,7 +344,7 @@ export function PlaySetupScreen({ storage = defaultPlayStorage }: PlaySetupScree
           </Card>
 
           <Card>
-            <CardContent className="p-5 sm:p-6">
+            <CardContent className="p-4 sm:p-5 md:p-6">
               <h2 className="text-lg font-bold">Help while you play</h2>
               <div className="mt-3 space-y-2">
                 <ToggleRow
@@ -373,7 +373,7 @@ export function PlaySetupScreen({ storage = defaultPlayStorage }: PlaySetupScree
           </Card>
 
           <Card>
-            <CardContent className="p-5 sm:p-6">
+            <CardContent className="p-4 sm:p-5 md:p-6">
               <OptionGroup
                 legend="Start from"
                 name="start-from"
@@ -415,7 +415,7 @@ export function PlaySetupScreen({ storage = defaultPlayStorage }: PlaySetupScree
           </Card>
         </div>
 
-        <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start" aria-label="Game summary">
+        <aside className="space-y-4 md:sticky md:top-6 md:self-start" aria-label="Game summary">
           <Card className="overflow-hidden">
             <div className="bg-muted/40 p-3">
               <div className="mx-auto max-w-[168px] overflow-hidden rounded-xl ring-1 ring-border">
@@ -428,9 +428,9 @@ export function PlaySetupScreen({ storage = defaultPlayStorage }: PlaySetupScree
                 />
               </div>
             </div>
-            <CardContent className="p-5">
+            <CardContent className="p-4 sm:p-5">
               <p className="text-xs tracking-wide text-muted-foreground uppercase">Your game</p>
-              <h2 className="mt-1 text-xl font-bold">vs Stockfish {plan.rating}</h2>
+              <h2 className="mt-1 text-lg font-bold sm:text-xl">vs Stockfish {plan.rating}</h2>
               <dl className="mt-3 space-y-2 text-sm">
                 <div className="flex justify-between gap-3">
                   <dt className="text-muted-foreground">You play</dt>
