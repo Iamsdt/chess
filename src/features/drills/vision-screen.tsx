@@ -156,19 +156,19 @@ export function VisionScreen() {
   return (
     <main className="min-h-full">
       {/* Sticky Header */}
-      <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur lg:px-6">
-        <Button asChild variant="ghost" size="sm">
+      <header className="sticky top-0 z-10 flex h-14 items-center gap-1.5 border-b bg-background/85 px-3 backdrop-blur sm:gap-2 sm:px-4 lg:px-6">
+        <Button asChild variant="ghost" size="sm" className="h-9 px-2 text-xs sm:px-3 sm:text-sm">
           <Link to="/puzzles">
             <ArrowLeft className="mr-1 size-4" aria-hidden="true" />
             <span className="max-sm:hidden">Puzzles</span>
           </Link>
         </Button>
-        <div className="mx-1 h-5 w-px bg-border" />
+        <div className="mx-0.5 h-5 w-px bg-border sm:mx-1" />
         <h1
           aria-label="Board vision"
-          className="flex min-w-0 items-center gap-2 text-base font-bold"
+          className="flex min-w-0 items-center gap-1.5 text-sm font-bold sm:gap-2 sm:text-base"
         >
-          <ScanEye className="size-4 text-cta" aria-hidden="true" />
+          <ScanEye className="size-4 shrink-0 text-cta" aria-hidden="true" />
           <span className="truncate">Name the square</span>
         </h1>
         <span className="badge max-sm:hidden">1 min</span>
@@ -196,7 +196,7 @@ export function VisionScreen() {
           <Button
             variant="ghost"
             size="sm"
-            className="text-muted-foreground"
+            className="h-9 px-2 text-xs text-muted-foreground sm:px-3 sm:text-sm"
             onClick={handleRestart}
           >
             <RotateCcw className="mr-1 size-4" aria-hidden="true" />
@@ -206,10 +206,10 @@ export function VisionScreen() {
       </header>
 
       {/* Main Grid: Board & Drill Controls */}
-      <div className="grid gap-5 p-4 lg:p-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid gap-4 p-3 sm:gap-5 sm:p-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:p-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         {/* Left Column: Board */}
         <section className="flex justify-center" aria-label="Vision board">
-          <div className="w-full max-w-[560px] space-y-2.5">
+          <div className="w-full max-w-[min(100%,calc(100dvh-180px),560px)] space-y-2 sm:space-y-2.5">
             <div className="overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.45)] ring-1 ring-border">
               <Board
                 fen={VISION_FEN}
@@ -229,43 +229,43 @@ export function VisionScreen() {
 
         {/* Right Column: Time, Score, Pickers, Input */}
         <aside
-          className="card flex min-h-0 flex-col overflow-hidden xl:max-h-[calc(100dvh-56px-48px)]"
+          className="card flex min-h-0 flex-col overflow-hidden lg:max-h-[calc(100dvh-56px-48px)]"
           aria-label="Drill panel"
         >
           {/* Top Score Bar */}
           <div className="grid grid-cols-3 border-b text-center">
-            <div className="p-3">
-              <div className="label">Time</div>
+            <div className="p-2.5 sm:p-3">
+              <div className="label text-[11px] sm:text-xs">Time</div>
               <div
-                className="clock is-running mx-auto mt-1 w-fit font-mono font-bold"
+                className="clock is-running mx-auto mt-0.5 w-fit font-mono text-base font-bold sm:mt-1 sm:text-lg"
                 role="timer"
                 aria-label="Time left"
               >
                 0:{String(timeLeft).padStart(2, '0')}
               </div>
             </div>
-            <div className="border-x p-3">
-              <div className="label">Score</div>
-              <div className="mt-1 font-display text-3xl leading-9 font-bold tabular-nums">
+            <div className="border-x p-2.5 sm:p-3">
+              <div className="label text-[11px] sm:text-xs">Score</div>
+              <div className="mt-0.5 font-display text-2xl leading-8 font-bold tabular-nums sm:mt-1 sm:text-3xl sm:leading-9">
                 {String(score)}
               </div>
             </div>
-            <div className="p-3">
-              <div className="label">Streak</div>
-              <div className="mt-1 inline-flex items-center gap-1 font-display text-3xl leading-9 font-bold text-emerald-600 tabular-nums dark:text-emerald-400">
-                <Zap className="size-5" aria-hidden="true" />
+            <div className="p-2.5 sm:p-3">
+              <div className="label text-[11px] sm:text-xs">Streak</div>
+              <div className="mt-0.5 inline-flex items-center gap-1 font-display text-2xl leading-8 font-bold text-emerald-600 tabular-nums sm:mt-1 sm:text-3xl sm:leading-9 dark:text-emerald-400">
+                <Zap className="size-4 sm:size-5" aria-hidden="true" />
                 <span>{String(streak)}</span>
               </div>
             </div>
           </div>
 
-          <div className="min-h-0 flex-1 space-y-5 overflow-auto p-5">
+          <div className="min-h-0 flex-1 space-y-4 overflow-auto p-4 sm:space-y-5 sm:p-5">
             <div className="text-center">
               <p className="label">Square {String(squareNumber)}</p>
-              <h2 className="mt-1 font-display text-[26px] leading-tight font-bold">
+              <h2 className="mt-1 font-display text-xl leading-tight font-bold sm:text-2xl md:text-[26px]">
                 Which square is circled?
               </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
                 Pick a file, then a rank. Or just type it.
               </p>
             </div>
@@ -279,7 +279,7 @@ export function VisionScreen() {
                     key={f}
                     type="button"
                     variant="outline"
-                    className={`h-10 px-0 font-mono text-base ${
+                    className={`h-9 min-h-[38px] px-0 font-mono text-sm sm:h-10 sm:text-base ${
                       selectedFile === f
                         ? 'border-primary bg-primary font-bold text-primary-foreground'
                         : ''
@@ -303,7 +303,7 @@ export function VisionScreen() {
                     key={r}
                     type="button"
                     variant="outline"
-                    className={`h-10 px-0 font-mono text-base ${
+                    className={`h-9 min-h-[38px] px-0 font-mono text-sm sm:h-10 sm:text-base ${
                       selectedRank === r
                         ? 'border-primary bg-primary font-bold text-primary-foreground'
                         : ''
@@ -325,7 +325,7 @@ export function VisionScreen() {
               </label>
               <Input
                 id="sq-input"
-                className="font-mono text-sm uppercase"
+                className="h-10 flex-1 font-mono text-sm uppercase"
                 placeholder="Type it, e.g. e4"
                 maxLength={2}
                 autoComplete="off"
@@ -334,7 +334,9 @@ export function VisionScreen() {
                   setTypedInput(e.target.value)
                 }}
               />
-              <Button type="submit">Check</Button>
+              <Button type="submit" className="h-10 px-4 sm:px-5">
+                Check
+              </Button>
             </form>
 
             {/* Last Three Badges */}
@@ -369,14 +371,14 @@ export function VisionScreen() {
       </div>
 
       {/* More Vision Drills Section */}
-      <section className="px-4 pb-8 lg:px-6" aria-labelledby="drills-h">
-        <h2 id="drills-h" className="font-display text-xl font-bold">
+      <section className="px-3 pb-8 sm:px-4 lg:px-6" aria-labelledby="drills-h">
+        <h2 id="drills-h" className="font-display text-lg font-bold sm:text-xl">
           More vision drills
         </h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <div className="mt-3 grid gap-3 sm:mt-4 sm:grid-cols-2 sm:gap-4 md:grid-cols-3">
           <button
             type="button"
-            className="card card-hover flex cursor-pointer items-start gap-3 p-5 text-left transition hover:border-ring/60"
+            className="card card-hover flex cursor-pointer items-start gap-3 p-4 text-left transition hover:border-ring/60 sm:p-5"
             onClick={() => {
               toast('Find all checks starts after this drill')
             }}
@@ -385,8 +387,10 @@ export function VisionScreen() {
               <Crosshair className="size-5" aria-hidden="true" />
             </span>
             <span>
-              <span className="block font-display text-lg font-bold">Find all checks</span>
-              <span className="mt-0.5 block text-sm text-muted-foreground">
+              <span className="block font-display text-base font-bold sm:text-lg">
+                Find all checks
+              </span>
+              <span className="mt-0.5 block text-xs text-muted-foreground sm:text-sm">
                 Tap every checking move before the clock ends. Builds the &quot;checks first&quot;
                 habit.
               </span>
@@ -396,7 +400,7 @@ export function VisionScreen() {
 
           <button
             type="button"
-            className="card card-hover flex cursor-pointer items-start gap-3 p-5 text-left transition hover:border-ring/60"
+            className="card card-hover flex cursor-pointer items-start gap-3 p-4 text-left transition hover:border-ring/60 sm:p-5"
             onClick={() => {
               toast('Knight route starts after this drill')
             }}
@@ -405,8 +409,10 @@ export function VisionScreen() {
               <Route className="size-5" aria-hidden="true" />
             </span>
             <span>
-              <span className="block font-display text-lg font-bold">Knight route</span>
-              <span className="mt-0.5 block text-sm text-muted-foreground">
+              <span className="block font-display text-base font-bold sm:text-lg">
+                Knight route
+              </span>
+              <span className="mt-0.5 block text-xs text-muted-foreground sm:text-sm">
                 Get the knight from one square to another in the fewest jumps.
               </span>
               <span className="mt-2 block text-xs text-muted-foreground">Best: 12 routes</span>
@@ -415,7 +421,7 @@ export function VisionScreen() {
 
           <button
             type="button"
-            className="card card-hover flex cursor-pointer items-start gap-3 p-5 text-left transition hover:border-ring/60"
+            className="card card-hover flex cursor-pointer items-start gap-3 p-4 text-left transition hover:border-ring/60 sm:p-5 sm:max-md:col-span-2"
             onClick={() => {
               toast('Blindfold move starts after this drill')
             }}
@@ -424,8 +430,10 @@ export function VisionScreen() {
               <EyeOff className="size-5" aria-hidden="true" />
             </span>
             <span>
-              <span className="block font-display text-lg font-bold">Blindfold move</span>
-              <span className="mt-0.5 block text-sm text-muted-foreground">
+              <span className="block font-display text-base font-bold sm:text-lg">
+                Blindfold move
+              </span>
+              <span className="mt-0.5 block text-xs text-muted-foreground sm:text-sm">
                 Hear a short line of moves, then say where the piece ends up.
               </span>
               <span className="mt-2 block text-xs text-muted-foreground">New · try it</span>
