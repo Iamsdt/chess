@@ -92,8 +92,8 @@ function Shell({
   readonly children: ReactNode
 }) {
   return (
-    <div className="mx-auto w-full max-w-[1200px] p-4 lg:p-6">
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="mx-auto w-full max-w-[1200px] p-2 sm:p-4 lg:p-6">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         <Button
           variant="ghost"
           size="sm"
@@ -102,12 +102,12 @@ function Shell({
           }}
         >
           <ArrowLeft aria-hidden className="size-4" />
-          Puzzles
+          <span className="max-sm:hidden">Puzzles</span>
         </Button>
         <PageHeader className="flex-1" title="Puzzle Rush" />
         {actions}
       </div>
-      <div className="mt-5">{children}</div>
+      <div className="mt-3 sm:mt-5">{children}</div>
     </div>
   )
 }
@@ -121,29 +121,29 @@ function ModePicker({
 }) {
   return (
     <Shell navigate={navigate}>
-      <section className="card mx-auto max-w-[520px] p-6" aria-labelledby="modes-heading">
-        <h2 id="modes-heading" className="text-xl font-bold">
+      <section className="card mx-auto max-w-[520px] p-4 sm:p-6" aria-labelledby="modes-heading">
+        <h2 id="modes-heading" className="font-display text-lg font-bold sm:text-xl">
           Pick your rush
         </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
           Easy first, then harder. Nothing here counts against your puzzle rating twice — each
           puzzle is rated once, as always.
         </p>
-        <div className="mt-5 space-y-2">
+        <div className="mt-4 space-y-2 sm:mt-5">
           {MODES.map((entry) => (
             <button
               key={entry.id}
               type="button"
-              className="option w-full cursor-pointer"
+              className="option w-full cursor-pointer p-3 sm:p-3.5"
               onClick={() => {
                 onPick(entry.mode)
               }}
             >
-              <span className="grid size-10 place-items-center rounded-xl bg-cta-soft text-cta">
-                <entry.icon aria-hidden className="size-5" />
+              <span className="grid size-9 place-items-center rounded-xl bg-cta-soft text-cta sm:size-10">
+                <entry.icon aria-hidden className="size-4 sm:size-5" />
               </span>
               <span className="flex-1 text-left">
-                <span className="block font-semibold">{entry.label}</span>
+                <span className="block text-sm font-semibold sm:text-base">{entry.label}</span>
                 <span className="block text-xs text-muted-foreground">{entry.hint}</span>
               </span>
             </button>
@@ -212,8 +212,8 @@ function RushRun({
   if (runner.status === 'finished') {
     return (
       <Shell navigate={navigate}>
-        <section className="card mx-auto max-w-[520px] p-6 text-center" aria-live="polite">
-          <h2 className="font-display text-2xl font-bold">Time's up</h2>
+        <section className="card mx-auto max-w-[520px] p-4 text-center sm:p-6" aria-live="polite">
+          <h2 className="font-display text-xl font-bold sm:text-2xl">Time's up</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             {summary === null
               ? 'That run is over.'
@@ -246,10 +246,10 @@ function RushRun({
         </Button>
       }
     >
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_300px]">
         <section className="flex justify-center" aria-label="Rush board">
-          <div className="w-full max-w-[640px] space-y-3">
-            <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 sm:gap-5">
+          <div className="board-size w-full max-w-[min(100%,calc(100dvh-200px))] space-y-2 sm:space-y-3 lg:max-w-[min(100%,70vh)]">
+            <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2.5 sm:gap-5">
               {runner.timeLeftMs === null ? (
                 <Badge variant="lilac">
                   <HeartPulse aria-hidden className="size-3.5" />
@@ -258,7 +258,7 @@ function RushRun({
               ) : (
                 <div
                   className={cn(
-                    'clock is-running !rounded-xl !px-4 !py-1.5 !text-3xl',
+                    'clock is-running !rounded-xl !px-3 !py-1 text-2xl sm:!px-4 sm:!py-1.5 sm:text-3xl',
                     runner.timeLeftMs < 30_000 && 'is-low',
                   )}
                   role="timer"
@@ -267,15 +267,15 @@ function RushRun({
                   {formatClock(runner.timeLeftMs)}
                 </div>
               )}
-              <div className="flex items-baseline gap-2">
-                <span className="font-display text-4xl leading-none font-bold tabular-nums">
+              <div className="flex items-baseline gap-1.5 sm:gap-2">
+                <span className="font-display text-3xl leading-none font-bold tabular-nums sm:text-4xl">
                   {summary?.solved ?? 0}
                 </span>
-                <span className="text-sm text-muted-foreground">solved</span>
+                <span className="text-xs text-muted-foreground sm:text-sm">solved</span>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="inline-flex items-center gap-1 rounded-lg bg-reward-soft px-2.5 py-1 font-display text-lg font-bold text-reward-ink">
-                  <Zap aria-hidden className="size-4" />x{runner.state?.streak ?? 0}
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="inline-flex items-center gap-1 rounded-lg bg-reward-soft px-2 py-0.5 font-display text-base font-bold text-reward-ink sm:px-2.5 sm:py-1 sm:text-lg">
+                  <Zap aria-hidden className="size-3.5 sm:size-4" />x{runner.state?.streak ?? 0}
                 </span>
                 <div
                   className="flex items-center gap-1"
@@ -286,12 +286,15 @@ function RushRun({
                     index < RUSH_LIVES - lives ? (
                       <span
                         key={index}
-                        className="grid size-6 place-items-center rounded-full bg-destructive-soft text-destructive"
+                        className="grid size-5 place-items-center rounded-full bg-destructive-soft text-destructive sm:size-6"
                       >
-                        <X aria-hidden className="size-3.5" />
+                        <X aria-hidden className="size-3 sm:size-3.5" />
                       </span>
                     ) : (
-                      <span key={index} className="size-6 rounded-full border-2 border-dashed" />
+                      <span
+                        key={index}
+                        className="size-5 rounded-full border-2 border-dashed sm:size-6"
+                      />
                     ),
                   )}
                 </div>
@@ -311,14 +314,17 @@ function RushRun({
           </div>
         </section>
 
-        <aside className="card flex min-h-0 flex-col p-5" aria-label="Run panel">
+        <aside
+          className="card flex min-h-0 flex-col overflow-auto p-4 sm:p-5 lg:max-h-[calc(100dvh-56px-48px)]"
+          aria-label="Run panel"
+        >
           <h2 className="text-sm font-semibold">This run</h2>
-          <ol className="mt-3 flex flex-wrap gap-1.5" aria-label="Results so far">
+          <ol className="mt-3 flex flex-wrap gap-1 sm:gap-1.5" aria-label="Results so far">
             {(runner.state?.results ?? []).map((result, index) => (
               <li
                 key={result.puzzleId}
                 className={cn(
-                  'grid size-8 place-items-center rounded-lg text-xs font-semibold',
+                  'grid size-7 place-items-center rounded-lg text-xs font-semibold sm:size-8',
                   result.solved ? 'bg-accent text-primary' : 'bg-destructive-soft text-destructive',
                 )}
                 title={result.solved ? 'Solved' : `The ${result.theme} idea got away`}
@@ -328,11 +334,11 @@ function RushRun({
             ))}
           </ol>
           {runner.puzzle === null || !runner.awaitingNext ? (
-            <p className="mt-5 rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
+            <p className="mt-4 rounded-lg border border-dashed p-3 text-xs text-muted-foreground sm:mt-5">
               Chat stays closed while the clock runs. Every puzzle you miss comes back another day.
             </p>
           ) : (
-            <PuzzleAttribution className="mt-5" puzzle={runner.puzzle} revealed />
+            <PuzzleAttribution className="mt-4 sm:mt-5" puzzle={runner.puzzle} revealed />
           )}
         </aside>
       </div>
