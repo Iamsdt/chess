@@ -493,10 +493,13 @@ export function ProgressScreen() {
           <p className="label">Only you vs you. No leaderboards, ever.</p>
           <h1 className="page-title mt-1">Growth</h1>
         </div>
-        <div className="seg" role="group" aria-label="Time range">
+        <div className="seg flex w-full sm:w-auto" role="group" aria-label="Time range">
           <button
             type="button"
-            className={cn(timeRange === '30d' && 'is-active')}
+            className={cn(
+              'min-h-[36px] flex-1 sm:min-h-0 sm:flex-none',
+              timeRange === '30d' && 'is-active',
+            )}
             onClick={() => {
               setTimeRange('30d')
             }}
@@ -505,7 +508,10 @@ export function ProgressScreen() {
           </button>
           <button
             type="button"
-            className={cn(timeRange === '90d' && 'is-active')}
+            className={cn(
+              'min-h-[36px] flex-1 sm:min-h-0 sm:flex-none',
+              timeRange === '90d' && 'is-active',
+            )}
             onClick={() => {
               setTimeRange('90d')
             }}
@@ -514,7 +520,10 @@ export function ProgressScreen() {
           </button>
           <button
             type="button"
-            className={cn(timeRange === 'all' && 'is-active')}
+            className={cn(
+              'min-h-[36px] flex-1 sm:min-h-0 sm:flex-none',
+              timeRange === 'all' && 'is-active',
+            )}
             onClick={() => {
               setTimeRange('all')
             }}
@@ -528,7 +537,7 @@ export function ProgressScreen() {
       <section className="card mt-6 overflow-hidden" aria-labelledby="garden-h">
         <div className="grid gap-0 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
           {/* Garden Graphic */}
-          <div className="relative flex flex-col bg-accent/60 p-6">
+          <div className="relative flex flex-col bg-accent/60 p-4 sm:p-6">
             <span className="badge badge-reward self-start">
               <Flame className="size-3.5" aria-hidden="true" />
               12-day streak
@@ -536,7 +545,7 @@ export function ProgressScreen() {
 
             <svg
               viewBox="70 14 220 186"
-              className="mx-auto my-auto w-full max-w-[360px] pt-2"
+              className="mx-auto my-auto w-full max-w-[280px] pt-2 sm:max-w-[360px]"
               role="img"
               aria-label="Your chess garden: a sapling with a yellow bud, three days from blooming"
             >
@@ -594,9 +603,9 @@ export function ProgressScreen() {
           </div>
 
           {/* Garden Status & Stages */}
-          <div className="flex flex-col p-6">
+          <div className="flex flex-col p-4 sm:p-6">
             <p className="eyebrow">Your chess garden · Level 4</p>
-            <h2 id="garden-h" className="mt-1 text-[28px] leading-tight font-bold">
+            <h2 id="garden-h" className="mt-1 text-2xl leading-tight font-bold sm:text-[28px]">
               Sapling, and nearly in bloom
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -609,32 +618,32 @@ export function ProgressScreen() {
               aria-label="Garden stages"
             >
               <li>
-                <span className="mx-auto grid size-9 place-items-center rounded-full bg-primary text-primary-foreground">
-                  <CircleDot className="size-4" aria-hidden="true" />
+                <span className="mx-auto grid size-8 place-items-center rounded-full bg-primary text-primary-foreground sm:size-9">
+                  <CircleDot className="size-3.5 sm:size-4" aria-hidden="true" />
                 </span>
                 <span className="mt-1.5 block">Seed</span>
               </li>
               <li>
-                <span className="mx-auto grid size-9 place-items-center rounded-full bg-primary text-primary-foreground">
-                  <Sprout className="size-4" aria-hidden="true" />
+                <span className="mx-auto grid size-8 place-items-center rounded-full bg-primary text-primary-foreground sm:size-9">
+                  <Sprout className="size-3.5 sm:size-4" aria-hidden="true" />
                 </span>
                 <span className="mt-1.5 block">Sprout</span>
               </li>
               <li aria-current="step">
-                <span className="mx-auto grid size-9 place-items-center rounded-full border-[2.5px] border-cta bg-card text-cta shadow-[0_0_0_5px_rgba(224,103,60,.12)]">
-                  <Leaf className="size-4" aria-hidden="true" />
+                <span className="mx-auto grid size-8 place-items-center rounded-full border-[2.5px] border-cta bg-card text-cta shadow-[0_0_0_5px_rgba(224,103,60,.12)] sm:size-9">
+                  <Leaf className="size-3.5 sm:size-4" aria-hidden="true" />
                 </span>
                 <span className="mt-1.5 block font-semibold text-cta">Sapling</span>
               </li>
               <li>
-                <span className="mx-auto grid size-9 place-items-center rounded-full border border-dashed bg-card text-muted-foreground">
-                  <Flower2 className="size-4" aria-hidden="true" />
+                <span className="mx-auto grid size-8 place-items-center rounded-full border border-dashed bg-card text-muted-foreground sm:size-9">
+                  <Flower2 className="size-3.5 sm:size-4" aria-hidden="true" />
                 </span>
                 <span className="mt-1.5 block text-muted-foreground">Bloom</span>
               </li>
               <li>
-                <span className="mx-auto grid size-9 place-items-center rounded-full border border-dashed bg-card text-muted-foreground">
-                  <Trees className="size-4" aria-hidden="true" />
+                <span className="mx-auto grid size-8 place-items-center rounded-full border border-dashed bg-card text-muted-foreground sm:size-9">
+                  <Trees className="size-3.5 sm:size-4" aria-hidden="true" />
                 </span>
                 <span className="mt-1.5 block text-muted-foreground">Tree</span>
               </li>
@@ -662,8 +671,8 @@ export function ProgressScreen() {
               </p>
             </div>
 
-            <div className="mt-auto flex flex-wrap items-center gap-3 pt-6">
-              <Button asChild className="btn-cta">
+            <div className="mt-auto flex flex-col gap-3 pt-6 sm:flex-row sm:flex-wrap sm:items-center">
+              <Button asChild className="btn-cta min-h-[44px] w-full sm:w-auto">
                 <Link to="/">
                   <Droplets className="size-[18px]" aria-hidden="true" />
                   Water it today · 4 min
@@ -672,7 +681,7 @@ export function ProgressScreen() {
               <Button
                 type="button"
                 variant="ghost"
-                className="h-11 text-muted-foreground"
+                className="h-11 min-h-[44px] w-full text-muted-foreground sm:w-auto"
                 onClick={() => {
                   chatPanel?.open()
                   toast('How does the chess garden grow? Asked Sage.')
@@ -700,23 +709,29 @@ export function ProgressScreen() {
           <span className="text-xs text-muted-foreground">{dateRangeLabel}</span>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-3 @[520px]:grid-cols-3 @[980px]:grid-cols-6">
+        <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-6 @[520px]:grid-cols-3 @[980px]:grid-cols-6">
           {metrics.map((m) => (
-            <div key={m.label} className="card p-4">
-              <div className="label">{m.label}</div>
-              <div className="mt-1 font-display text-2xl font-bold tabular-nums">{m.value}</div>
+            <div key={m.label} className="card p-3 sm:p-4">
+              <div className="label truncate text-[11px] sm:text-xs">{m.label}</div>
+              <div className="mt-1 font-display text-xl font-bold tabular-nums sm:text-2xl">
+                {m.value}
+              </div>
               <div
                 className={cn(
-                  'mt-0.5 flex items-center gap-1 text-xs font-medium',
+                  'mt-0.5 flex items-center gap-1 truncate text-[11px] font-medium sm:text-xs',
                   m.deltaType === 'success' ? 'text-success' : 'text-muted-foreground',
                 )}
               >
-                {m.deltaIcon === 'up' && <ArrowUpRight className="size-3.5" aria-hidden="true" />}
-                {m.deltaIcon === 'down' && (
-                  <ArrowDownRight className="size-3.5" aria-hidden="true" />
+                {m.deltaIcon === 'up' && (
+                  <ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" />
                 )}
-                {m.deltaIcon === 'rotate' && <RotateCcw className="size-3.5" aria-hidden="true" />}
-                {m.delta}
+                {m.deltaIcon === 'down' && (
+                  <ArrowDownRight className="size-3.5 shrink-0" aria-hidden="true" />
+                )}
+                {m.deltaIcon === 'rotate' && (
+                  <RotateCcw className="size-3.5 shrink-0" aria-hidden="true" />
+                )}
+                <span className="truncate">{m.delta}</span>
               </div>
             </div>
           ))}
@@ -726,7 +741,7 @@ export function ProgressScreen() {
       {/* Rating Charts */}
       <section className="mt-6 grid gap-4 lg:grid-cols-2" aria-label="Rating charts">
         {/* Puzzle Rating */}
-        <figure className="card p-5">
+        <figure className="card p-4 sm:p-5">
           <figcaption className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-bold">Puzzle rating</h3>
@@ -1108,7 +1123,7 @@ export function ProgressScreen() {
                     +16 this month · you spot them 2s faster
                   </span>
                 </span>
-                <Button asChild variant="ghost" size="sm">
+                <Button asChild variant="ghost" size="sm" className="min-h-[36px]">
                   <Link to="/puzzles">Keep sharp</Link>
                 </Button>
               </li>
@@ -1117,7 +1132,7 @@ export function ProgressScreen() {
                   <span className="block font-medium">Italian Game</span>
                   <span className="text-xs text-muted-foreground">84.6% accuracy in 11 games</span>
                 </span>
-                <Button asChild variant="ghost" size="sm">
+                <Button asChild variant="ghost" size="sm" className="min-h-[36px]">
                   <Link to="/openings">Repertoire</Link>
                 </Button>
               </li>
@@ -1128,7 +1143,7 @@ export function ProgressScreen() {
                     +11 · fewer pieces left hanging
                   </span>
                 </span>
-                <Button asChild variant="ghost" size="sm">
+                <Button asChild variant="ghost" size="sm" className="min-h-[36px]">
                   <Link to="/drills/vision">Keep sharp</Link>
                 </Button>
               </li>
@@ -1136,7 +1151,7 @@ export function ProgressScreen() {
           </div>
 
           {/* Needs a Little Love */}
-          <div className="card border-cta/25 bg-cta-soft p-5">
+          <div className="card border-cta/25 bg-cta-soft p-4 sm:p-5">
             <h3 className="flex items-center gap-2 text-base font-bold">
               <HeartHandshake className="text-cta" aria-hidden="true" />
               Needs a little love
@@ -1149,7 +1164,11 @@ export function ProgressScreen() {
                     3 won positions ended in draws
                   </span>
                 </span>
-                <Button asChild size="sm" className="bg-cta text-white hover:brightness-105">
+                <Button
+                  asChild
+                  size="sm"
+                  className="min-h-[36px] bg-cta text-white hover:brightness-105"
+                >
                   <Link to="/drills/endgames">
                     <Target className="size-3.5" aria-hidden="true" />
                     Train this
@@ -1163,7 +1182,7 @@ export function ProgressScreen() {
                     You spend 40% of your clock on moves 8–12
                   </span>
                 </span>
-                <Button asChild variant="outline" size="sm">
+                <Button asChild variant="outline" size="sm" className="min-h-[36px]">
                   <Link to="/play">Train this</Link>
                 </Button>
               </li>
@@ -1172,14 +1191,14 @@ export function ProgressScreen() {
                   <span className="block font-medium">Defending knight forks</span>
                   <span className="text-xs text-muted-foreground">Started 4 of your 5 losses</span>
                 </span>
-                <Button asChild variant="outline" size="sm">
+                <Button asChild variant="outline" size="sm" className="min-h-[36px]">
                   <Link to="/mistakes">Train this</Link>
                 </Button>
               </li>
             </ul>
             <button
               type="button"
-              className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-cta hover:underline"
+              className="mt-2 inline-flex min-h-[36px] items-center gap-1.5 text-xs font-medium text-cta hover:underline"
               aria-label="Ask Sage why Endgames is flat"
               onClick={() => {
                 chatPanel?.open()
@@ -1194,7 +1213,7 @@ export function ProgressScreen() {
       </section>
 
       {/* Heatmap Section */}
-      <section className="card mt-6 p-5" aria-labelledby="heat-h">
+      <section className="card mt-6 p-4 sm:p-5" aria-labelledby="heat-h">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h2 id="heat-h" className="text-base font-bold">
@@ -1204,7 +1223,7 @@ export function ProgressScreen() {
               88 days practised · longest streak 19 days · 1 freeze used
             </p>
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
             Less
             <span className="size-3 rounded-[3px] bg-muted" />
             <span className="size-3 rounded-[3px] bg-q-best/25" />
@@ -1212,63 +1231,65 @@ export function ProgressScreen() {
             <span className="size-3 rounded-[3px] bg-q-best/75" />
             <span className="size-3 rounded-[3px] bg-q-best" />
             More
-            <span className="ml-2 size-3 rounded-[3px] bg-sky ring-1 ring-sky-ink/30 ring-inset" />
+            <span className="ml-1 size-3 rounded-[3px] bg-sky ring-1 ring-sky-ink/30 ring-inset sm:ml-2" />
             Freeze
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-start gap-x-10 gap-y-5">
-          <div className="w-full max-w-[480px]">
-            {/* Months Header */}
-            <div
-              className="ml-9 grid grid-cols-16 gap-[3px] text-[10px] text-muted-foreground"
-              aria-hidden="true"
-            >
-              <span className="col-span-5">June</span>
-              <span className="col-span-4">July</span>
-              <span className="col-span-5">August</span>
-              <span className="col-span-2">Sep</span>
-            </div>
-
-            {/* Days and Grid */}
-            <div className="mt-1.5 flex gap-1.5">
+        <div className="mt-4 flex flex-col items-start gap-x-10 gap-y-6 lg:flex-row">
+          <div className="w-full max-w-full overflow-x-auto pb-2 lg:max-w-[480px]">
+            <div className="min-w-[340px]">
+              {/* Months Header */}
               <div
-                className="grid w-7.5 shrink-0 grid-rows-7 gap-[3px] text-[10px] leading-none text-muted-foreground"
+                className="ml-9 grid grid-cols-16 gap-[3px] text-[10px] text-muted-foreground"
                 aria-hidden="true"
               >
-                <span className="flex items-center">Mon</span>
-                <span />
-                <span className="flex items-center">Wed</span>
-                <span />
-                <span className="flex items-center">Fri</span>
-                <span />
-                <span />
+                <span className="col-span-5">June</span>
+                <span className="col-span-4">July</span>
+                <span className="col-span-5">August</span>
+                <span className="col-span-2">Sep</span>
               </div>
 
-              <div className="min-w-0 flex-1">
+              {/* Days and Grid */}
+              <div className="mt-1.5 flex gap-1.5">
                 <div
-                  className="grid grid-cols-16 gap-[3px]"
-                  role="img"
-                  aria-label="Practice heatmap for the last 16 weeks"
+                  className="grid w-7.5 shrink-0 grid-rows-7 gap-[3px] text-[10px] leading-none text-muted-foreground"
+                  aria-hidden="true"
                 >
-                  {PRACTICE_WEEKS.map((week, weekIndex) => (
-                    <div key={`week-${String(weekIndex)}`} className="grid grid-rows-7 gap-[3px]">
-                      {week.map((cell, dayIndex) => (
-                        <span
-                          key={`cell-${String(weekIndex)}-${String(dayIndex)}`}
-                          className={getHeatmapCellClasses(cell.kind)}
-                          title={cell.title}
-                        />
-                      ))}
-                    </div>
-                  ))}
+                  <span className="flex items-center">Mon</span>
+                  <span />
+                  <span className="flex items-center">Wed</span>
+                  <span />
+                  <span className="flex items-center">Fri</span>
+                  <span />
+                  <span />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div
+                    className="grid grid-cols-16 gap-[3px]"
+                    role="img"
+                    aria-label="Practice heatmap for the last 16 weeks"
+                  >
+                    {PRACTICE_WEEKS.map((week, weekIndex) => (
+                      <div key={`week-${String(weekIndex)}`} className="grid grid-rows-7 gap-[3px]">
+                        {week.map((cell, dayIndex) => (
+                          <span
+                            key={`cell-${String(weekIndex)}-${String(dayIndex)}`}
+                            className={getHeatmapCellClasses(cell.kind)}
+                            title={cell.title}
+                          />
+                        ))}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Activity Breakdown */}
-          <dl className="grid flex-1 grid-cols-2 gap-x-6 gap-y-4 text-sm sm:min-w-[260px]">
+          <dl className="grid w-full grid-cols-2 gap-x-4 gap-y-3 text-sm sm:gap-x-6 sm:gap-y-4 lg:flex-1">
             <div>
               <dt className="label">Favourite time</dt>
               <dd className="mt-0.5 font-semibold">Evenings, around 8pm</dd>
@@ -1301,30 +1322,33 @@ export function ProgressScreen() {
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {/* Completed Milestones */}
           {COMPLETED_MILESTONES.map((ms) => (
-            <div key={ms.id} className="card flex items-start gap-3 p-4">
-              <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-reward text-[#5a3f00]">
+            <div key={ms.id} className="card flex items-start gap-3 p-3.5 sm:p-4">
+              <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-reward text-[#5a3f00] sm:size-11">
                 {ms.icon === 'shield' && <ShieldCheck className="size-5" aria-hidden="true" />}
                 {ms.icon === 'swords' && <Swords className="size-5" aria-hidden="true" />}
                 {ms.icon === 'mistake' && <RotateCcw className="size-5" aria-hidden="true" />}
               </span>
-              <div>
-                <div className="text-sm font-semibold">{ms.title}</div>
+              <div className="min-w-0">
+                <div className="truncate text-sm font-semibold">{ms.title}</div>
                 <div className="text-xs text-muted-foreground">{ms.description}</div>
-                <div className="mt-1 text-[11px] text-reward-ink">{ms.earnedDate}</div>
+                <div className="mt-1 text-[11px] font-medium text-reward-ink">{ms.earnedDate}</div>
               </div>
             </div>
           ))}
 
           {/* In-Progress Milestones */}
           {IN_PROGRESS_MILESTONES.map((ms) => (
-            <div key={ms.id} className="flex items-start gap-3 rounded-xl border border-dashed p-4">
-              <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-muted text-muted-foreground">
+            <div
+              key={ms.id}
+              className="flex items-start gap-3 rounded-xl border border-dashed p-3.5 sm:p-4"
+            >
+              <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-muted text-muted-foreground sm:size-11">
                 {ms.icon === 'castle' && <Castle className="size-5" aria-hidden="true" />}
                 {ms.icon === 'puzzle' && <Puzzle className="size-5" aria-hidden="true" />}
                 {ms.icon === 'flower' && <Flower2 className="size-5" aria-hidden="true" />}
               </span>
-              <div className="flex-1">
-                <div className="text-sm font-semibold">{ms.title}</div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-semibold">{ms.title}</div>
                 <div className="text-xs text-muted-foreground">{ms.description}</div>
                 <div
                   role="progressbar"
