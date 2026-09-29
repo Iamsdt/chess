@@ -257,7 +257,7 @@ export function ReviewScreen() {
   return (
     <div className="min-h-full">
       {/* Sticky Review Header */}
-      <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur lg:px-6">
+      <header className="sticky top-0 z-10 flex h-14 items-center gap-1.5 border-b bg-background/85 px-2 backdrop-blur sm:gap-2 sm:px-4 lg:px-6">
         <Button asChild variant="ghost" size="sm">
           <Link to="/games">
             <ArrowLeft className="size-4" aria-hidden="true" />
@@ -269,7 +269,7 @@ export function ReviewScreen() {
           aria-label="Game review"
           className="flex min-w-0 items-center gap-2 text-base font-bold"
         >
-          <FlagTriangleRight className="size-4 text-cta" aria-hidden="true" />
+          <FlagTriangleRight className="size-4 shrink-0 text-cta" aria-hidden="true" />
           <span className="truncate">Review · vs Stockfish 1200 · Won</span>
         </h1>
         <span className="badge border-transparent bg-muted text-foreground/80 max-md:hidden">
@@ -300,14 +300,14 @@ export function ReviewScreen() {
       </header>
 
       {/* Main Review Grid */}
-      <div className="grid gap-5 p-4 lg:p-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid gap-4 p-2 sm:gap-5 sm:p-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:p-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         {/* Left Column: Board & Eval Graph */}
         <section className="flex justify-center" aria-label="Review board">
-          <div className="w-full max-w-[620px] space-y-2.5">
+          <div className="w-full max-w-[min(100%,calc(100dvh-320px))] space-y-2 sm:space-y-2.5 lg:max-w-[min(100%,60vh)]">
             {/* Opponent Bar */}
-            <div className="flex items-center gap-3">
-              <span className="grid size-9 place-items-center rounded-xl bg-[#3b4a44] text-[#cfe0d6]">
-                <Cpu className="size-4" aria-hidden="true" />
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <span className="grid size-8 place-items-center rounded-xl bg-[#3b4a44] text-[#cfe0d6] sm:size-9">
+                <Cpu className="size-3.5 sm:size-4" aria-hidden="true" />
               </span>
               <div className="leading-tight">
                 <div className="text-sm font-semibold">
@@ -331,8 +331,8 @@ export function ReviewScreen() {
             </div>
 
             {/* User Bar */}
-            <div className="flex items-center gap-3">
-              <span className="avatar size-9 rounded-xl bg-primary font-bold text-primary-foreground">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <span className="avatar size-8 rounded-xl bg-primary font-bold text-primary-foreground sm:size-9">
                 SK
               </span>
               <div className="leading-tight">
@@ -348,7 +348,7 @@ export function ReviewScreen() {
             </div>
 
             {/* Evaluation Graph */}
-            <figure className="card p-3" aria-labelledby="graph-cap">
+            <figure className="card p-2.5 sm:p-3" aria-labelledby="graph-cap">
               <figcaption
                 id="graph-cap"
                 className="mb-1.5 flex items-center justify-between text-xs"
@@ -488,9 +488,12 @@ export function ReviewScreen() {
         </section>
 
         {/* Right Column: Side Panel */}
-        <div className="flex min-h-0 flex-col gap-4">
+        <div className="flex min-h-0 flex-col gap-3 overflow-auto sm:gap-4 lg:max-h-[calc(100dvh-56px-48px)]">
           {/* Plain-Language Explanation for Current Move */}
-          <article className="card shrink-0 border-q-mistake/40 p-4" aria-labelledby="explain-h">
+          <article
+            className="card shrink-0 border-q-mistake/40 p-3.5 sm:p-4"
+            aria-labelledby="explain-h"
+          >
             <div className="flex items-center gap-2">
               <QualityGlyph quality="mistake" size="default" />
               <h2 id="explain-h" className="text-base font-bold">
@@ -575,21 +578,21 @@ export function ReviewScreen() {
 
             {/* Tab 1: Summary Panel */}
             {activeTab === 'sum' && (
-              <div className="min-h-0 flex-1 overflow-auto p-4">
+              <div className="min-h-0 flex-1 overflow-auto p-3.5 sm:p-4">
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="rounded-xl bg-accent/60 p-3">
+                  <div className="rounded-xl bg-accent/60 p-2.5 sm:p-3">
                     <div className="label">You</div>
-                    <div className="font-display text-3xl font-bold tabular-nums">
-                      84<span className="text-lg">%</span>
+                    <div className="font-display text-2xl font-bold tabular-nums sm:text-3xl">
+                      84<span className="text-base sm:text-lg">%</span>
                     </div>
                     <div className="text-xs text-muted-foreground">
                       accuracy · +6 vs your average
                     </div>
                   </div>
-                  <div className="rounded-xl bg-muted/60 p-3">
+                  <div className="rounded-xl bg-muted/60 p-2.5 sm:p-3">
                     <div className="label">Stockfish 1200</div>
-                    <div className="font-display text-3xl font-bold text-muted-foreground tabular-nums">
-                      77<span className="text-lg">%</span>
+                    <div className="font-display text-2xl font-bold text-muted-foreground tabular-nums sm:text-3xl">
+                      77<span className="text-base sm:text-lg">%</span>
                     </div>
                     <div className="text-xs text-muted-foreground">accuracy</div>
                   </div>
@@ -655,19 +658,19 @@ export function ReviewScreen() {
 
             {/* Tab 2: Key Moments */}
             {activeTab === 'key' && (
-              <div className="min-h-0 flex-1 space-y-3 overflow-auto p-4">
+              <div className="min-h-0 flex-1 space-y-2.5 overflow-auto p-3.5 sm:space-y-3 sm:p-4">
                 <p className="text-xs text-muted-foreground">
                   4 turning points. Play each one again before reading the answer.
                 </p>
                 {KEY_MOMENTS.map((moment) => (
                   <article
                     key={moment.id}
-                    className={`rounded-xl border p-3 ${
+                    className={`rounded-xl border p-2.5 sm:p-3 ${
                       moment.isHero ? 'border-q-great/40 bg-sky/40' : ''
                     }`}
                   >
-                    <div className="flex gap-3">
-                      <div className="w-[72px] shrink-0 overflow-hidden rounded-md ring-1 ring-border">
+                    <div className="flex gap-2.5 sm:gap-3">
+                      <div className="w-[64px] shrink-0 overflow-hidden rounded-md ring-1 ring-border sm:w-[72px]">
                         <Board
                           fen={moment.fen}
                           orientation="white"
