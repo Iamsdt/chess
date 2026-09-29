@@ -9,3 +9,4 @@ export {
   type UnitData,
   type UnitLessonItem,
 } from './learn-screen'
+export { LessonScreen } from './lesson-screen'
