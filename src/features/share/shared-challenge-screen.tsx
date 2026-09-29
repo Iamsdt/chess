@@ -88,7 +88,7 @@ export function SharedChallengeScreen() {
 
       {/* Tabs */}
       <div
-        className="tabs mt-4 [scrollbar-width:none] overflow-x-auto"
+        className="tabs -mx-4 mt-4 flex [scrollbar-width:none] overflow-x-auto px-4 sm:mx-0 sm:px-0"
         role="tablist"
         aria-label="Share types"
       >
@@ -98,7 +98,10 @@ export function SharedChallengeScreen() {
           id="tab-puzzle"
           aria-selected={activeTab === 'puzzle'}
           aria-controls="panel-puzzle"
-          className={cn('tab whitespace-nowrap', activeTab === 'puzzle' && 'is-active')}
+          className={cn(
+            'tab min-h-[40px] whitespace-nowrap sm:min-h-[44px]',
+            activeTab === 'puzzle' && 'is-active',
+          )}
           onClick={() => {
             setActiveTab('puzzle')
           }}
@@ -111,7 +114,10 @@ export function SharedChallengeScreen() {
           id="tab-position"
           aria-selected={activeTab === 'position'}
           aria-controls="panel-position"
-          className={cn('tab whitespace-nowrap', activeTab === 'position' && 'is-active')}
+          className={cn(
+            'tab min-h-[40px] whitespace-nowrap sm:min-h-[44px]',
+            activeTab === 'position' && 'is-active',
+          )}
           onClick={() => {
             setActiveTab('position')
           }}
@@ -124,7 +130,10 @@ export function SharedChallengeScreen() {
           id="tab-game"
           aria-selected={activeTab === 'game'}
           aria-controls="panel-game"
-          className={cn('tab whitespace-nowrap', activeTab === 'game' && 'is-active')}
+          className={cn(
+            'tab min-h-[40px] whitespace-nowrap sm:min-h-[44px]',
+            activeTab === 'game' && 'is-active',
+          )}
           onClick={() => {
             setActiveTab('game')
           }}
@@ -137,7 +146,10 @@ export function SharedChallengeScreen() {
           id="tab-corr"
           aria-selected={activeTab === 'corr'}
           aria-controls="panel-corr"
-          className={cn('tab whitespace-nowrap', activeTab === 'corr' && 'is-active')}
+          className={cn(
+            'tab min-h-[40px] whitespace-nowrap sm:min-h-[44px]',
+            activeTab === 'corr' && 'is-active',
+          )}
           onClick={() => {
             setActiveTab('corr')
           }}
@@ -150,8 +162,8 @@ export function SharedChallengeScreen() {
       {activeTab === 'puzzle' && (
         <section id="panel-puzzle" role="tabpanel" aria-labelledby="tab-puzzle" className="mt-6">
           <div className="card overflow-hidden">
-            <div className="grid gap-8 p-6 md:grid-cols-[minmax(0,380px)_minmax(0,1fr)] md:p-8">
-              <figure>
+            <div className="grid gap-6 p-4 sm:gap-8 sm:p-6 md:grid-cols-[minmax(0,380px)_minmax(0,1fr)] md:p-8">
+              <figure className="mx-auto w-full max-w-[min(100%,calc(100dvh-260px),420px)] md:max-w-none">
                 <div className="overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.45)] ring-1 ring-border">
                   <Board
                     fen={PUZZLE_FEN}
@@ -162,26 +174,31 @@ export function SharedChallengeScreen() {
                   />
                 </div>
                 <figcaption className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="size-3 rounded-full border bg-white" aria-hidden="true" />
-                  <b className="font-medium text-foreground">White to play.</b> Mate is in there
-                  somewhere.
+                  <span
+                    className="size-3 shrink-0 rounded-full border bg-white"
+                    aria-hidden="true"
+                  />
+                  <span>
+                    <b className="font-medium text-foreground">White to play.</b> Mate is in there
+                    somewhere.
+                  </span>
                 </figcaption>
               </figure>
 
               <div className="flex flex-col">
                 <div className="flex items-center gap-3">
-                  <span className="avatar size-10 bg-[#e9a15a] text-xs font-bold text-[#3b1d00]">
+                  <span className="avatar size-10 shrink-0 bg-[#e9a15a] text-xs font-bold text-[#3b1d00]">
                     RA
                   </span>
-                  <div className="leading-tight">
-                    <div className="text-sm font-semibold">Rafi challenged you</div>
-                    <div className="text-xs text-muted-foreground">
+                  <div className="min-w-0 leading-tight">
+                    <div className="truncate text-sm font-semibold">Rafi challenged you</div>
+                    <div className="truncate text-xs text-muted-foreground">
                       He solved it in 1:12 · rated about 1550
                     </div>
                   </div>
                 </div>
 
-                <h2 className="mt-5 text-[34px] leading-[1.05] font-bold tracking-tight">
+                <h2 className="mt-4 text-2xl font-bold tracking-tight sm:mt-5 sm:text-[30px] sm:leading-[1.05] md:text-[34px]">
                   White to play and win
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -203,14 +220,19 @@ export function SharedChallengeScreen() {
                   </span>
                 </div>
 
-                <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <Button asChild className="btn-cta">
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                  <Button asChild className="btn-cta min-h-[44px] w-full sm:w-auto">
                     <Link to="/puzzles/solve">
                       <Play className="size-[18px]" aria-hidden="true" />
                       Solve it
                     </Link>
                   </Button>
-                  <Button asChild variant="outline" size="lg">
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="lg"
+                    className="min-h-[44px] w-full sm:w-auto"
+                  >
                     <Link to="/analysis">
                       <Microscope className="size-4" aria-hidden="true" />
                       Open in analysis
@@ -221,13 +243,13 @@ export function SharedChallengeScreen() {
                   Solve it and you get a link back to send Rafi with your time.
                 </p>
 
-                <div className="mt-auto pt-8">
-                  <div className="rounded-2xl bg-accent/60 p-4">
+                <div className="mt-auto pt-6 sm:pt-8">
+                  <div className="rounded-2xl bg-accent/60 p-3.5 sm:p-4">
                     <h3 className="flex items-center gap-2 text-sm font-bold">
-                      <ShieldCheck className="size-4 text-primary" aria-hidden="true" />
+                      <ShieldCheck className="size-4 shrink-0 text-primary" aria-hidden="true" />
                       The whole puzzle lives inside the link
                     </h3>
-                    <p className="mt-1.5 rounded-lg bg-card px-3 py-2 font-mono text-[11.5px] leading-relaxed break-all text-muted-foreground ring-1 ring-border">
+                    <p className="mt-1.5 rounded-lg bg-card px-2.5 py-2 font-mono text-[11px] leading-relaxed break-all text-muted-foreground ring-1 ring-border sm:px-3 sm:text-[11.5px]">
                       chessking.app/s
                       <span className="font-semibold text-primary">
                         #p=r4r1k/pp1b2pp/1qnp4/2p1p1N1/2Q1P3/2PP4/PP4PP/R1B1R2K_w&amp;by=Rafi&amp;t=72
@@ -257,8 +279,8 @@ export function SharedChallengeScreen() {
           aria-labelledby="tab-position"
           className="mt-6"
         >
-          <div className="card grid gap-8 p-6 md:grid-cols-[minmax(0,340px)_minmax(0,1fr)] md:p-8">
-            <div className="overflow-hidden rounded-xl ring-1 ring-border">
+          <div className="card grid gap-6 p-4 sm:gap-8 sm:p-6 md:grid-cols-[minmax(0,340px)_minmax(0,1fr)] md:p-8">
+            <div className="mx-auto w-full max-w-[min(100%,calc(100dvh-260px),380px)] overflow-hidden rounded-xl ring-1 ring-border md:max-w-none">
               <Board
                 fen={POSITION_FEN}
                 coordinates
@@ -269,21 +291,25 @@ export function SharedChallengeScreen() {
             </div>
             <div>
               <div className="flex items-center gap-3">
-                <span className="avatar size-10 bg-sky text-xs font-bold text-sky-ink">MN</span>
-                <div className="leading-tight">
-                  <div className="text-sm font-semibold">Mina shared a position</div>
-                  <div className="text-xs text-muted-foreground">
+                <span className="avatar size-10 shrink-0 bg-sky text-xs font-bold text-sky-ink">
+                  MN
+                </span>
+                <div className="min-w-0 leading-tight">
+                  <div className="truncate text-sm font-semibold">Mina shared a position</div>
+                  <div className="truncate text-xs text-muted-foreground">
                     Queen's Gambit Declined · move 10
                   </div>
                 </div>
               </div>
-              <h2 className="mt-5 text-2xl font-bold">"Trade on e7, or keep the bishop?"</h2>
+              <h2 className="mt-4 text-xl font-bold sm:mt-5 sm:text-2xl">
+                "Trade on e7, or keep the bishop?"
+              </h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 A shared position is a question, not a quiz. Open it, try ideas, and send your
                 answer back as a new link.
               </p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                <Button asChild>
+              <div className="mt-5 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:gap-2">
+                <Button asChild className="min-h-[44px] w-full sm:w-auto">
                   <Link to="/analysis">
                     <Microscope className="size-4" aria-hidden="true" />
                     Open in analysis
@@ -291,6 +317,7 @@ export function SharedChallengeScreen() {
                 </Button>
                 <Button
                   variant="outline"
+                  className="min-h-[44px] w-full sm:w-auto"
                   onClick={() => {
                     handleAskSage(
                       "Help me think about Mina's question: trade on e7 or keep the bishop?",
@@ -309,8 +336,8 @@ export function SharedChallengeScreen() {
       {/* ANNOTATED GAME PANEL */}
       {activeTab === 'game' && (
         <section id="panel-game" role="tabpanel" aria-labelledby="tab-game" className="mt-6">
-          <div className="card grid gap-8 p-6 md:grid-cols-[minmax(0,340px)_minmax(0,1fr)] md:p-8">
-            <div className="overflow-hidden rounded-xl ring-1 ring-border">
+          <div className="card grid gap-6 p-4 sm:gap-8 sm:p-6 md:grid-cols-[minmax(0,340px)_minmax(0,1fr)] md:p-8">
+            <div className="mx-auto w-full max-w-[min(100%,calc(100dvh-260px),380px)] overflow-hidden rounded-xl ring-1 ring-border md:max-w-none">
               <Board
                 fen={GAME_FEN}
                 coordinates
@@ -321,24 +348,30 @@ export function SharedChallengeScreen() {
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-3">
-                <span className="avatar size-10 bg-lilac text-xs font-bold text-lilac-ink">TO</span>
-                <div className="leading-tight">
-                  <div className="text-sm font-semibold">Tomás shared an annotated game</div>
-                  <div className="text-xs text-muted-foreground">
+                <span className="avatar size-10 shrink-0 bg-lilac text-xs font-bold text-lilac-ink">
+                  TO
+                </span>
+                <div className="min-w-0 leading-tight">
+                  <div className="truncate text-sm font-semibold">
+                    Tomás shared an annotated game
+                  </div>
+                  <div className="truncate text-xs text-muted-foreground">
                     Tomás vs Stockfish 1400 · 1–0 · 41 moves
                   </div>
                 </div>
               </div>
-              <h2 className="mt-5 text-2xl font-bold">My first win with the slow Italian</h2>
+              <h2 className="mt-4 text-xl font-bold sm:mt-5 sm:text-2xl">
+                My first win with the slow Italian
+              </h2>
               <ol className="mt-4 space-y-2 text-sm">
-                <li className="flex gap-3 rounded-lg bg-muted/50 p-3">
+                <li className="flex items-start gap-3 rounded-lg bg-muted/50 p-3">
                   <span className="h-fit font-mono font-medium whitespace-nowrap">7.a4</span>
                   <span className="text-muted-foreground">
                     "Grab space before Black plays …a6 and …Ba7."{' '}
-                    <span className="text-foreground">Tomás</span>
+                    <span className="font-medium text-foreground">Tomás</span>
                   </span>
                 </li>
-                <li className="flex gap-3 rounded-lg bg-lilac/60 p-3">
+                <li className="flex items-start gap-3 rounded-lg bg-lilac/60 p-3">
                   <span className="h-fit font-mono font-medium whitespace-nowrap">8.Nbd2</span>
                   <span className="text-muted-foreground">
                     "The knight heads for f1 and g3, the classic tour."{' '}
@@ -346,7 +379,7 @@ export function SharedChallengeScreen() {
                   </span>
                 </li>
               </ol>
-              <Button asChild className="mt-5">
+              <Button asChild className="mt-5 min-h-[44px] w-full sm:w-auto">
                 <Link to="/analysis">
                   <Play className="size-4" aria-hidden="true" />
                   Step through the game
@@ -360,8 +393,8 @@ export function SharedChallengeScreen() {
       {/* CORRESPONDENCE MOVE PANEL */}
       {activeTab === 'corr' && (
         <section id="panel-corr" role="tabpanel" aria-labelledby="tab-corr" className="mt-6">
-          <div className="card grid gap-8 p-6 md:grid-cols-[minmax(0,340px)_minmax(0,1fr)] md:p-8">
-            <div className="overflow-hidden rounded-xl ring-1 ring-border">
+          <div className="card grid gap-6 p-4 sm:gap-8 sm:p-6 md:grid-cols-[minmax(0,340px)_minmax(0,1fr)] md:p-8">
+            <div className="mx-auto w-full max-w-[min(100%,calc(100dvh-260px),380px)] overflow-hidden rounded-xl ring-1 ring-border md:max-w-none">
               <Board
                 fen={CORR_FEN}
                 coordinates
@@ -372,20 +405,22 @@ export function SharedChallengeScreen() {
             </div>
             <div>
               <div className="flex items-center gap-3">
-                <span className="avatar size-10 bg-[#e9a15a] text-xs font-bold text-[#3b1d00]">
+                <span className="avatar size-10 shrink-0 bg-[#e9a15a] text-xs font-bold text-[#3b1d00]">
                   RA
                 </span>
-                <div className="leading-tight">
-                  <div className="text-sm font-semibold">
+                <div className="min-w-0 leading-tight">
+                  <div className="truncate text-sm font-semibold">
                     Rafi played{' '}
                     <span className="font-mono font-medium whitespace-nowrap">7…Qb6</span>
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="truncate text-xs text-muted-foreground">
                     Sicilian Najdorf · correspondence · 2h ago
                   </div>
                 </div>
               </div>
-              <h2 className="mt-5 text-2xl font-bold">Your move. Then send the link back.</h2>
+              <h2 className="mt-4 text-xl font-bold sm:mt-5 sm:text-2xl">
+                Your move. Then send the link back.
+              </h2>
               <ol className="mt-4 space-y-2 text-sm text-muted-foreground">
                 <li className="flex gap-2">
                   <Move className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
@@ -400,7 +435,7 @@ export function SharedChallengeScreen() {
                   <span>Send it to Rafi however you chat.</span>
                 </li>
               </ol>
-              <Button asChild className="mt-5">
+              <Button asChild className="mt-5 min-h-[44px] w-full sm:w-auto">
                 <Link to="/friends/live">
                   <Swords className="size-4" aria-hidden="true" />
                   Make my move

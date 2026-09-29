@@ -142,17 +142,20 @@ export function LiveGameScreen() {
   }
 
   return (
-    <main className="min-h-full">
+    <main className="mx-auto min-h-full w-full max-w-[1280px] pb-8">
       {/* Game header */}
-      <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur lg:px-6">
-        <Button asChild variant="ghost" size="sm">
+      <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background/85 px-3 backdrop-blur sm:px-4 lg:px-6">
+        <Button asChild variant="ghost" size="sm" className="h-9 px-2.5 sm:px-3">
           <Link to="/friends">
             <ArrowLeft className="mr-1 size-4" aria-hidden="true" />
             <span className="max-sm:hidden">Friends</span>
           </Link>
         </Button>
-        <div className="mx-1 h-5 w-px bg-border" />
-        <h1 aria-label="Live game" className="flex min-w-0 items-center gap-2 text-base font-bold">
+        <div className="mx-0.5 h-5 w-px bg-border sm:mx-1" />
+        <h1
+          aria-label="Live game"
+          className="flex min-w-0 items-center gap-1.5 text-sm font-bold sm:gap-2 sm:text-base"
+        >
           <Users className="size-4 shrink-0 text-cta" aria-hidden="true" />
           <span className="truncate">You vs Rafi</span>
         </h1>
@@ -164,8 +167,14 @@ export function LiveGameScreen() {
           <span className="size-1.5 rounded-full bg-success" aria-hidden="true" />
           Connected · 42 ms
         </span>
-        <div className="ml-auto flex items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={handleFlip} aria-label="Flip board">
+        <div className="ml-auto flex shrink-0 items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleFlip}
+            aria-label="Flip board"
+            className="h-9 px-2 sm:px-3"
+          >
             <ArrowUpDown className="size-4" aria-hidden="true" />
             <span className="max-sm:hidden">Flip</span>
           </Button>
@@ -173,7 +182,7 @@ export function LiveGameScreen() {
             asChild
             variant="ghost"
             size="icon"
-            className="size-8"
+            className="size-9 sm:size-8"
             title="Board & pieces"
             aria-label="Board and piece settings"
           >
@@ -184,30 +193,32 @@ export function LiveGameScreen() {
         </div>
       </header>
 
-      <div className="grid gap-5 p-4 lg:p-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="grid gap-5 p-3 sm:p-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:p-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         {/* Board column */}
         <section className="flex justify-center" aria-label="Game board">
-          <div className="w-full max-w-[540px] space-y-2.5">
+          <div className="w-full max-w-[min(100%,calc(100dvh-56px-48px-120px),560px)] space-y-2.5">
             {/* Opponent Card */}
-            <div className="flex items-center gap-3">
-              <span className="avatar size-9 rounded-xl bg-[#e9a15a] text-xs font-bold text-[#3b1d00]">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <span className="avatar size-8 shrink-0 rounded-xl bg-[#e9a15a] text-xs font-bold text-[#3b1d00] sm:size-9">
                 RA
               </span>
               <div className="min-w-0 leading-tight">
-                <div className="text-sm font-semibold">Rafi</div>
+                <div className="truncate text-sm font-semibold">Rafi</div>
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <span className="size-1.5 rounded-full bg-success" aria-hidden="true" />
-                  Online · played{' '}
-                  <span className="font-mono font-medium text-foreground">…Qb6</span>
+                  <span className="size-1.5 shrink-0 rounded-full bg-success" aria-hidden="true" />
+                  <span className="truncate">
+                    Online · played{' '}
+                    <span className="font-mono font-medium text-foreground">…Qb6</span>
+                  </span>
                 </div>
               </div>
-              <div className="relative ml-auto flex items-center gap-2">
+              <div className="relative ml-auto flex shrink-0 items-center gap-2">
                 {floatingReaction && (
                   <span className="rise rounded-full rounded-br-sm border bg-card px-2.5 py-1 text-xs font-medium shadow-xs max-sm:hidden">
                     {floatingReaction}
                   </span>
                 )}
-                <div className="clock ml-0 rounded-md bg-muted px-2.5 py-1 font-mono text-sm font-semibold tabular-nums">
+                <div className="clock ml-0 flex min-h-[36px] items-center justify-center rounded-md bg-muted px-2.5 py-1 font-mono text-sm font-semibold tabular-nums">
                   7:48
                 </div>
               </div>
@@ -229,17 +240,17 @@ export function LiveGameScreen() {
             </div>
 
             {/* Player Card */}
-            <div className="flex items-center gap-3">
-              <span className="avatar size-9 rounded-xl bg-primary text-xs font-bold text-primary-foreground">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <span className="avatar size-8 shrink-0 rounded-xl bg-primary text-xs font-bold text-primary-foreground sm:size-9">
                 SK
               </span>
-              <div className="leading-tight">
+              <div className="min-w-0 leading-tight">
                 <div className="text-sm font-semibold">You</div>
-                <div className="text-xs font-medium text-success">
+                <div className="truncate text-xs font-medium text-success">
                   {playedMove8 ? 'Waiting for Rafi…' : 'Your move'}
                 </div>
               </div>
-              <div className="clock is-running ml-auto rounded-md bg-primary px-2.5 py-1 font-mono text-sm font-bold text-primary-foreground tabular-nums shadow-xs">
+              <div className="clock is-running ml-auto flex min-h-[36px] shrink-0 items-center justify-center rounded-md bg-primary px-2.5 py-1 font-mono text-sm font-bold text-primary-foreground tabular-nums shadow-xs">
                 8:31
               </div>
             </div>
@@ -248,11 +259,11 @@ export function LiveGameScreen() {
 
         {/* Side panel */}
         <aside
-          className="card flex min-h-0 flex-col overflow-hidden xl:max-h-[calc(100dvh-56px-48px)]"
+          className="card flex min-h-0 flex-col overflow-hidden lg:max-h-[calc(100dvh-56px-48px)]"
           aria-label="Game panel"
         >
           <div className="flex items-center gap-2 border-b px-4 py-3">
-            <span className="inline-flex size-6 items-center justify-center rounded bg-accent font-mono text-xs font-bold text-accent-foreground">
+            <span className="inline-flex size-6 shrink-0 items-center justify-center rounded bg-accent font-mono text-xs font-bold text-accent-foreground">
               B
             </span>
             <div className="min-w-0 leading-tight">
@@ -262,7 +273,7 @@ export function LiveGameScreen() {
           </div>
 
           {/* Moves List */}
-          <div className="min-h-0 flex-1 overflow-auto p-2">
+          <div className="min-h-0 flex-1 overflow-auto p-2 max-lg:max-h-[240px]">
             <ol className="text-sm" aria-label="Moves">
               {INITIAL_MOVES.map((item) => (
                 <li
@@ -321,7 +332,7 @@ export function LiveGameScreen() {
                   <button
                     key={phrase}
                     type="button"
-                    className="reply"
+                    className="reply min-h-[36px] px-3 py-1.5 text-xs font-medium"
                     onClick={() => {
                       handleSendReaction(phrase)
                     }}
@@ -336,14 +347,19 @@ export function LiveGameScreen() {
             </div>
 
             <div className="grid grid-cols-3 gap-2">
-              <Button variant="outline" size="sm" onClick={handleOfferDraw}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="min-h-[40px]"
+                onClick={handleOfferDraw}
+              >
                 <Handshake className="size-3.5" aria-hidden="true" />
                 Draw
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-muted-foreground"
+                className="min-h-[40px] text-muted-foreground"
                 onClick={() => {
                   setIsResignOpen(true)
                 }}
@@ -354,7 +370,7 @@ export function LiveGameScreen() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-muted-foreground"
+                className="min-h-[40px] text-muted-foreground"
                 disabled
                 title="Available when the game ends"
               >
@@ -373,7 +389,7 @@ export function LiveGameScreen() {
 
       {/* Resign Dialog */}
       <Dialog open={isResignOpen} onOpenChange={setIsResignOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-[min(440px,calc(100vw-32px))] p-5 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">Resign against Rafi?</DialogTitle>
             <DialogDescription className="mt-2 text-sm text-muted-foreground">
@@ -381,16 +397,17 @@ export function LiveGameScreen() {
               goes to Review for both of you.
             </DialogDescription>
           </DialogHeader>
-          <div className="mt-6 flex justify-end gap-2">
+          <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button
               variant="outline"
+              className="min-h-[44px] w-full sm:w-auto"
               onClick={() => {
                 setIsResignOpen(false)
               }}
             >
               Keep playing
             </Button>
-            <Button asChild variant="destructive">
+            <Button asChild variant="destructive" className="min-h-[44px] w-full sm:w-auto">
               <Link to="/games/review">Resign &amp; review</Link>
             </Button>
           </div>
