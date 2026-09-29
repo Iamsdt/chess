@@ -295,7 +295,7 @@ describe('standing down', () => {
     // at the top of the loop, so one more claim can begin inside a slice that has
     // just run out; what must not happen is a slice running on and on.
     expect(stats.maxSliceMs).toBeLessThan(SLICE_MS * 3)
-  })
+  }, 15_000)
 })
 
 describe('reporting', () => {

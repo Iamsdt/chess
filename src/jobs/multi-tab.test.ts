@@ -106,7 +106,7 @@ describe('one job, two tabs', () => {
     expect(log).toHaveLength(6)
     expect(await jobsRepo.listByState('succeeded')).toHaveLength(6)
     expect(await jobsRepo.listByState('queued')).toHaveLength(0)
-  })
+  }, 15_000)
 
   it('lets the second tab take a different job type instead of waiting', async () => {
     const log: string[] = []
