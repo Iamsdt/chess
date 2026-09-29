@@ -65,4 +65,8 @@ export const SCREEN_COMPONENTS: Partial<Record<ScreenId, FunctionComponent>> = {
     () => importLazy(() => import('@/features/openings')),
     'OpeningsScreen',
   ),
+  'opening-drill': lazyRouteComponent(
+    () => importLazy(() => import('@/features/openings')),
+    'OpeningDrillScreen',
+  ),
 }
