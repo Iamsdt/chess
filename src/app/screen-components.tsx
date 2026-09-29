@@ -16,6 +16,7 @@ import type { FunctionComponent } from 'react'
  * added to the first download — which is what keeps the §5 budget honest as features land.
  */
 export const SCREEN_COMPONENTS: Partial<Record<ScreenId, FunctionComponent>> = {
+  today: lazyRouteComponent(() => importLazy(() => import('@/features/today')), 'TodayScreen'),
   'play-setup': lazyRouteComponent(
     () => importLazy(() => import('@/features/play')),
     'PlaySetupScreen',
@@ -48,4 +49,9 @@ export const SCREEN_COMPONENTS: Partial<Record<ScreenId, FunctionComponent>> = {
     () => importLazy(() => import('@/features/library')),
     'GamesLibraryScreen',
   ),
+  mistakes: lazyRouteComponent(
+    () => importLazy(() => import('@/features/mistakes')),
+    'MistakesScreen',
+  ),
+  review: lazyRouteComponent(() => importLazy(() => import('@/features/review')), 'ReviewScreen'),
 }
