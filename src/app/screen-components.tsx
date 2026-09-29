@@ -56,4 +56,8 @@ export const SCREEN_COMPONENTS: Partial<Record<ScreenId, FunctionComponent>> = {
   review: lazyRouteComponent(() => importLazy(() => import('@/features/review')), 'ReviewScreen'),
   learn: lazyRouteComponent(() => importLazy(() => import('@/features/learn')), 'LearnScreen'),
   lesson: lazyRouteComponent(() => importLazy(() => import('@/features/learn')), 'LessonScreen'),
+  endgames: lazyRouteComponent(
+    () => importLazy(() => import('@/features/drills')),
+    'EndgamesScreen',
+  ),
 }
