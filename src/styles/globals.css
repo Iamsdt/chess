@@ -289,10 +289,10 @@
     @apply rounded bg-muted px-1 py-px font-mono text-[12.5px] font-medium text-foreground;
   }
   .page {
-    @apply mx-auto w-full max-w-[1100px] p-6 lg:p-8;
+    @apply mx-auto w-full max-w-[1100px] p-4 sm:p-6 lg:p-8;
   }
   .page-title {
-    @apply font-display text-[32px] leading-tight font-bold tracking-tight;
+    @apply font-display text-2xl leading-tight font-bold tracking-tight sm:text-[28px] md:text-[32px];
   }
 
   /* forms */
