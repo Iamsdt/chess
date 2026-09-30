@@ -177,3 +177,6 @@ Rules: the context builder assembles these under a fixed token budget, newest an
 | **S21** | Coach runtime: AI SDK, provider presets + custom OpenAI-compatible entry, BYOK crypto, streaming, tool loop, cost meter. |
 | **S21b** | Tools (§5), context builder and memory (§6), engine-truth guardrail (§7). |
 | **S21c** | Grandmaster thinking mode (§4): structured analysis, board-linked cards, line stepping. |
+
+
+https://huggingface.co/blog/sora-2/laya-ai-model-how-it-works-run-it-locally-and-eval
