@@ -16,6 +16,7 @@ import type { FunctionComponent } from 'react'
  * added to the first download — which is what keeps the §5 budget honest as features land.
  */
 export const SCREEN_COMPONENTS: Partial<Record<ScreenId, FunctionComponent>> = {
+  today: lazyRouteComponent(() => importLazy(() => import('@/features/today')), 'TodayScreen'),
   'play-setup': lazyRouteComponent(
     () => importLazy(() => import('@/features/play')),
     'PlaySetupScreen',
@@ -47,5 +48,46 @@ export const SCREEN_COMPONENTS: Partial<Record<ScreenId, FunctionComponent>> = {
   games: lazyRouteComponent(
     () => importLazy(() => import('@/features/library')),
     'GamesLibraryScreen',
+  ),
+  mistakes: lazyRouteComponent(
+    () => importLazy(() => import('@/features/mistakes')),
+    'MistakesScreen',
+  ),
+  review: lazyRouteComponent(() => importLazy(() => import('@/features/review')), 'ReviewScreen'),
+  learn: lazyRouteComponent(() => importLazy(() => import('@/features/learn')), 'LearnScreen'),
+  lesson: lazyRouteComponent(() => importLazy(() => import('@/features/learn')), 'LessonScreen'),
+  endgames: lazyRouteComponent(
+    () => importLazy(() => import('@/features/drills')),
+    'EndgamesScreen',
+  ),
+  vision: lazyRouteComponent(() => importLazy(() => import('@/features/drills')), 'VisionScreen'),
+  openings: lazyRouteComponent(
+    () => importLazy(() => import('@/features/openings')),
+    'OpeningsScreen',
+  ),
+  'opening-drill': lazyRouteComponent(
+    () => importLazy(() => import('@/features/openings')),
+    'OpeningDrillScreen',
+  ),
+  friends: lazyRouteComponent(
+    () => importLazy(() => import('@/features/friends')),
+    'FriendsScreen',
+  ),
+  live: lazyRouteComponent(() => importLazy(() => import('@/features/friends')), 'LiveGameScreen'),
+  share: lazyRouteComponent(
+    () => importLazy(() => import('@/features/share')),
+    'SharedChallengeScreen',
+  ),
+  progress: lazyRouteComponent(
+    () => importLazy(() => import('@/features/progress')),
+    'ProgressScreen',
+  ),
+  settings: lazyRouteComponent(
+    () => importLazy(() => import('@/features/settings')),
+    'SettingsScreen',
+  ),
+  onboarding: lazyRouteComponent(
+    () => importLazy(() => import('@/features/onboarding')),
+    'OnboardingScreen',
   ),
 }

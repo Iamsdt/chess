@@ -48,7 +48,7 @@ export function OptionGroup<Value extends string>({
         className={cn(
           'mt-3 gap-2',
           layout === 'row' && 'flex flex-wrap',
-          layout === 'grid' && 'grid grid-cols-1 sm:grid-cols-3',
+          layout === 'grid' && 'grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3',
           layout === 'stack' && 'grid grid-cols-1',
         )}
       >

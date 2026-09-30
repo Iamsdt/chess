@@ -131,17 +131,17 @@ export function PuzzleSolver({ navigate }: PuzzleSolverProps) {
 
   return (
     <Frame navigate={navigate} dots={runner.dots}>
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_340px]">
         <section className="flex justify-center" aria-label="Puzzle board">
-          <div className="board-size w-full max-w-[640px] space-y-2.5">
+          <div className="board-size w-full max-w-[min(100%,calc(100dvh-220px))] space-y-2 sm:space-y-2.5 lg:max-w-[min(100%,70vh)]">
             <div className="flex items-center gap-3">
-              <div className="leading-tight">
+              <div className="min-w-0 leading-tight">
                 <p className="text-sm font-semibold">
                   {solve === null
                     ? 'Loading'
                     : `${solve.userColor === 'white' ? 'White' : 'Black'} to play`}
                 </p>
-                <p className="text-xs text-muted-foreground">{puzzle?.prompt ?? ''}</p>
+                <p className="truncate text-xs text-muted-foreground">{puzzle?.prompt ?? ''}</p>
               </div>
             </div>
             <SolverBoard
@@ -154,13 +154,16 @@ export function PuzzleSolver({ navigate }: PuzzleSolverProps) {
           </div>
         </section>
 
-        <aside className="card flex min-h-0 flex-col overflow-hidden" aria-label="Puzzle panel">
-          <div className="border-b px-5 py-4">
+        <aside
+          className="card flex min-h-0 flex-col overflow-hidden lg:max-h-[calc(100dvh-56px-48px)]"
+          aria-label="Puzzle panel"
+        >
+          <div className="border-b px-4 py-3 sm:px-5 sm:py-4">
             <p className="label">Your task</p>
-            <h2 className="mt-0.5 font-display text-xl leading-snug font-bold">
+            <h2 className="mt-0.5 font-display text-lg leading-snug font-bold sm:text-xl">
               {puzzle?.title ?? 'Find the move'}
             </h2>
-            <div className="mt-3 flex items-center gap-2 text-xs">
+            <div className="mt-2.5 flex flex-wrap items-center gap-2 text-xs sm:mt-3">
               {puzzle === null ? null : <PuzzleAttribution puzzle={puzzle} revealed={showMeta} />}
               {showMeta || puzzle === null ? null : (
                 <button
@@ -176,7 +179,7 @@ export function PuzzleSolver({ navigate }: PuzzleSolverProps) {
             </div>
           </div>
 
-          <div className="min-h-0 flex-1 space-y-5 overflow-auto p-5">
+          <div className="min-h-0 flex-1 space-y-4 overflow-auto p-4 sm:space-y-5 sm:p-5">
             <HintLadder
               used={runner.hintUsed}
               hint={runner.hint}
@@ -249,8 +252,8 @@ function Frame({
   readonly children: ReactNode
 }) {
   return (
-    <div className="mx-auto w-full max-w-[1200px] p-4 lg:p-6">
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="mx-auto w-full max-w-[1200px] p-2 sm:p-4 lg:p-6">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         <Button
           variant="ghost"
           size="sm"
@@ -259,13 +262,15 @@ function Frame({
           }}
         >
           <ArrowLeft aria-hidden className="size-4" />
-          Puzzles
+          <span className="max-sm:hidden">Puzzles</span>
         </Button>
         <PageHeader className="flex-1" title="Puzzle" />
         {dots === undefined ? null : <ProgressDots dots={dots} />}
-        <Badge variant="muted">No spoilers · hints nudge, they do not tell</Badge>
+        <Badge variant="muted" className="max-md:hidden">
+          No spoilers · hints nudge, they do not tell
+        </Badge>
       </div>
-      <div className="mt-5">{children}</div>
+      <div className="mt-3 sm:mt-5">{children}</div>
     </div>
   )
 }

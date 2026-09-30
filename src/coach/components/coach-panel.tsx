@@ -1,7 +1,7 @@
 import { Brain, KeyRound, PanelRightClose, Plus, SlidersHorizontal, SquarePen } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
-import { Button, cn, EmptyState, TooltipProvider } from '@/design'
+import { Button, cn, EmptyState, SimpleTooltip, TooltipProvider } from '@/design'
 import { now as nowTimestamp } from '@/domain'
 import type { CoachAttachment, CoachContext, Timestamp } from '@/domain'
 
@@ -162,36 +162,30 @@ function CoachPanelContents({
             <div className="font-display text-base font-bold">Sage</div>
             <div className="truncate text-xs text-muted-foreground">{statusLine}</div>
           </div>
-          <Button asChild variant="ghost" size="icon-sm" title="Coach settings">
-            <a href={settingsHref} aria-label="Coach settings">
-              <SlidersHorizontal />
-            </a>
-          </Button>
+          <SimpleTooltip content="Coach settings" side="bottom">
+            <Button asChild variant="ghost" size="icon-sm">
+              <a href={settingsHref} aria-label="Coach settings">
+                <SlidersHorizontal />
+              </a>
+            </Button>
+          </SimpleTooltip>
           <ThreadHistory
             threads={coach.threads}
             currentId={coach.threadId}
             onOpen={coach.openThread}
             locale={locale}
           />
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="New chat"
-            title="New chat"
-            onClick={coach.newThread}
-          >
-            <SquarePen />
-          </Button>
-          {onClose === undefined ? null : (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Close chat"
-              title="Close chat"
-              onClick={onClose}
-            >
-              <PanelRightClose />
+          <SimpleTooltip content="New chat" side="bottom">
+            <Button variant="ghost" size="icon-sm" aria-label="New chat" onClick={coach.newThread}>
+              <SquarePen />
             </Button>
+          </SimpleTooltip>
+          {onClose === undefined ? null : (
+            <SimpleTooltip content="Close chat" side="bottom">
+              <Button variant="ghost" size="icon-sm" aria-label="Close chat" onClick={onClose}>
+                <PanelRightClose />
+              </Button>
+            </SimpleTooltip>
           )}
         </header>
 

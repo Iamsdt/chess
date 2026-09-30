@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { Crown, Settings } from 'lucide-react'
 
-import { cn, ThemeToggle } from '@/design'
+import { cn, SimpleTooltip, ThemeToggle } from '@/design'
 
 import { NAV_GROUPS, SETTINGS_NAV_ITEM, chordHint, type NavItem } from '../navigation'
 import { screenPath } from '../screens'
@@ -64,19 +64,35 @@ export function Sidebar({ screen, compact }: SidebarProps) {
             {group.label !== undefined && compact && index > 0 ? (
               <div className="mx-auto my-2 h-px w-8 bg-border" aria-hidden="true" />
             ) : null}
-            {group.items.map((item) => (
-              <Link
-                key={item.id}
-                to={screenPath(item.screen)}
-                className={cn('nav-item relative', compact && 'justify-center px-0')}
-                title={`${item.label} · ${chordHint(item)}`}
-                {...(screen.nav === item.id ? { 'aria-current': 'page' as const } : {})}
-              >
-                <item.icon className="size-4 shrink-0" aria-hidden="true" />
-                <span className={cn('truncate', compact && 'sr-only')}>{item.label}</span>
-                <NavBadgeMark item={item} compact={compact} />
-              </Link>
-            ))}
+            {group.items.map((item) => {
+              const link = (
+                <Link
+                  key={item.id}
+                  to={screenPath(item.screen)}
+                  className={cn('nav-item relative', compact && 'justify-center px-0')}
+                  title={compact ? undefined : `${item.label} · ${chordHint(item)}`}
+                  {...(screen.nav === item.id ? { 'aria-current': 'page' as const } : {})}
+                >
+                  <item.icon className="size-4 shrink-0" aria-hidden="true" />
+                  <span className={cn('truncate', compact && 'sr-only')}>{item.label}</span>
+                  <NavBadgeMark item={item} compact={compact} />
+                </Link>
+              )
+
+              if (compact) {
+                return (
+                  <SimpleTooltip
+                    key={item.id}
+                    content={`${item.label} · ${chordHint(item)}`}
+                    side="right"
+                  >
+                    {link}
+                  </SimpleTooltip>
+                )
+              }
+
+              return link
+            })}
           </div>
         ))}
       </nav>
@@ -121,17 +137,21 @@ export function Sidebar({ screen, compact }: SidebarProps) {
             <span className="block text-xs text-muted-foreground">Local profile</span>
           </span>
         </Link>
-        <Link
-          to="/settings"
-          className={cn(
-            'btn btn-ghost btn-icon btn-sm',
-            screen.nav === SETTINGS_NAV_ITEM.id && 'bg-card ring-1 ring-border',
-          )}
-          title={`Settings · ${chordHint(SETTINGS_NAV_ITEM)}`}
-          aria-label="Settings"
+        <SimpleTooltip
+          content={`Settings · ${chordHint(SETTINGS_NAV_ITEM)}`}
+          side={compact ? 'right' : 'top'}
         >
-          <Settings className="size-4" aria-hidden="true" />
-        </Link>
+          <Link
+            to="/settings"
+            className={cn(
+              'btn btn-ghost btn-icon btn-sm',
+              screen.nav === SETTINGS_NAV_ITEM.id && 'bg-card ring-1 ring-border',
+            )}
+            aria-label="Settings"
+          >
+            <Settings className="size-4" aria-hidden="true" />
+          </Link>
+        </SimpleTooltip>
         <ThemeToggle className="size-8 rounded-md border-0 bg-transparent shadow-none hover:bg-accent" />
       </div>
     </aside>

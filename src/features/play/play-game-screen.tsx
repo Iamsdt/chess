@@ -16,6 +16,7 @@ import {
   DialogTitle,
   EmptyState,
   PageHeader,
+  SimpleTooltip,
   Tabs,
   TabsContent,
   TabsList,
@@ -176,33 +177,42 @@ export function PlayGameScreen({ storage }: PlayGameScreenProps = {}) {
     <Frame
       badges={
         <>
-          <Badge variant="outline">{formatTimeControl(state.config.timeControl)}</Badge>
-          {state.config.trainingWheels ? <Badge variant="soft">Training wheels</Badge> : null}
+          <Badge variant="outline" className="max-sm:hidden">
+            {formatTimeControl(state.config.timeControl)}
+          </Badge>
+          {state.config.trainingWheels ? (
+            <Badge variant="soft" className="max-md:hidden">
+              Training wheels
+            </Badge>
+          ) : null}
           {evalLabel === null ? null : (
             <Badge variant="muted" aria-label={`Evaluation ${evalLabel}`}>
               {evalLabel}
             </Badge>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            aria-pressed={flipped}
-            onClick={() => {
-              setFlipped((previous) => !previous)
-            }}
-          >
-            <ArrowUpDown aria-hidden="true" />
-            Flip
-          </Button>
+          <SimpleTooltip content="Flip board orientation">
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Flip board"
+              aria-pressed={flipped}
+              onClick={() => {
+                setFlipped((previous) => !previous)
+              }}
+            >
+              <ArrowUpDown aria-hidden="true" />
+              <span className="max-sm:hidden">Flip</span>
+            </Button>
+          </SimpleTooltip>
         </>
       }
       subtitle={`vs Stockfish ${String(state.config.opponentRating)} · ${state.config.personality}`}
     >
-      <div className="mt-4 grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="mt-3 grid gap-4 sm:mt-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
         <section className="flex justify-center" aria-label="Game board">
-          <div className="w-full max-w-[min(100%,70vh)] space-y-2.5">
+          <div className="w-full max-w-[min(100%,calc(100dvh-200px))] space-y-2 sm:space-y-2.5 lg:max-w-[min(100%,70vh)]">
             {strip(orientation === you ? opponent : you)}
-            <div className="overflow-hidden rounded-xl ring-1 ring-border">
+            <div className="overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.25)] ring-1 ring-border">
               <Board
                 fen={game.fen}
                 orientation={orientation}
@@ -227,8 +237,8 @@ export function PlayGameScreen({ storage }: PlayGameScreenProps = {}) {
           </div>
         </section>
 
-        <Card className="flex min-h-0 flex-col overflow-hidden p-0">
-          <div className="flex items-center gap-2 border-b px-4 py-3">
+        <Card className="flex min-h-0 flex-col overflow-hidden p-0 lg:max-h-[calc(100dvh-56px-48px)]">
+          <div className="flex items-center gap-2 border-b px-3 py-2.5 sm:px-4 sm:py-3">
             <div className="min-w-0 leading-tight">
               <div className="truncate text-sm font-semibold">{opening?.name ?? 'Out of book'}</div>
               <div className="text-xs text-muted-foreground">
@@ -381,13 +391,13 @@ function Frame({
   readonly subtitle?: string
 }) {
   return (
-    <div className="mx-auto w-full max-w-6xl p-4 lg:p-6">
+    <div className="mx-auto w-full max-w-6xl p-2 sm:p-4 lg:p-6">
       <PageHeader
         eyebrow="Practice game"
         title="Sparring"
         {...(subtitle === undefined ? {} : { description: subtitle })}
         actions={
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             {badges}
             <Button variant="ghost" size="sm" asChild>
               <Link to="/play">Setup</Link>

@@ -79,9 +79,9 @@ export function FilterBar({ filters, onChange, openings }: FilterBarProps) {
   const rangeId = useId()
 
   return (
-    <section className="card mt-6 p-4" aria-label="Filter games">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-[200px] flex-1">
+    <section className="card mt-4 p-3.5 sm:mt-6 sm:p-4" aria-label="Filter games">
+      <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+        <div className="relative min-w-[160px] flex-1 sm:min-w-[200px]">
           <Search
             aria-hidden
             className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"

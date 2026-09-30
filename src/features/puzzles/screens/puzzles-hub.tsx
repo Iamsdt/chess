@@ -60,7 +60,7 @@ export function PuzzlesHub({ navigate, importPort }: PuzzlesHubProps) {
   const header = (
     <PageHeader
       eyebrow="Puzzles"
-      title="Sharpen your eye"
+      title={<span aria-label="Puzzles">Sharpen your eye</span>}
       description="Short sets, tuned to you. Play the move, don't just read it."
     />
   )
@@ -137,9 +137,9 @@ export function PuzzlesHub({ navigate, importPort }: PuzzlesHubProps) {
       {header}
       <HubHero data={data} navigate={navigate} />
       <ModeCards data={data} navigate={navigate} />
-      <section className="@container mt-8" aria-labelledby="themes-heading">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 id="themes-heading" className="font-display text-xl font-bold">
+      <section className="@container mt-6 sm:mt-8" aria-labelledby="themes-heading">
+        <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-2">
+          <h2 id="themes-heading" className="font-display text-lg font-bold sm:text-xl">
             Themes
           </h2>
           <span className="text-xs text-muted-foreground">
@@ -172,10 +172,10 @@ function HubHero({ data, navigate }: { readonly data: HubData; readonly navigate
 
   return (
     <section
-      className="card @container mt-6 overflow-hidden border-cta/30"
+      className="card @container mt-5 overflow-hidden border-cta/30 sm:mt-6"
       aria-labelledby="hero-heading"
     >
-      <div className="grid gap-6 p-6 lg:p-7 @[640px]:grid-cols-[minmax(0,1fr)_220px]">
+      <div className="grid gap-4 p-4 sm:gap-6 sm:p-6 lg:p-7 @[640px]:grid-cols-[minmax(0,1fr)_220px]">
         <div>
           {data.focusTheme === null ? null : (
             <Badge variant="cta">
@@ -185,7 +185,7 @@ function HubHero({ data, navigate }: { readonly data: HubData; readonly navigate
           )}
           <h2
             id="hero-heading"
-            className="mt-3 font-display text-[30px] leading-[1.05] font-bold tracking-tight"
+            className="mt-2 font-display text-xl leading-[1.05] font-bold tracking-tight sm:mt-3 sm:text-2xl md:text-[30px]"
           >
             {resume === null ? 'Start an adaptive set' : 'Carry on where you left off'}
           </h2>
@@ -193,28 +193,28 @@ function HubHero({ data, navigate }: { readonly data: HubData; readonly navigate
             Difficulty is tuned so you solve about 75%: hard enough to grow, easy enough to enjoy.
             Your set is drawn from the {data.rung.band} band, rung {data.rung.subLevel}.
           </p>
-          <dl className="mt-5 flex flex-wrap gap-x-8 gap-y-3">
+          <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-3 sm:mt-5 sm:gap-x-8">
             <div>
               <dt className="label">Puzzle rating</dt>
-              <dd className="font-display text-2xl font-bold tabular-nums">
+              <dd className="font-display text-xl font-bold tabular-nums sm:text-2xl">
                 {Math.round(data.rating.rating)}
               </dd>
             </div>
             <div>
               <dt className="label">Solve rate, last 50</dt>
-              <dd className="font-display text-2xl font-bold tabular-nums">
+              <dd className="font-display text-xl font-bold tabular-nums sm:text-2xl">
                 {formatPercent(data.solveRate)}
               </dd>
             </div>
             <div>
               <dt className="label">This set</dt>
-              <dd className="font-display text-2xl font-bold tabular-nums">
+              <dd className="font-display text-xl font-bold tabular-nums sm:text-2xl">
                 {done}
                 <span className="text-base font-semibold text-muted-foreground"> of {goal}</span>
               </dd>
             </div>
           </dl>
-          <div className="mt-5 flex flex-wrap items-center gap-3">
+          <div className="mt-4 flex flex-wrap items-center gap-3 sm:mt-5">
             <Button
               className="btn btn-cta"
               onClick={() => {
@@ -225,7 +225,9 @@ function HubHero({ data, navigate }: { readonly data: HubData; readonly navigate
               {resume === null ? 'Start adaptive puzzles' : 'Continue adaptive puzzles'}
             </Button>
           </div>
-          {dots.length === 0 ? null : <ProgressDots className="mt-5" dots={dots} shape="bar" />}
+          {dots.length === 0 ? null : (
+            <ProgressDots className="mt-4 sm:mt-5" dots={dots} shape="bar" />
+          )}
         </div>
         <DailyCard data={data} navigate={navigate} />
       </div>
@@ -299,26 +301,26 @@ function ModeCards({ data, navigate }: { readonly data: HubData; readonly naviga
   ]
 
   return (
-    <section className="@container mt-8" aria-labelledby="modes-heading">
-      <h2 id="modes-heading" className="font-display text-xl font-bold">
+    <section className="@container mt-6 sm:mt-8" aria-labelledby="modes-heading">
+      <h2 id="modes-heading" className="font-display text-lg font-bold sm:text-xl">
         Ways to train
       </h2>
-      <div className="mt-4 grid gap-4 @[480px]:grid-cols-2 @[640px]:grid-cols-3">
+      <div className="mt-3 grid gap-3 sm:mt-4 sm:gap-4 @[480px]:grid-cols-2 @[640px]:grid-cols-3">
         {modes.map((mode) => (
           <button
             key={mode.key}
             type="button"
-            className="card card-hover flex cursor-pointer flex-col p-5 text-left"
+            className="card card-hover flex cursor-pointer flex-col p-4 text-left sm:p-5"
             onClick={() => {
               navigate(mode.path)
             }}
           >
-            <span className="grid size-10 place-items-center rounded-xl bg-accent text-primary">
-              <mode.icon aria-hidden className="size-5" />
+            <span className="grid size-9 place-items-center rounded-xl bg-accent text-primary sm:size-10">
+              <mode.icon aria-hidden className="size-4 sm:size-5" />
             </span>
-            <span className="mt-3 text-lg font-bold">{mode.title}</span>
+            <span className="mt-2.5 text-base font-bold sm:mt-3 sm:text-lg">{mode.title}</span>
             <span className="mt-1 text-sm text-muted-foreground">{mode.description}</span>
-            <span className="mt-auto pt-4 text-xs text-muted-foreground">{mode.note}</span>
+            <span className="mt-auto pt-3 text-xs text-muted-foreground sm:pt-4">{mode.note}</span>
           </button>
         ))}
       </div>
@@ -330,13 +332,15 @@ function PersonalBests({ data }: { readonly data: HubData }) {
   const lastSession = data.resume === null ? null : sessionSummary(data.resume.state)
 
   return (
-    <section className="card mt-8 p-5" aria-labelledby="bests-heading">
+    <section className="card mt-6 p-4 sm:mt-8 sm:p-5" aria-labelledby="bests-heading">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 id="bests-heading" className="font-display text-lg font-bold">
+          <h2 id="bests-heading" className="font-display text-base font-bold sm:text-lg">
             Your personal bests
           </h2>
-          <p className="text-sm text-muted-foreground">Only you vs. you. No leaderboards here.</p>
+          <p className="text-xs text-muted-foreground sm:text-sm">
+            Only you vs. you. No leaderboards here.
+          </p>
         </div>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">

@@ -63,7 +63,10 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  SimpleTooltip,
+  Skeleton,
   Slider,
+  Spinner,
   StatCard,
   Switch,
   Tabs,
@@ -219,6 +222,7 @@ export function Gallery() {
             </Button>
             <Button variant="link">Link</Button>
             <Button disabled>Disabled</Button>
+            <Button loading>Saving…</Button>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <Button size="xs">Extra small</Button>
@@ -243,10 +247,29 @@ export function Gallery() {
             </CtaButton>
             <CtaButton size="lg">Large</CtaButton>
             <CtaButton disabled>Disabled</CtaButton>
+            <CtaButton loading>Submitting…</CtaButton>
           </div>
           <CtaButton block asChild>
             <a href="#gallery-top">As a link, full width</a>
           </CtaButton>
+        </Block>
+
+        <Block title="Loaders & Skeletons">
+          <div className="flex flex-wrap items-center gap-4">
+            <Spinner size="xs" />
+            <Spinner size="sm" />
+            <Spinner />
+            <Spinner size="lg" />
+            <Spinner size="xl" />
+            <Spinner tone="cta" />
+            <Spinner tone="reward" />
+            <Spinner tone="destructive" />
+          </div>
+          <div className="grid max-w-md gap-2">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-12 w-full rounded-xl" shimmer />
+          </div>
         </Block>
 
         <Block title="Badge">
@@ -530,6 +553,10 @@ export function Gallery() {
               </TooltipTrigger>
               <TooltipContent>Evaluation from the last completed depth.</TooltipContent>
             </Tooltip>
+
+            <SimpleTooltip content="Evaluation from the last completed depth.">
+              <Button variant="outline">SimpleTooltip</Button>
+            </SimpleTooltip>
 
             <Button
               variant="secondary"

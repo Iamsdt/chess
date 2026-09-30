@@ -202,7 +202,7 @@ export function ImportCard({ getPort, onImported, fetchImpl }: ImportCardProps) 
   }, [])
 
   return (
-    <section className="card p-5" aria-labelledby="library-import-heading">
+    <section className="card p-4 sm:p-5" aria-labelledby="library-import-heading">
       <div className="flex items-center gap-2">
         <span aria-hidden className="grid size-8 place-items-center rounded-lg bg-sky text-sky-ink">
           <Download className="size-4" />

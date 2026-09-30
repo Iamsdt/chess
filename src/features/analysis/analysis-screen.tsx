@@ -17,6 +17,7 @@ import {
   Badge,
   Button,
   PageHeader,
+  SimpleTooltip,
   Tabs,
   TabsContent,
   TabsList,
@@ -170,62 +171,69 @@ export function AnalysisScreen({ engine, explorerFetch, isOnline }: AnalysisScre
       : `${String(numbering.moveNumber)}${numbering.white ? '.' : '…'} ${current.san}`
 
   return (
-    <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-4 p-4 lg:p-6">
+    <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-3 p-2 sm:gap-4 sm:p-4 lg:p-6">
       <PageHeader
         eyebrow="Analysis board"
         title="Analysis"
         description="A free board with engine lines, a variation tree and position setup."
         actions={
-          <>
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             {opening === null ? null : (
               <Badge variant="soft" className="max-md:hidden">
                 {opening.name}
               </Badge>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                board.updateSettings({
-                  orientation: board.settings.orientation === 'white' ? 'black' : 'white',
-                })
-              }}
-            >
-              <ArrowUpDown aria-hidden="true" />
-              Flip
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setSetupOpen(true)
-              }}
-            >
-              <Grid2x2Plus aria-hidden="true" />
-              Set up
-            </Button>
+            <SimpleTooltip content="Flip board orientation">
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-label="Flip board"
+                onClick={() => {
+                  board.updateSettings({
+                    orientation: board.settings.orientation === 'white' ? 'black' : 'white',
+                  })
+                }}
+              >
+                <ArrowUpDown aria-hidden="true" />
+                <span className="max-sm:hidden">Flip</span>
+              </Button>
+            </SimpleTooltip>
+            <SimpleTooltip content="Set up custom position">
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-label="Set up position"
+                onClick={() => {
+                  setSetupOpen(true)
+                }}
+              >
+                <Grid2x2Plus aria-hidden="true" />
+                <span className="max-sm:hidden">Set up</span>
+              </Button>
+            </SimpleTooltip>
             <Button asChild size="sm">
               {/* The position rides in the URL so the setup screen can offer it. S12 owns
                   what it does with it; this side of the handover is all S19 can write. */}
               <Link to="/play" search={{ fen: board.fen }}>
                 <Swords aria-hidden="true" />
-                Practice from here
+                <span className="max-sm:hidden">Practice from here</span>
+                <span className="sm:hidden">Practice</span>
               </Link>
             </Button>
-          </>
+          </div>
         }
       />
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_360px]">
         <section className="flex justify-center" aria-label="Analysis board">
-          <div className="w-full max-w-[min(100%,calc(100dvh-220px))]">
-            <div className="flex gap-2.5">
+          <div className="w-full max-w-[min(100%,calc(100dvh-220px))] lg:max-w-[min(100%,70vh)]">
+            <div className="flex gap-2 sm:gap-2.5">
               <EvalBar
                 score={analysis.lines[0]?.score ?? null}
                 sideToMove={sideToMove}
                 orientation={board.settings.orientation}
               />
-              <div className="min-w-0 flex-1 overflow-hidden rounded-xl ring-1 ring-border">
+              <div className="min-w-0 flex-1 overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.25)] ring-1 ring-border">
                 <Board
                   fen={board.fen}
                   orientation={board.settings.orientation}
@@ -256,7 +264,7 @@ export function AnalysisScreen({ engine, explorerFetch, isOnline }: AnalysisScre
           </div>
         </section>
 
-        <div className="flex min-h-0 flex-col gap-4">
+        <div className="flex min-h-0 flex-col gap-4 overflow-auto lg:max-h-[calc(100dvh-56px-48px)]">
           <EnginePanel
             analysis={analysis}
             settings={board.settings}
@@ -269,7 +277,7 @@ export function AnalysisScreen({ engine, explorerFetch, isOnline }: AnalysisScre
           />
 
           <aside
-            className="card flex min-h-[420px] flex-col overflow-hidden"
+            className="card flex min-h-[360px] flex-col overflow-hidden sm:min-h-[420px]"
             aria-label="Moves, explorer and import"
           >
             <Tabs defaultValue="moves" className="min-h-0 flex-1 gap-0">
@@ -312,18 +320,26 @@ export function AnalysisScreen({ engine, explorerFetch, isOnline }: AnalysisScre
 
             <div className="border-t p-3">
               <div className="grid grid-cols-4 gap-1">
-                <Button variant="ghost" size="sm" aria-label="Start position" onClick={toStart}>
-                  <ChevronsLeft aria-hidden="true" />
-                </Button>
-                <Button variant="ghost" size="sm" aria-label="Previous move" onClick={back}>
-                  <ChevronLeft aria-hidden="true" />
-                </Button>
-                <Button variant="ghost" size="sm" aria-label="Next move" onClick={forward}>
-                  <ChevronRight aria-hidden="true" />
-                </Button>
-                <Button variant="ghost" size="sm" aria-label="Last move" onClick={toEnd}>
-                  <ChevronsRight aria-hidden="true" />
-                </Button>
+                <SimpleTooltip content="Start position (Home)">
+                  <Button variant="ghost" size="sm" aria-label="Start position" onClick={toStart}>
+                    <ChevronsLeft aria-hidden="true" />
+                  </Button>
+                </SimpleTooltip>
+                <SimpleTooltip content="Previous move (←)">
+                  <Button variant="ghost" size="sm" aria-label="Previous move" onClick={back}>
+                    <ChevronLeft aria-hidden="true" />
+                  </Button>
+                </SimpleTooltip>
+                <SimpleTooltip content="Next move (→)">
+                  <Button variant="ghost" size="sm" aria-label="Next move" onClick={forward}>
+                    <ChevronRight aria-hidden="true" />
+                  </Button>
+                </SimpleTooltip>
+                <SimpleTooltip content="Last move (End)">
+                  <Button variant="ghost" size="sm" aria-label="Last move" onClick={toEnd}>
+                    <ChevronsRight aria-hidden="true" />
+                  </Button>
+                </SimpleTooltip>
               </div>
             </div>
           </aside>

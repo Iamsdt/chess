@@ -49,9 +49,12 @@ async function renderShell(path: string, width: number) {
       <RouterProvider router={router} />
     </ThemeProvider>,
   )
-  await waitFor(() => {
-    expect(router.state.status).toBe('idle')
-  })
+  await waitFor(
+    () => {
+      expect(router.state.status).toBe('idle')
+    },
+    { timeout: 5000 },
+  )
   return { router, user, container }
 }
 

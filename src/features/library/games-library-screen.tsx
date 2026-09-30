@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { gamesRepo } from '@/data'
 import type { GameRow } from '@/data'
-import { CtaButton, EmptyState, PageHeader, toast } from '@/design'
+import { CtaButton, EmptyState, PageHeader, Skeleton, toast } from '@/design'
 
 import { ExportCard } from './export-card'
 import { downloadFile, exportGame } from './export-service'
@@ -119,7 +119,7 @@ export function GamesLibraryScreen() {
             <span className="sr-only">Loading games</span>
             <div className="space-y-3" aria-hidden>
               {[0, 1, 2, 3, 4].map((line) => (
-                <div key={line} className="h-10 animate-pulse rounded-lg bg-muted" />
+                <Skeleton key={line} className="h-10 rounded-lg" shimmer />
               ))}
             </div>
           </div>
