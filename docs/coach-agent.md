@@ -28,6 +28,7 @@ One agent, running entirely in the browser, on the user's own API key. Built on 
 | 18 | Work in your language | Answers in the language you write in. |
 | 19 | Stream its thinking | Text, tool calls and analysis cards appear as they're produced. |
 | 20 | Stop instantly | Cancel any answer; the engine stops with it. |
+| 21 | Map the calculation | Draws an engine-verified tree of candidates and replies, full screen, and can test you on it (see §9). |
 
 ## 2. What Sage CANNOT do (by design)
 
@@ -75,7 +76,7 @@ You ask "what should I play here?" and get a lesson in thinking, not an answer.
 |---|---|---|
 | 1 · Assess | Material, king safety, structure, piece activity, the one imbalance that matters. | Short card, highlighted squares |
 | 2 · Candidates | Three moves worth considering and what each one is *trying* to do. | Three arrows, one card each |
-| 3 · Calculate | The concrete line for each candidate, engine-verified, with the refutation of the tempting one. | Step-through on the board |
+| 3 · Calculate | The concrete line for each candidate, engine-verified, with the refutation of the tempting one. | Step-through on the board, and the full-screen calculation tree (§9) |
 | 4 · Compare | Why the best move wins and what the natural-looking move misses. | Side-by-side evals from the engine |
 | 5 · Plan | What you're aiming for over the next five moves. | Plan card with target squares |
 | 6 · Takeaway | The single habit to carry into your next game. | One sentence, savable to notes |
@@ -96,6 +97,7 @@ All tools run locally in the browser. Results are facts the model must use; the 
 | `evaluateMove` | What a specific move does to the evaluation. |
 | `compareMoves` | Ranks two or more candidate moves side by side. |
 | `findBestPlan` | Longer, deeper search used only for grandmaster mode. |
+| `buildCalculationTree` | Builds the pruned candidate/reply tree for a position (§9). |
 
 **Rules and position**
 
@@ -114,6 +116,7 @@ All tools run locally in the browser. Results are facts the model must use; the 
 | `setPosition` | Puts a position on the board (with an undo back to your game). |
 | `stepThroughLine` | Animates a variation move by move with captions. |
 | `clearBoardMarks` | Removes everything it drew. |
+| `openCalculationTree` | Pins a calculation card in the chat that opens the full-screen tree (§9). |
 
 **Your data**
 
@@ -177,6 +180,84 @@ Rules: the context builder assembles these under a fixed token budget, newest an
 | **S21** | Coach runtime: AI SDK, provider presets + custom OpenAI-compatible entry, BYOK crypto, streaming, tool loop, cost meter. |
 | **S21b** | Tools (§5), context builder and memory (§6), engine-truth guardrail (§7). |
 | **S21c** | Grandmaster thinking mode (§4): structured analysis, board-linked cards, line stepping. |
+
+The calculation tree (§9) is not scheduled yet. Its engine-only parts (§9.1, §9.3, §9.4) depend only on S07, S08 and S19 and can start any time; the LLM narrator (§9.2) needs S21.
+
+---
+
+## 9. Calculation tree (visual calculation + "Test me")
+
+Strong players calculate by building a tree in their head: *if I play this, he plays that, then I…*. Sage draws that tree for any position, lets you explore it full screen, and can hide it and test you first, so that over time you learn to build it yourself.
+
+Two modes on one screen: **Explore** (the tree, built and explained) and **Test me** (you calculate first, then the real tree is revealed and compared).
+
+### 9.1 Tree builder (engine only, works without a key)
+
+Pure module `src/calculation/`, no React, no storage.
+
+| Rule | Value |
+|---|---|
+| Root candidates | Engine top 3 (MultiPV 3) **plus up to 2 tempting moves**: checks or captures that look natural but lose ≥ 1.5 pawns. The refutation of the tempting move is often the lesson. |
+| Opponent replies | Best reply, plus a second if within 0.5 pawns of it. |
+| Our continuations | Best move only. |
+| Stop a branch | Quiet position (no checks or captures, stable eval), mate, or 6 plies. |
+| Budget | ~25 nodes, ~6–8 s total, `interactive` lane. |
+| Order | Breadth-first and streamed: candidates appear at once, branches fill in. |
+| Cancellation | One `AbortSignal` stops every search in flight. |
+
+Each node: `san`, `uci`, `fen` after the move, eval (white-centipawns or mate), change vs parent, tag (`best` · `good` · `tempting` · `mistake` · `blunder` · `only-move` · `forced`, via `@/chess` classify). Each leaf records why it stopped. Storage is a flat id map like `VariationTree`, with a zod schema in `@/domain`, so a tree converts to a `VariationTree` for "Open in analysis board".
+
+### 9.2 Narrator (the AI layer)
+
+A `CalcNarrator` interface with two implementations:
+
+| Narrator | When | Produces |
+|---|---|---|
+| Template | Always available, no key needed | Labels from tags: "Wins the exchange", "Allows mate in 3", "Only move". |
+| LLM | Once S21 exists and a key is set | From the compact tree + your rating, as a structured object: a 2–4 word name per branch, the one-sentence idea of each candidate, the key-moment node per branch, a takeaway. May nominate up to 2 "moves a player at your level would consider"; the engine expands and verifies them before they enter the tree. |
+
+Guardrail: the narrator labels the tree, it never edits it. Any move, eval or node id in its output that the engine didn't produce is dropped (same engine-truth rule as §7).
+
+### 9.3 Explore (full screen)
+
+| Part | Behaviour |
+|---|---|
+| Container | Full-screen dialog (`@/design` dialog). |
+| Board (left on desktop, top on mobile) | Shows the selected node; animates from its parent; arrows preview the next moves of the branch. Eval bar beside it. |
+| Tree (right on desktop, indented list on mobile) | SVG graph: one column per ply, one row per branch. Node chips like `Qxb7 −2.1`, coloured by tag, branch name on the first chip. Layout is a pure function, no new dependency. |
+| Navigation | Click a node to jump · hover for ghost arrows · ←/→ along the line · ↑/↓ between siblings · **Play branch** auto-steps. |
+| Comparison strip | Final eval of each candidate side by side, best one marked. |
+| Exits | "Open in analysis board" (converts to `VariationTree`) · "Ask Sage why" on any node. |
+
+### 9.4 Test me (trainer)
+
+| Step | What you do | What the app does |
+|---|---|---|
+| 1 · Candidates | Pick up to 3 candidate moves. | Tree hidden. |
+| 2 · Calculate | For each candidate, enter the opponent's reply and your follow-up. | **Guided**: pieces move as you go. **Visualize**: pieces stay frozen at the root, only arrows and notation accumulate (the real visualization training). |
+| 3 · Verdict | Mark each candidate winning / equal / losing and choose your move. | — |
+| 4 · Reveal | — | Shows the real tree with your lines overlaid: the first ply where you left the engine's line, candidates you missed, wrong verdicts, and a score. |
+| 5 · Practise | **Play it out** from the root against the engine, or **Save to Mistake Bank** for spaced review. | Attempts are stored (Dexie) so calculation depth and accuracy can be tracked over time. |
+
+Fair play and spoilers: Test me and Explore are unavailable during a live game vs a friend, and inside puzzles and lessons Explore is spoiler-guarded like every other answer (§7).
+
+### 9.5 Entry points
+
+| Where | How |
+|---|---|
+| Analysis screen | "Calculation tree" button on the current position. |
+| Coach chat | New attachment kind `calculation`, rendered as a card with **Open full screen**. "What should I play?" in Grandmaster mode attaches one; the mock coach's grandmaster transcript includes one until S21 lands. |
+| Review (later) | "What did you miss here?" on a mistake opens Test me at that position. |
+
+### 9.6 Build order and tests
+
+| Step | Scope | Tests |
+|---|---|---|
+| 1 | Builder + schema | Fake-engine fixtures: every node legal, budget respected, abort leaves nothing running, pruning rules, tempting-move detection. |
+| 2 | Explore + analysis entry | Layout function unit tests, RTL navigation tests. |
+| 3 | Test me + attempt storage | Diff and scoring unit tests, RTL flow test. |
+| 4 | Coach card + narrator interface | Template narrator snapshots, guardrail test with a doctored narrator output. |
+| — | End to end | One Playwright run: open tree, step a branch, Test me, reveal. |
 
 
 https://huggingface.co/blog/sora-2/laya-ai-model-how-it-works-run-it-locally-and-eval
