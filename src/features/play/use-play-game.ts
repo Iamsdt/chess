@@ -8,6 +8,7 @@ import type { Settings, Timestamp, Uci } from '@/domain'
 import { scoreToMoverCentipawns } from '@/engine'
 
 import { isLowTime } from './clock'
+import { settleFinishedGame } from './finish-game'
 import { isEnginesTurn, isYourTurn, playReducer } from './machine'
 import { defaultPlayStorage, loadResumableGame, saveGame } from './persistence'
 import { usePlayPorts } from './ports'
@@ -396,6 +397,18 @@ export function usePlayGame(options: UsePlayGameOptions = {}): PlayGameControlle
       setReview({ status: 'failed', message: 'The review could not be queued yet.' })
     })
   }, [finishedGameId, ports, storage])
+
+  /* ---------------------------------------- rating, session and streak, once */
+
+  const settledFor = useRef<string | null>(null)
+
+  useEffect(() => {
+    const id = state?.phase === 'game-over' ? state.gameId : null
+    if (state === null || id === null || settledFor.current === id) return
+    settledFor.current = id
+    // A failure here costs a rating update, never the game: it is already saved.
+    void settleFinishedGame(state).catch(() => undefined)
+  }, [state])
 
   /* ----------------------------------------------------------------- actions */
 

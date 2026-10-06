@@ -15,14 +15,17 @@ import {
   ThemeModeSchema,
 } from './enums'
 import { TimeControlSchema } from './game'
-import { ProfileIdSchema } from './ids'
+import { ProfileIdSchema, toProfileId } from './ids'
 import {
   ClockTimeSchema,
   DurationMsSchema,
   LocalDateSchema,
+  now,
   RatingSchema,
   TimestampSchema,
 } from './primitives'
+
+import type { Rating } from './primitives'
 
 /**
  * The single local user, their settings and their streak.
@@ -52,6 +55,44 @@ export const ProfileSchema = z.object({
   updatedAt: TimestampSchema,
 })
 export type Profile = z.infer<typeof ProfileSchema>
+
+/** Where a self-described level starts the two ratings. They adapt after a few attempts. */
+export const STARTING_RATINGS = {
+  beginner: 800,
+  club: 1200,
+  strong: 1600,
+} as const satisfies Record<z.infer<typeof SkillLevelSchema>, Rating>
+
+export interface NewProfileInput {
+  readonly displayName: string
+  readonly skillLevel: z.infer<typeof SkillLevelSchema>
+  readonly goals?: readonly string[]
+  readonly timeZone: string
+  readonly onboardingCompleted?: boolean
+}
+
+/** Why here: Settings and Onboarding both create the one local profile, and the starting
+ *  Glicko-2 numbers (high deviation, default volatility) must agree between them. */
+export function createProfile(input: NewProfileInput): Profile {
+  const rating = STARTING_RATINGS[input.skillLevel]
+  const at = now()
+  return {
+    id: toProfileId('profile-local'),
+    displayName: input.displayName,
+    skillLevel: input.skillLevel,
+    puzzleRating: rating,
+    puzzleRatingDeviation: 350,
+    puzzleRatingVolatility: 0.06,
+    sparringRating: rating,
+    goals: [...(input.goals ?? [])],
+    timeZone: input.timeZone,
+    gardenLevel: 0,
+    gardenStage: 'seed',
+    onboardingCompletedAt: input.onboardingCompleted === true ? at : null,
+    createdAt: at,
+    updatedAt: at,
+  }
+}
 
 /** Board and piece appearance; changing any of these takes effect immediately. */
 export const BoardSettingsSchema = z.object({

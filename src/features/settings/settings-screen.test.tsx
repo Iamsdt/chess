@@ -7,10 +7,11 @@ import {
   createRouter,
   RouterProvider,
 } from '@tanstack/react-router'
-import { fireEvent, render, screen, within } from '@testing-library/react'
-import { beforeAll, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { axe } from 'vitest-axe'
 
+import { clearAllData, profileRepo, settingsRepo } from '@/data'
 import { ThemeProvider } from '@/design'
 
 import { SettingsScreen } from './settings-screen'
@@ -61,6 +62,11 @@ function renderSettingsScreen() {
 }
 
 describe('SettingsScreen', () => {
+  beforeEach(async () => {
+    await clearAllData()
+    localStorage.clear()
+  })
+
   it('renders heading with accessible name "Settings"', async () => {
     renderSettingsScreen()
 
@@ -80,164 +86,170 @@ describe('SettingsScreen', () => {
     expect(results.violations.map((violation) => violation.id)).toEqual([])
   })
 
-  it('updates profile settings (name, level, daily goal, reminder)', async () => {
+  it('saves the profile: name on blur and level on change, creating the profile if needed', async () => {
     renderSettingsScreen()
     await screen.findByRole('heading', { level: 1, name: 'Settings' })
 
     const nameInput = screen.getByLabelText('Display name')
-    expect(nameInput).toHaveValue('Shudipto')
     fireEvent.change(nameInput, { target: { value: 'Magnus' } })
-    expect(nameInput).toHaveValue('Magnus')
+    fireEvent.blur(nameInput)
+    await waitFor(async () => {
+      expect((await profileRepo.get())?.displayName).toBe('Magnus')
+    })
 
-    const levelSelect = screen.getByLabelText('Your level')
-    expect(levelSelect).toHaveValue('Club player · around 1200')
-    fireEvent.change(levelSelect, { target: { value: 'Strong · 1600+' } })
-    expect(levelSelect).toHaveValue('Strong · 1600+')
-
-    const goal30 = screen.getByRole('button', { name: '30 min' })
-    fireEvent.click(goal30)
-    expect(goal30).toHaveClass('is-active')
-
-    const remindInput = screen.getByLabelText('Daily reminder')
-    expect(remindInput).toHaveValue('20:00')
-    fireEvent.change(remindInput, { target: { value: '21:30' } })
-    expect(remindInput).toHaveValue('21:30')
+    fireEvent.change(screen.getByLabelText('Your level'), { target: { value: 'strong' } })
+    await waitFor(async () => {
+      expect((await profileRepo.get())?.skillLevel).toBe('strong')
+    })
+    expect(screen.getByLabelText('Your level')).toHaveValue('strong')
   })
 
-  it('manages board appearance, themes, piece sets and preview', async () => {
+  it('persists the daily goal and the reminder', async () => {
     renderSettingsScreen()
     await screen.findByRole('heading', { level: 1, name: 'Settings' })
 
-    // Theme mode
-    const darkBtn = screen.getByRole('button', { name: 'Dark' })
-    fireEvent.click(darkBtn)
-    expect(darkBtn).toHaveClass('is-active')
+    fireEvent.click(screen.getByRole('button', { name: '30 min' }))
+    fireEvent.change(screen.getByLabelText('Daily reminder'), { target: { value: '21:30' } })
+    await waitFor(async () => {
+      const saved = await settingsRepo.peek()
+      expect(saved?.dailyGoalMinutes).toBe(30)
+      expect(saved?.reminderTime).toBe('21:30')
+    })
+    expect(screen.getByRole('button', { name: '30 min' })).toHaveClass('is-active')
+  })
 
-    // Board themes
-    const walnutSwatch = screen.getByRole('radio', { name: 'Walnut' })
-    fireEvent.click(walnutSwatch)
-    expect(walnutSwatch).toHaveAttribute('aria-checked', 'true')
+  it('applies the look at once and keeps it in the database', async () => {
+    renderSettingsScreen()
+    await screen.findByRole('heading', { level: 1, name: 'Settings' })
 
-    // Piece sets
-    const stauntyOption = screen.getByRole('radio', { name: 'Staunty' })
-    fireEvent.click(stauntyOption)
-    expect(stauntyOption).toHaveAttribute('aria-checked', 'true')
+    fireEvent.click(screen.getByRole('button', { name: 'Dark' }))
+    fireEvent.click(screen.getByRole('radio', { name: 'Walnut' }))
+    fireEvent.click(screen.getByRole('radio', { name: 'Staunty' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Slow' }))
 
-    // Live preview board
+    expect(document.documentElement).toHaveClass('dark')
+    expect(document.documentElement.dataset.board).toBe('walnut')
+    expect(screen.getByRole('radio', { name: 'Walnut' })).toHaveAttribute('aria-checked', 'true')
+
+    await waitFor(async () => {
+      const saved = await settingsRepo.peek()
+      expect(saved?.theme).toBe('dark')
+      expect(saved?.board.theme).toBe('walnut')
+      expect(saved?.board.pieceSet).toBe('staunty')
+      expect(saved?.board.animation).toBe('slow')
+    })
     expect(
       screen.getByRole('img', { name: 'Preview board: Italian Game after 6...O-O' }),
     ).toBeInTheDocument()
-
-    // Move animation toggle
-    const slowAnimBtn = screen.getByRole('button', { name: 'Slow' })
-    fireEvent.click(slowAnimBtn)
-    expect(slowAnimBtn).toHaveClass('is-active')
   })
 
-  it('configures AI coach, tests key, reveals password, and opens remove key modal', async () => {
+  it('keeps two quick board toggles instead of letting the second overwrite the first', async () => {
+    renderSettingsScreen()
+    await screen.findByRole('heading', { level: 1, name: 'Settings' })
+
+    fireEvent.click(screen.getByLabelText('Premoves'))
+    fireEvent.click(screen.getByLabelText('Coordinates'))
+    await waitFor(async () => {
+      const saved = await settingsRepo.peek()
+      expect(saved?.board.premoves).toBe(true)
+      expect(saved?.board.coordinates).toBe(false)
+    })
+  })
+
+  it('persists coach preferences and never shows a made-up key', async () => {
     renderSettingsScreen()
     await screen.findByRole('heading', { level: 1, name: 'Settings' })
 
     const keyInput = screen.getByLabelText('API key')
-    expect(keyInput).toHaveAttribute('type', 'password')
+    expect(keyInput).toBeDisabled()
+    expect(keyInput).toHaveValue('')
+    expect(screen.getByText('No key yet')).toBeInTheDocument()
 
-    const revealBtn = screen.getByRole('button', { name: 'Show key' })
-    fireEvent.click(revealBtn)
-    expect(keyInput).toHaveAttribute('type', 'text')
-
-    const testBtn = screen.getByRole('button', { name: 'Test key' })
-    fireEvent.click(testBtn)
-
-    // Coach tone
-    const bluntTone = screen.getByRole('radio', { name: /Blunt GM/i })
-    fireEvent.click(bluntTone)
-    expect(bluntTone).toHaveAttribute('aria-checked', 'true')
-
-    // Token progress bar
+    fireEvent.click(screen.getByRole('radio', { name: /Blunt GM/i }))
+    fireEvent.click(screen.getByLabelText(/Spoiler guard/i))
+    fireEvent.change(screen.getByLabelText('Provider'), { target: { value: 'openai' } })
+    await waitFor(async () => {
+      const saved = await settingsRepo.peek()
+      expect(saved?.coach.tone).toBe('blunt')
+      expect(saved?.coach.spoilerGuard).toBe(false)
+      expect(saved?.coach.provider).toBe('openai')
+      expect(saved?.coach.model).toBe('gpt-4.1-mini')
+    })
     expect(screen.getByRole('progressbar', { name: 'Monthly token usage' })).toBeInTheDocument()
-
-    // Remove key modal
-    const removeBtn = screen.getByRole('button', { name: 'Remove key' })
-    fireEvent.click(removeBtn)
-
-    const modal = screen.getByRole('dialog', { name: 'Remove your Gemini key?' })
-    expect(modal).toBeInTheDocument()
-
-    const confirmRemoveBtn = within(modal).getByRole('button', { name: 'Remove key' })
-    fireEvent.click(confirmRemoveBtn)
-    expect(
-      screen.queryByRole('dialog', { name: 'Remove your Gemini key?' }),
-    ).not.toBeInTheDocument()
   })
 
-  it('updates sound settings and styles', async () => {
+  it('persists sound settings', async () => {
     renderSettingsScreen()
     await screen.findByRole('heading', { level: 1, name: 'Settings' })
 
-    const volSlider = screen.getByLabelText('Volume')
-    expect(volSlider).toHaveValue('60')
-    fireEvent.change(volSlider, { target: { value: '80' } })
-    expect(volSlider).toHaveValue('80')
-
-    const softSoundBtn = screen.getByRole('button', { name: 'Soft' })
-    fireEvent.click(softSoundBtn)
-    expect(softSoundBtn).toHaveClass('is-active')
+    fireEvent.change(screen.getByLabelText('Volume'), { target: { value: '80' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Soft' }))
+    await waitFor(async () => {
+      const saved = await settingsRepo.peek()
+      expect(saved?.sound.volume).toBe(80)
+      expect(saved?.sound.style).toBe('soft')
+    })
   })
 
-  it('manages data exports, backups, and clear all data modal', async () => {
+  it('does not clear anything until DELETE is typed, then wipes the database and look', async () => {
+    await settingsRepo.update({ dailyGoalMinutes: 30 })
+    localStorage.setItem('ck-board', 'walnut')
     renderSettingsScreen()
     await screen.findByRole('heading', { level: 1, name: 'Settings' })
 
-    expect(
-      screen.getByRole('img', {
-        name: 'Games 2.6 MB, puzzles 0.9 MB, lessons and repertoire 0.4 MB, chats 0.3 MB',
-      }),
-    ).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Clear all data' }))
+    const dialog = screen.getByRole('dialog', { name: 'Clear everything on this device?' })
+    const confirm = within(dialog).getByRole('button', { name: 'Clear all data' })
+    expect(confirm).toBeDisabled()
 
-    const exportBackupBtn = screen.getByRole('button', { name: /Export backup/i })
-    fireEvent.click(exportBackupBtn)
+    fireEvent.change(within(dialog).getByLabelText('Type DELETE to confirm'), {
+      target: { value: 'delete' },
+    })
+    expect(confirm).toBeDisabled()
+    fireEvent.change(within(dialog).getByLabelText('Type DELETE to confirm'), {
+      target: { value: 'DELETE' },
+    })
+    expect(confirm).toBeEnabled()
+    fireEvent.click(confirm)
 
-    const importBackupBtn = screen.getByRole('button', { name: /Import backup/i })
-    fireEvent.click(importBackupBtn)
+    await waitFor(async () => {
+      expect(await settingsRepo.peek()).toBeUndefined()
+    })
+    expect(localStorage.getItem('ck-board')).toBeNull()
+  })
 
-    const exportPgnBtn = screen.getByRole('button', { name: /Export all PGN/i })
-    fireEvent.click(exportPgnBtn)
+  it('can be cancelled out of the clear dialog', async () => {
+    renderSettingsScreen()
+    await screen.findByRole('heading', { level: 1, name: 'Settings' })
 
-    // Clear all data modal
-    const clearBtn = screen.getByRole('button', { name: 'Clear all data' })
-    fireEvent.click(clearBtn)
-
-    const clearDialog = screen.getByRole('dialog', { name: 'Clear everything on this device?' })
-    expect(clearDialog).toBeInTheDocument()
-
-    const cancelBtn = within(clearDialog).getByRole('button', { name: 'Cancel' })
-    fireEvent.click(cancelBtn)
+    fireEvent.click(screen.getByRole('button', { name: 'Clear all data' }))
+    const dialog = screen.getByRole('dialog', { name: 'Clear everything on this device?' })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
     expect(
       screen.queryByRole('dialog', { name: 'Clear everything on this device?' }),
     ).not.toBeInTheDocument()
   })
 
-  it('renders about section with app version, GitHub link, and onboarding setup link', async () => {
+  it('offers backup export, import and PGN export', async () => {
     renderSettingsScreen()
     await screen.findByRole('heading', { level: 1, name: 'Settings' })
 
-    expect(
-      screen.getByRole('heading', { level: 2, name: /Chess King v0\.9\.2/i }),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText(
-        'Free and open source under the MIT licence. Stockfish 17 runs on your device.',
-      ),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Export backup/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Import backup/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Export all PGN/i })).toBeInTheDocument()
+    expect(screen.getByLabelText('Backup file')).toHaveAttribute('type', 'file')
+    expect(await screen.findByText(/games in your library/)).toBeInTheDocument()
+  })
 
+  it('renders the about section with the first-run link', async () => {
+    renderSettingsScreen()
+    await screen.findByRole('heading', { level: 1, name: 'Settings' })
+
+    expect(screen.getByRole('heading', { level: 2, name: /Chess King/i })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Source on GitHub/i })).toHaveAttribute(
       'href',
       'https://github.com/',
     )
-
-    const checkUpdatesBtn = screen.getByRole('button', { name: /Check for updates/i })
-    fireEvent.click(checkUpdatesBtn)
-
     expect(screen.getByRole('link', { name: /Replay first-run setup/i })).toHaveAttribute(
       'href',
       '/onboarding',

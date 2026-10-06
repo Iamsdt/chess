@@ -8,7 +8,6 @@ import {
   Crown,
   Database,
   Download,
-  Eye,
   EyeOff,
   FileDown,
   HelpCircle,
@@ -16,9 +15,9 @@ import {
   KeyRound,
   Lock,
   LockKeyhole,
+  Monitor,
   Moon,
   Palette,
-  PlugZap,
   RefreshCw,
   RotateCcw,
   Send,
@@ -31,21 +30,59 @@ import {
   Volume2,
   Zap,
 } from 'lucide-react'
-import { useId, useMemo, useState } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 
 import { Board } from '@/board'
+import { useGameCount, useProfile, useSettings, useStorageEstimate, gamesRepo } from '@/data'
 import { Button, cn, toast, useTheme, type BoardTheme, type PieceSet } from '@/design'
-import { emptyBoardShapes, toFen, toSquare, type BoardShapes, type Fen } from '@/domain'
+import {
+  emptyBoardShapes,
+  toFen,
+  toSquare,
+  type BoardSettings,
+  type BoardShapes,
+  type CoachSettings,
+  type DailyGoalMinutes,
+  type Fen,
+  type Settings,
+  type SkillLevel,
+  type SoundSettings,
+  type ThemeMode,
+} from '@/domain'
+import { downloadFile, exportGames, pgnFileName, usePgnPort } from '@/features/library'
+
+import { MODEL_OPTIONS, PROVIDER_OPTIONS } from './coach-options'
+import {
+  changeProfile,
+  changeSettings,
+  downloadBackup,
+  importBackupFile,
+  wipeEverything,
+} from './settings-actions'
 
 const PREVIEW_FEN: Fen = toFen(
   'r1bq1rk1/ppp2ppp/2np1n2/2b1p3/2B1P3/2PP1N2/PP3PPP/RNBQ1RK1 w - - 2 7',
 )
 
 type SettingsSection = 'profile' | 'board' | 'coach' | 'sound' | 'data' | 'about'
-type DailyGoal = 5 | 15 | 30
-type MoveAnimSpeed = 'off' | 'normal' | 'slow'
-type CoachTone = 'friendly' | 'blunt' | 'socratic'
-type SoundStyle = 'wood' | 'soft' | 'minimal'
+
+const SKILL_LEVEL_OPTIONS: readonly { readonly id: SkillLevel; readonly label: string }[] = [
+  { id: 'beginner', label: 'I know the rules' },
+  { id: 'club', label: 'Club player · around 1200' },
+  { id: 'strong', label: 'Strong · 1600+' },
+]
+
+const MB = 1024 * 1024
+
+function formatBytes(bytes: number): string {
+  return bytes >= MB
+    ? `${(bytes / MB).toFixed(1)} MB`
+    : `${String(Math.max(1, Math.round(bytes / 1024)))} KB`
+}
+
+function formatTokens(tokens: number): string {
+  return tokens >= 1000 ? `${String(Math.round(tokens / 1000))}k` : String(tokens)
+}
 
 interface BoardSwatchOption {
   readonly id: BoardTheme
@@ -84,43 +121,117 @@ const PIECE_SET_OPTIONS: readonly PieceSetOption[] = [
  * - About (version info, license, GitHub source, check for updates)
  */
 export function SettingsScreen() {
-  const { resolvedTheme, setTheme, board, setBoard, pieceSet, setPieceSet } = useTheme()
+  const { theme, setTheme, board: boardTheme, setBoard, pieceSet, setPieceSet } = useTheme()
+  const settings = useSettings()
+  const profile = useProfile()
+  const { estimate, refresh: refreshStorage } = useStorageEstimate()
+  const gameCount = useGameCount()
+  const getPgnPort = usePgnPort()
+  const importInput = useRef<HTMLInputElement>(null)
 
-  // Profile state
   const [activeSection, setActiveSection] = useState<SettingsSection>('profile')
-  const [displayName, setDisplayName] = useState('Shudipto')
-  const [skillLevel, setSkillLevel] = useState('Club player · around 1200')
-  const [dailyGoal, setDailyGoal] = useState<DailyGoal>(15)
-  const [reminderTime, setReminderTime] = useState('20:00')
-  const [reminderEnabled, setReminderEnabled] = useState(true)
-
-  // Board toggles
-  const [coordinates, setCoordinates] = useState(true)
-  const [highlightLastMove, setHighlightLastMove] = useState(true)
-  const [animationSpeed, setAnimationSpeed] = useState<MoveAnimSpeed>('normal')
-  const [premoves, setPremoves] = useState(false)
-  const [alwaysAskOnPromotion, setAlwaysAskOnPromotion] = useState(true)
-
-  // AI coach state
-  const [provider, setProvider] = useState('Google Gemini')
-  const [model, setModel] = useState('Gemini 2.5 Flash · fast, cheap')
-  const [apiKey, setApiKey] = useState('AIzaSyC7k2-Qm9vT4xLp0eRb8nWd3HfJ6uYs1Ao')
-  const [showKey, setShowKey] = useState(false)
-  const [passphraseLock, setPassphraseLock] = useState(false)
-  const [coachTone, setCoachTone] = useState<CoachTone>('friendly')
-  const [spoilerGuard, setSpoilerGuard] = useState(true)
-  const [allowEngineLines, setAllowEngineLines] = useState(true)
-
-  // Sound state
-  const [moveSounds, setMoveSounds] = useState(true)
-  const [volume, setVolume] = useState(60)
-  const [soundStyle, setSoundStyle] = useState<SoundStyle>('wood')
-  const [lowTimeWarning, setLowTimeWarning] = useState(true)
-  const [celebrations, setCelebrations] = useState(false)
-
-  // Dialog state
-  const [removeKeyModalOpen, setRemoveKeyModalOpen] = useState(false)
+  /** What the name field shows while it is being edited; saved on blur. */
+  const [nameDraft, setNameDraft] = useState<string | undefined>(undefined)
   const [clearDataModalOpen, setClearDataModalOpen] = useState(false)
+  const [clearConfirmation, setClearConfirmation] = useState('')
+  const [wiping, setWiping] = useState(false)
+
+  const { board: boardPrefs, sound, coach } = settings
+  const displayName = nameDraft ?? profile?.displayName ?? ''
+  const skillLevel = profile?.skillLevel ?? 'club'
+
+  /** Why one funnel: every control saves as it changes, and a failed write must be said out loud. */
+  function save(change: (current: Settings) => Settings): void {
+    void changeSettings(change).then((result) => {
+      if (!result.ok)
+        toast.error('That setting was not saved', { description: result.error.message })
+    })
+  }
+  const saveBoard = (patch: Partial<BoardSettings>): void => {
+    save((current) => ({ ...current, board: { ...current.board, ...patch } }))
+  }
+  const saveSound = (patch: Partial<SoundSettings>): void => {
+    save((current) => ({ ...current, sound: { ...current.sound, ...patch } }))
+  }
+  const saveCoach = (patch: Partial<CoachSettings>): void => {
+    save((current) => ({ ...current, coach: { ...current.coach, ...patch } }))
+  }
+  const saveGoal = (minutes: DailyGoalMinutes): void => {
+    save((current) => ({ ...current, dailyGoalMinutes: minutes }))
+  }
+
+  /** Look changes are applied to the page immediately and kept in the database. */
+  const chooseTheme = (mode: ThemeMode): void => {
+    setTheme(mode)
+    save((current) => ({ ...current, theme: mode }))
+  }
+  const chooseBoard = (next: BoardTheme): void => {
+    setBoard(next)
+    saveBoard({ theme: next })
+  }
+  const choosePieceSet = (next: PieceSet): void => {
+    setPieceSet(next)
+    saveBoard({ pieceSet: next })
+  }
+
+  function commitName(): void {
+    const trimmed = (nameDraft ?? '').trim()
+    setNameDraft(undefined)
+    if (nameDraft === undefined || trimmed === '' || trimmed === profile?.displayName) return
+    void changeProfile({ displayName: trimmed }).then((result) => {
+      if (!result.ok) toast.error('Your name was not saved', { description: result.error.message })
+    })
+  }
+
+  function onExportBackup(): void {
+    void downloadBackup().then((result) => {
+      if (!result.ok) {
+        toast.error('Backup failed', { description: result.error.message })
+        return
+      }
+      toast.success(`Backup saved · ${result.value.fileName}`, {
+        description: 'Everything except your API key.',
+      })
+    })
+  }
+
+  function onImportBackup(file: File | undefined): void {
+    if (file === undefined) return
+    void importBackupFile(file).then((result) => {
+      if (!result.ok) {
+        toast.error('That backup could not be imported', { description: result.error.message })
+        return
+      }
+      toast.success('Backup merged', { description: `${String(result.value)} records read.` })
+      refreshStorage()
+    })
+  }
+
+  function onExportPgn(): void {
+    void exportGames({}, { pgn: getPgnPort(), games: gamesRepo }).then((result) => {
+      if (!result.ok) {
+        toast.error('Nothing exported', { description: result.error.message })
+        return
+      }
+      const name = pgnFileName()
+      downloadFile(name, result.value.text)
+      toast.success(`${name} downloaded`, { description: `${String(result.value.count)} games.` })
+    })
+  }
+
+  function onClearAll(): void {
+    setWiping(true)
+    void wipeEverything().then((result) => {
+      if (!result.ok) {
+        setWiping(false)
+        toast.error('Nothing was cleared', { description: result.error.message })
+        return
+      }
+      // A full load, not a route change: every live query and cached setting is stale now,
+      // and the first-run flow should start from a clean slate.
+      window.location.assign('/onboarding')
+    })
+  }
 
   // IDs for accessibility
   const goalLabelId = useId()
@@ -133,10 +244,10 @@ export function SettingsScreen() {
 
   const previewShapes: BoardShapes = useMemo(
     () =>
-      highlightLastMove
+      boardPrefs.highlightLastMove
         ? { ...emptyBoardShapes(), highlight: [toSquare('e8'), toSquare('g8')] }
         : emptyBoardShapes(),
-    [highlightLastMove],
+    [boardPrefs.highlightLastMove],
   )
 
   return (
@@ -262,8 +373,10 @@ export function SettingsScreen() {
                   className="input"
                   value={displayName}
                   onChange={(e) => {
-                    setDisplayName(e.target.value)
+                    setNameDraft(e.target.value)
                   }}
+                  onBlur={commitName}
+                  maxLength={40}
                   autoComplete="nickname"
                 />
                 <p className="help">Shown to friends when you share a link.</p>
@@ -278,12 +391,16 @@ export function SettingsScreen() {
                   className="input"
                   value={skillLevel}
                   onChange={(e) => {
-                    setSkillLevel(e.target.value)
+                    const level = SKILL_LEVEL_OPTIONS.find((option) => option.id === e.target.value)
+                    if (level === undefined) return
+                    void changeProfile({ skillLevel: level.id })
                   }}
                 >
-                  <option value="I know the rules">I know the rules</option>
-                  <option value="Club player · around 1200">Club player · around 1200</option>
-                  <option value="Strong · 1600+">Strong · 1600+</option>
+                  {SKILL_LEVEL_OPTIONS.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
                 </select>
                 <p className="help">Sets puzzle and sparring starting points. They adapt anyway.</p>
               </div>
@@ -295,9 +412,12 @@ export function SettingsScreen() {
                 <div className="seg flex w-full" role="group" aria-labelledby={goalLabelId}>
                   <button
                     type="button"
-                    className={cn('min-h-[36px] flex-1 sm:min-h-0', dailyGoal === 5 && 'is-active')}
+                    className={cn(
+                      'min-h-[36px] flex-1 sm:min-h-0',
+                      settings.dailyGoalMinutes === 5 && 'is-active',
+                    )}
                     onClick={() => {
-                      setDailyGoal(5)
+                      saveGoal(5)
                     }}
                   >
                     5 min
@@ -306,10 +426,10 @@ export function SettingsScreen() {
                     type="button"
                     className={cn(
                       'min-h-[36px] flex-1 sm:min-h-0',
-                      dailyGoal === 15 && 'is-active',
+                      settings.dailyGoalMinutes === 15 && 'is-active',
                     )}
                     onClick={() => {
-                      setDailyGoal(15)
+                      saveGoal(15)
                     }}
                   >
                     15 min
@@ -318,10 +438,10 @@ export function SettingsScreen() {
                     type="button"
                     className={cn(
                       'min-h-[36px] flex-1 sm:min-h-0',
-                      dailyGoal === 30 && 'is-active',
+                      settings.dailyGoalMinutes === 30 && 'is-active',
                     )}
                     onClick={() => {
-                      setDailyGoal(30)
+                      saveGoal(30)
                     }}
                   >
                     30 min
@@ -339,17 +459,20 @@ export function SettingsScreen() {
                     id="remind"
                     type="time"
                     className="input w-32 sm:w-36"
-                    value={reminderTime}
+                    value={settings.reminderTime}
                     onChange={(e) => {
-                      setReminderTime(e.target.value)
+                      const time = e.target.value
+                      if (time === '') return
+                      save((current) => ({ ...current, reminderTime: time }))
                     }}
                   />
                   <label className="switch" aria-label="Reminder on">
                     <input
                       type="checkbox"
-                      checked={reminderEnabled}
+                      checked={settings.reminderEnabled}
                       onChange={(e) => {
-                        setReminderEnabled(e.target.checked)
+                        const enabled = e.target.checked
+                        save((current) => ({ ...current, reminderEnabled: enabled }))
                       }}
                     />
                     <span />
@@ -384,9 +507,9 @@ export function SettingsScreen() {
                   >
                     <button
                       type="button"
-                      className={cn(resolvedTheme === 'light' && 'is-active')}
+                      className={cn(theme === 'light' && 'is-active')}
                       onClick={() => {
-                        setTheme('light')
+                        chooseTheme('light')
                       }}
                     >
                       <Sun className="mr-1.5 inline size-3.5 align-[-2px]" aria-hidden="true" />
@@ -394,13 +517,23 @@ export function SettingsScreen() {
                     </button>
                     <button
                       type="button"
-                      className={cn(resolvedTheme === 'dark' && 'is-active')}
+                      className={cn(theme === 'dark' && 'is-active')}
                       onClick={() => {
-                        setTheme('dark')
+                        chooseTheme('dark')
                       }}
                     >
                       <Moon className="mr-1.5 inline size-3.5 align-[-2px]" aria-hidden="true" />
                       Dark
+                    </button>
+                    <button
+                      type="button"
+                      className={cn(theme === 'system' && 'is-active')}
+                      onClick={() => {
+                        chooseTheme('system')
+                      }}
+                    >
+                      <Monitor className="mr-1.5 inline size-3.5 align-[-2px]" aria-hidden="true" />
+                      System
                     </button>
                   </div>
                 </div>
@@ -421,11 +554,11 @@ export function SettingsScreen() {
                         key={swatch.id}
                         type="button"
                         role="radio"
-                        aria-checked={board === swatch.id}
+                        aria-checked={boardTheme === swatch.id}
                         data-board-name={swatch.id === 'grove' ? '' : swatch.id}
                         className="group flex flex-col items-center gap-1.5 text-xs font-medium"
                         onClick={() => {
-                          setBoard(swatch.id)
+                          chooseBoard(swatch.id)
                         }}
                       >
                         <span
@@ -461,7 +594,7 @@ export function SettingsScreen() {
                         data-set-name={opt.id}
                         className="option min-h-[44px] flex-col gap-1 p-3 aria-checked:border-primary aria-checked:bg-accent/50 aria-checked:ring-2 aria-checked:ring-primary/20"
                         onClick={() => {
-                          setPieceSet(opt.id)
+                          choosePieceSet(opt.id)
                         }}
                       >
                         <span className="flex">
@@ -497,9 +630,9 @@ export function SettingsScreen() {
                       <input
                         type="checkbox"
                         id="opt-coords"
-                        checked={coordinates}
+                        checked={boardPrefs.coordinates}
                         onChange={(e) => {
-                          setCoordinates(e.target.checked)
+                          saveBoard({ coordinates: e.target.checked })
                         }}
                       />
                       <span />
@@ -517,9 +650,9 @@ export function SettingsScreen() {
                       <input
                         type="checkbox"
                         id="opt-hl"
-                        checked={highlightLastMove}
+                        checked={boardPrefs.highlightLastMove}
                         onChange={(e) => {
-                          setHighlightLastMove(e.target.checked)
+                          saveBoard({ highlightLastMove: e.target.checked })
                         }}
                       />
                       <span />
@@ -540,27 +673,27 @@ export function SettingsScreen() {
                     >
                       <button
                         type="button"
-                        className={cn(animationSpeed === 'off' && 'is-active')}
+                        className={cn(boardPrefs.animation === 'off' && 'is-active')}
                         onClick={() => {
-                          setAnimationSpeed('off')
+                          saveBoard({ animation: 'off' })
                         }}
                       >
                         Off
                       </button>
                       <button
                         type="button"
-                        className={cn(animationSpeed === 'normal' && 'is-active')}
+                        className={cn(boardPrefs.animation === 'normal' && 'is-active')}
                         onClick={() => {
-                          setAnimationSpeed('normal')
+                          saveBoard({ animation: 'normal' })
                         }}
                       >
                         Normal
                       </button>
                       <button
                         type="button"
-                        className={cn(animationSpeed === 'slow' && 'is-active')}
+                        className={cn(boardPrefs.animation === 'slow' && 'is-active')}
                         onClick={() => {
-                          setAnimationSpeed('slow')
+                          saveBoard({ animation: 'slow' })
                         }}
                       >
                         Slow
@@ -579,9 +712,9 @@ export function SettingsScreen() {
                       <input
                         type="checkbox"
                         id="opt-premoves"
-                        checked={premoves}
+                        checked={boardPrefs.premoves}
                         onChange={(e) => {
-                          setPremoves(e.target.checked)
+                          saveBoard({ premoves: e.target.checked })
                         }}
                       />
                       <span />
@@ -599,9 +732,9 @@ export function SettingsScreen() {
                       <input
                         type="checkbox"
                         id="opt-promo"
-                        checked={alwaysAskOnPromotion}
+                        checked={boardPrefs.alwaysAskOnPromotion}
                         onChange={(e) => {
-                          setAlwaysAskOnPromotion(e.target.checked)
+                          saveBoard({ alwaysAskOnPromotion: e.target.checked })
                         }}
                       />
                       <span />
@@ -615,7 +748,7 @@ export function SettingsScreen() {
                 <div className="mx-auto w-full max-w-[260px] overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.45)] ring-1 ring-border sm:max-w-[300px]">
                   <Board
                     fen={PREVIEW_FEN}
-                    coordinates={coordinates}
+                    coordinates={boardPrefs.coordinates}
                     movable="none"
                     shapes={previewShapes}
                     label="Preview board: Italian Game after 6...O-O"
@@ -641,8 +774,13 @@ export function SettingsScreen() {
                 <p className="help">Bring your own key. No key? Everything else works.</p>
               </div>
               <span className="badge badge-soft">
-                <span className="size-1.5 rounded-full bg-success" />
-                Connected
+                <span
+                  className={cn(
+                    'size-1.5 rounded-full',
+                    coach.hasKey ? 'bg-success' : 'bg-muted-foreground',
+                  )}
+                />
+                {coach.hasKey ? 'Connected' : 'No key yet'}
               </span>
             </div>
 
@@ -655,14 +793,23 @@ export function SettingsScreen() {
                   <select
                     id="provider"
                     className="input"
-                    value={provider}
+                    value={coach.provider}
                     onChange={(e) => {
-                      setProvider(e.target.value)
+                      const next = PROVIDER_OPTIONS.find((option) => option.id === e.target.value)
+                      if (next === undefined) return
+                      // A model name from another provider would be a request that always fails.
+                      const firstModel = MODEL_OPTIONS[next.id][0]
+                      saveCoach({
+                        provider: next.id,
+                        ...(firstModel ? { model: firstModel.id } : {}),
+                      })
                     }}
                   >
-                    <option value="Google Gemini">Google Gemini</option>
-                    <option value="OpenAI">OpenAI</option>
-                    <option value="Anthropic">Anthropic</option>
+                    {PROVIDER_OPTIONS.map((option) => (
+                      <option key={option.id} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -673,17 +820,16 @@ export function SettingsScreen() {
                   <select
                     id="model"
                     className="input"
-                    value={model}
+                    value={coach.model}
                     onChange={(e) => {
-                      setModel(e.target.value)
+                      saveCoach({ model: e.target.value })
                     }}
                   >
-                    <option value="Gemini 2.5 Flash · fast, cheap">
-                      Gemini 2.5 Flash · fast, cheap
-                    </option>
-                    <option value="Gemini 2.5 Pro · deeper reviews">
-                      Gemini 2.5 Pro · deeper reviews
-                    </option>
+                    {MODEL_OPTIONS[coach.provider].map((option) => (
+                      <option key={option.id} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -691,68 +837,27 @@ export function SettingsScreen() {
                   <label htmlFor="apikey" className="field-label">
                     API key
                   </label>
-                  <div className="flex flex-wrap gap-2">
-                    <div className="relative min-w-0 flex-1 basis-60">
-                      <Lock
-                        className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-                        aria-hidden="true"
-                      />
-                      <input
-                        id="apikey"
-                        type={showKey ? 'text' : 'password'}
-                        className="input pr-11 pl-9 font-mono"
-                        value={apiKey}
-                        onChange={(e) => {
-                          setApiKey(e.target.value)
-                        }}
-                        autoComplete="off"
-                        spellCheck="false"
-                      />
-                      <button
-                        type="button"
-                        id="reveal"
-                        className="btn btn-ghost btn-icon btn-sm absolute top-1/2 right-1 min-h-[36px] min-w-[36px] -translate-y-1/2"
-                        aria-label={showKey ? 'Hide key' : 'Show key'}
-                        aria-pressed={showKey}
-                        onClick={() => {
-                          setShowKey(!showKey)
-                        }}
-                      >
-                        {showKey ? (
-                          <EyeOff className="size-4" aria-hidden="true" />
-                        ) : (
-                          <Eye className="size-4" aria-hidden="true" />
-                        )}
-                      </button>
-                    </div>
-
-                    <div className="flex w-full items-center gap-2 sm:w-auto">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="min-h-[40px] flex-1 sm:flex-initial"
-                        onClick={() => {
-                          toast('Key works · Gemini 2.5 Flash')
-                        }}
-                      >
-                        <PlugZap className="size-4" aria-hidden="true" />
-                        Test key
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        className="min-h-[40px] flex-1 sm:flex-initial"
-                        onClick={() => {
-                          setRemoveKeyModalOpen(true)
-                        }}
-                      >
-                        <Trash2 className="size-4" aria-hidden="true" />
-                        Remove key
-                      </Button>
-                    </div>
+                  <div className="relative">
+                    <Lock
+                      className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                      aria-hidden="true"
+                    />
+                    <input
+                      id="apikey"
+                      type="password"
+                      className="input pl-9 font-mono"
+                      value=""
+                      placeholder={
+                        coach.hasKey ? 'A key is stored on this device' : 'No key stored'
+                      }
+                      disabled
+                      readOnly
+                      autoComplete="off"
+                    />
                   </div>
                   <p className="help">
-                    Get a free key at aistudio.google.com. Added 3 Sep · last used 6 min ago.
+                    Saving a key switches on with the Sage coach itself, which also tests it and
+                    shows its usage. Your tone and model choices below are kept already.
                   </p>
                 </div>
               </div>
@@ -823,9 +928,9 @@ export function SettingsScreen() {
                     <input
                       type="checkbox"
                       id="opt-passphrase"
-                      checked={passphraseLock}
+                      checked={coach.passphraseLock}
                       onChange={(e) => {
-                        setPassphraseLock(e.target.checked)
+                        saveCoach({ passphraseLock: e.target.checked })
                       }}
                     />
                     <span />
@@ -843,13 +948,13 @@ export function SettingsScreen() {
                     <button
                       type="button"
                       role="radio"
-                      aria-checked={coachTone === 'friendly'}
+                      aria-checked={coach.tone === 'friendly'}
                       className={cn(
                         'option min-h-[44px] w-full p-3 text-left',
-                        coachTone === 'friendly' && 'is-active',
+                        coach.tone === 'friendly' && 'is-active',
                       )}
                       onClick={() => {
-                        setCoachTone('friendly')
+                        saveCoach({ tone: 'friendly' })
                       }}
                     >
                       <span className="grid size-8 place-items-center rounded-lg bg-accent text-primary">
@@ -864,13 +969,13 @@ export function SettingsScreen() {
                     <button
                       type="button"
                       role="radio"
-                      aria-checked={coachTone === 'blunt'}
+                      aria-checked={coach.tone === 'blunt'}
                       className={cn(
                         'option min-h-[44px] w-full p-3 text-left',
-                        coachTone === 'blunt' && 'is-active',
+                        coach.tone === 'blunt' && 'is-active',
                       )}
                       onClick={() => {
-                        setCoachTone('blunt')
+                        saveCoach({ tone: 'blunt' })
                       }}
                     >
                       <span className="grid size-8 place-items-center rounded-lg bg-cta-soft text-cta">
@@ -885,13 +990,13 @@ export function SettingsScreen() {
                     <button
                       type="button"
                       role="radio"
-                      aria-checked={coachTone === 'socratic'}
+                      aria-checked={coach.tone === 'socratic'}
                       className={cn(
                         'option min-h-[44px] w-full p-3 text-left',
-                        coachTone === 'socratic' && 'is-active',
+                        coach.tone === 'socratic' && 'is-active',
                       )}
                       onClick={() => {
-                        setCoachTone('socratic')
+                        saveCoach({ tone: 'socratic' })
                       }}
                     >
                       <span className="grid size-8 place-items-center rounded-lg bg-lilac text-lilac-ink">
@@ -919,9 +1024,9 @@ export function SettingsScreen() {
                       <input
                         type="checkbox"
                         id="opt-spoiler"
-                        checked={spoilerGuard}
+                        checked={coach.spoilerGuard}
                         onChange={(e) => {
-                          setSpoilerGuard(e.target.checked)
+                          saveCoach({ spoilerGuard: e.target.checked })
                         }}
                       />
                       <span />
@@ -941,9 +1046,9 @@ export function SettingsScreen() {
                       <input
                         type="checkbox"
                         id="opt-engine"
-                        checked={allowEngineLines}
+                        checked={coach.allowEngineLines}
                         onChange={(e) => {
-                          setAllowEngineLines(e.target.checked)
+                          saveCoach({ allowEngineLines: e.target.checked })
                         }}
                       />
                       <span />
@@ -952,23 +1057,23 @@ export function SettingsScreen() {
 
                   <div className="rounded-xl border p-4">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium">September usage</span>
+                      <span className="font-medium">Monthly usage</span>
                       <span className="text-muted-foreground">
-                        ≈ <b className="font-semibold text-foreground">$0.06</b>
+                        <b className="font-semibold text-foreground">0</b> tokens so far
                       </span>
                     </div>
                     <div
                       role="progressbar"
-                      aria-valuenow={184000}
+                      aria-valuenow={0}
                       aria-valuemin={0}
-                      aria-valuemax={500000}
+                      aria-valuemax={coach.monthlyTokenCap}
                       aria-label="Monthly token usage"
                       className="progress mt-2"
                     >
-                      <span className="w-[37%]" />
+                      <span className="w-0" />
                     </div>
                     <div className="mt-1.5 flex justify-between text-xs text-muted-foreground">
-                      <span>184k of 500k tokens</span>
+                      <span>0 of {formatTokens(coach.monthlyTokenCap)} tokens</span>
                       <span>Soft cap · you set it</span>
                     </div>
                     <p className="mt-2 text-xs text-muted-foreground">
@@ -998,9 +1103,9 @@ export function SettingsScreen() {
                   <input
                     type="checkbox"
                     id="opt-movesounds"
-                    checked={moveSounds}
+                    checked={sound.moveSounds}
                     onChange={(e) => {
-                      setMoveSounds(e.target.checked)
+                      saveSound({ moveSounds: e.target.checked })
                     }}
                   />
                   <span />
@@ -1016,9 +1121,9 @@ export function SettingsScreen() {
                   type="range"
                   min="0"
                   max="100"
-                  value={volume}
+                  value={sound.volume}
                   onChange={(e) => {
-                    setVolume(Number(e.target.value))
+                    saveSound({ volume: Number(e.target.value) })
                   }}
                   className="w-full accent-[var(--primary)] sm:w-48"
                 />
@@ -1035,27 +1140,27 @@ export function SettingsScreen() {
                 >
                   <button
                     type="button"
-                    className={cn(soundStyle === 'wood' && 'is-active')}
+                    className={cn(sound.style === 'wood' && 'is-active')}
                     onClick={() => {
-                      setSoundStyle('wood')
+                      saveSound({ style: 'wood' })
                     }}
                   >
                     Wood
                   </button>
                   <button
                     type="button"
-                    className={cn(soundStyle === 'soft' && 'is-active')}
+                    className={cn(sound.style === 'soft' && 'is-active')}
                     onClick={() => {
-                      setSoundStyle('soft')
+                      saveSound({ style: 'soft' })
                     }}
                   >
                     Soft
                   </button>
                   <button
                     type="button"
-                    className={cn(soundStyle === 'minimal' && 'is-active')}
+                    className={cn(sound.style === 'minimal' && 'is-active')}
                     onClick={() => {
-                      setSoundStyle('minimal')
+                      saveSound({ style: 'minimal' })
                     }}
                   >
                     Minimal
@@ -1074,9 +1179,9 @@ export function SettingsScreen() {
                   <input
                     type="checkbox"
                     id="opt-lowtime"
-                    checked={lowTimeWarning}
+                    checked={sound.lowTimeWarning}
                     onChange={(e) => {
-                      setLowTimeWarning(e.target.checked)
+                      saveSound({ lowTimeWarning: e.target.checked })
                     }}
                   />
                   <span />
@@ -1094,9 +1199,9 @@ export function SettingsScreen() {
                   <input
                     type="checkbox"
                     id="opt-celebrations"
-                    checked={celebrations}
+                    checked={sound.celebrations}
                     onChange={(e) => {
-                      setCelebrations(e.target.checked)
+                      saveSound({ celebrations: e.target.checked })
                     }}
                   />
                   <span />
@@ -1119,46 +1224,46 @@ export function SettingsScreen() {
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium">Storage used</span>
                   <span className="text-muted-foreground">
-                    <b className="font-semibold text-foreground">4.2 MB</b> in IndexedDB
+                    {estimate === undefined ? (
+                      'The browser did not say'
+                    ) : (
+                      <>
+                        <b className="font-semibold text-foreground">
+                          {formatBytes(estimate.usageBytes)}
+                        </b>{' '}
+                        of {formatBytes(estimate.quotaBytes)} available
+                      </>
+                    )}
                   </span>
                 </div>
-                <div
-                  className="mt-2 flex h-2.5 overflow-hidden rounded-full bg-muted"
-                  role="img"
-                  aria-label="Games 2.6 MB, puzzles 0.9 MB, lessons and repertoire 0.4 MB, chats 0.3 MB"
-                >
-                  <span className="w-[62%] bg-primary" />
-                  <span className="w-[21%] bg-sky-ink" />
-                  <span className="w-[10%] bg-reward" />
-                  <span className="w-[7%] bg-lilac-ink" />
-                </div>
-                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1.5">
-                    <span className="size-2 rounded-full bg-primary" />
-                    Games · 142
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="size-2 rounded-full bg-sky-ink" />
-                    Puzzles
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="size-2 rounded-full bg-reward" />
-                    Lessons &amp; repertoire
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="size-2 rounded-full bg-lilac-ink" />
-                    Sage chats
-                  </span>
-                </div>
+                {estimate !== undefined && estimate.quotaBytes > 0 && (
+                  <div
+                    role="progressbar"
+                    aria-label="Storage used"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={Math.min(100, Math.round(estimate.usedRatio * 100))}
+                    className="progress mt-2"
+                  >
+                    <span
+                      style={{
+                        width: `${String(Math.min(100, estimate.usedRatio * 100))}%`,
+                      }}
+                    />
+                  </div>
+                )}
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {gameCount === undefined
+                    ? 'Counting games…'
+                    : `${String(gameCount)} games in your library`}
+                </p>
               </div>
 
               <div className="grid gap-2 sm:grid-cols-3">
                 <Button
                   variant="outline"
                   className="h-auto min-h-[52px] flex-col items-start gap-0.5 p-3 text-left whitespace-normal"
-                  onClick={() => {
-                    toast('Backup saved · chess-king-2026-09-19.json')
-                  }}
+                  onClick={onExportBackup}
                 >
                   <span className="flex items-center gap-2 font-medium">
                     <Download className="size-4" aria-hidden="true" />
@@ -1173,7 +1278,7 @@ export function SettingsScreen() {
                   variant="outline"
                   className="h-auto min-h-[52px] flex-col items-start gap-0.5 p-3 text-left whitespace-normal"
                   onClick={() => {
-                    toast('Choose a backup file to import')
+                    importInput.current?.click()
                   }}
                 >
                   <span className="flex items-center gap-2 font-medium">
@@ -1184,20 +1289,30 @@ export function SettingsScreen() {
                     Merges with what&apos;s here
                   </span>
                 </Button>
+                <input
+                  ref={importInput}
+                  type="file"
+                  accept="application/json,.json"
+                  className="sr-only"
+                  aria-label="Backup file"
+                  tabIndex={-1}
+                  onChange={(e) => {
+                    onImportBackup(e.target.files?.[0])
+                    e.target.value = ''
+                  }}
+                />
 
                 <Button
                   variant="outline"
                   className="h-auto min-h-[52px] flex-col items-start gap-0.5 p-3 text-left whitespace-normal"
-                  onClick={() => {
-                    toast('142 games exported · my-games.pgn')
-                  }}
+                  onClick={onExportPgn}
                 >
                   <span className="flex items-center gap-2 font-medium">
                     <FileDown className="size-4" aria-hidden="true" />
                     Export all PGN
                   </span>
                   <span className="text-xs font-normal text-muted-foreground">
-                    142 games, with Sage&apos;s notes
+                    Every game in your library
                   </span>
                 </Button>
               </div>
@@ -1213,6 +1328,7 @@ export function SettingsScreen() {
                   variant="destructive"
                   className="min-h-[44px] w-full sm:w-auto"
                   onClick={() => {
+                    setClearConfirmation('')
                     setClearDataModalOpen(true)
                   }}
                 >
@@ -1233,14 +1349,14 @@ export function SettingsScreen() {
                 <h2 id="about-h" className="text-lg font-bold">
                   Chess King{' '}
                   <span className="ml-1 align-middle font-mono text-xs font-medium text-muted-foreground">
-                    v0.9.2
+                    v0.0.0
                   </span>
                 </h2>
                 <p className="mt-1 text-sm">
                   No accounts. No tracking. Your data stays in this browser.
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Free and open source under the MIT licence. Stockfish 17 runs on your device.
+                  Free and open source under the MIT licence. Stockfish runs on your device.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <a
@@ -1257,7 +1373,7 @@ export function SettingsScreen() {
                     size="sm"
                     className="min-h-[36px]"
                     onClick={() => {
-                      toast('Up to date · v0.9.2')
+                      toast('You are on the latest build')
                     }}
                   >
                     <RefreshCw className="size-3.5" aria-hidden="true" />
@@ -1276,48 +1392,6 @@ export function SettingsScreen() {
         </div>
       </div>
 
-      {/* Remove Key Modal */}
-      {removeKeyModalOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="rk-h"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-        >
-          <div className="card w-full max-w-[min(440px,calc(100vw-32px))] p-5 shadow-xl sm:p-6">
-            <h2 id="rk-h" className="text-xl font-bold">
-              Remove your Gemini key?
-            </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Sage goes quiet until you add a key again. Your games, puzzles and progress stay
-              exactly as they are.
-            </p>
-            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button
-                variant="outline"
-                className="min-h-[44px] w-full sm:w-auto"
-                onClick={() => {
-                  setRemoveKeyModalOpen(false)
-                }}
-              >
-                Keep key
-              </Button>
-              <Button
-                variant="destructive"
-                className="min-h-[44px] w-full sm:w-auto"
-                onClick={() => {
-                  setApiKey('')
-                  setRemoveKeyModalOpen(false)
-                  toast('Key removed from this browser')
-                }}
-              >
-                Remove key
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Clear Data Modal */}
       {clearDataModalOpen && (
         <div
@@ -1334,20 +1408,34 @@ export function SettingsScreen() {
               Clear everything on this device?
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              142 games, your Mistake Bank, your garden and your key will be deleted. There&apos;s
-              no server copy, so this can&apos;t be undone.
+              {gameCount === undefined ? 'Your' : `${String(gameCount)} games, your`} Mistake Bank,
+              your garden and your key will be deleted. There&apos;s no server copy, so this
+              can&apos;t be undone.
             </p>
             <Button
               variant="outline"
               size="sm"
               className="mt-4 min-h-[36px]"
-              onClick={() => {
-                toast('Backup saved · chess-king-2026-09-19.json')
-              }}
+              onClick={onExportBackup}
             >
               <Download className="size-3.5" aria-hidden="true" />
               Export a backup first
             </Button>
+            <div className="mt-4 space-y-1.5">
+              <label htmlFor="clear-confirm" className="field-label">
+                Type DELETE to confirm
+              </label>
+              <input
+                id="clear-confirm"
+                className="input"
+                value={clearConfirmation}
+                autoComplete="off"
+                spellCheck="false"
+                onChange={(e) => {
+                  setClearConfirmation(e.target.value)
+                }}
+              />
+            </div>
             <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button
                 variant="outline"
@@ -1361,10 +1449,8 @@ export function SettingsScreen() {
               <Button
                 variant="destructive"
                 className="min-h-[44px] w-full sm:w-auto"
-                onClick={() => {
-                  setClearDataModalOpen(false)
-                  toast('All data cleared')
-                }}
+                disabled={clearConfirmation !== 'DELETE' || wiping}
+                onClick={onClearAll}
               >
                 Clear all data
               </Button>

@@ -19,6 +19,7 @@ import type {
   SrsCard,
   SrsState,
   StreakState,
+  Timestamp,
 } from '@/domain'
 
 import { KV_KEYS } from './kv-keys'
@@ -31,6 +32,8 @@ import type { MistakeFilter } from './repositories/mistakes'
 import type { PuzzleSelection, PuzzleStats } from './repositories/puzzles'
 import type { DueQuery } from './repositories/srs-cards'
 import type { GameRow, LessonProgress, PracticeSession } from './schema'
+
+const MAX_TIMESTAMP = Number.MAX_SAFE_INTEGER as Timestamp
 
 /**
  * Live-query hooks.
@@ -91,6 +94,22 @@ export function usePuzzleStats(): PuzzleStats | undefined {
 
 export function useRecentAttempts(limit = 20): PuzzleAttempt[] | undefined {
   return useLiveQuery(() => repositories.attempts.listRecent(limit), [limit])
+}
+
+/** Every attempt ever made; the Growth screen windows them itself so ranges switch instantly. */
+export function useAllAttempts(): PuzzleAttempt[] | undefined {
+  return useLiveQuery(() => repositories.attempts.listByDate(), [])
+}
+
+export function useAllSessions(): PracticeSession[] | undefined {
+  return useLiveQuery(() => repositories.sessions.listBetween(0 as Timestamp, MAX_TIMESTAMP), [])
+}
+
+/** Puzzles by id, for looking up the theme of each attempt. */
+export function usePuzzlesByIds(ids: readonly PuzzleId[]): Puzzle[] | undefined {
+  const key = ids.join(',')
+  // `key` stands in for the array so a new array with the same ids does not re-query.
+  return useLiveQuery(() => repositories.puzzles.getMany(ids), [key])
 }
 
 export function useDueCards(query?: DueQuery): SrsCard[] | undefined {
@@ -158,6 +177,11 @@ export function useSettings(): Settings {
 
 export function useProfile(): Profile | undefined {
   return useLiveQuery(() => repositories.profile.get(), [])
+}
+
+/** `undefined` until the query has answered, so "not yet known" is never read as "no profile". */
+export function useHasProfile(): boolean | undefined {
+  return useLiveQuery(async () => (await repositories.profile.get()) !== undefined, [])
 }
 
 export function useStreak(): StreakState | undefined {

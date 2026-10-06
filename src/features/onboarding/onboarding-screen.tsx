@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import {
   ArrowLeft,
   ArrowRight,
@@ -22,8 +22,20 @@ import {
 import { useId, useMemo, useState } from 'react'
 
 import { Board } from '@/board'
-import { Button, cn, useTheme, type BoardTheme } from '@/design'
-import { emptyBoardShapes, toFen, toSquare, type BoardShapes, type Fen } from '@/domain'
+import { useProfile, useSettings } from '@/data'
+import { Button, cn, toast, useTheme, type BoardTheme } from '@/design'
+import {
+  emptyBoardShapes,
+  toFen,
+  toSquare,
+  type BoardShapes,
+  type CoachProvider,
+  type Fen,
+  type SkillLevel,
+} from '@/domain'
+import { PROVIDER_OPTIONS } from '@/features/settings/coach-options'
+
+import { completeOnboarding } from './onboarding-actions'
 
 const PREVIEW_FEN: Fen = toFen('rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2')
 
@@ -31,6 +43,30 @@ type OnboardingStep = 1 | 2 | 3 | 4
 type SkillLevelChoice = 'never' | 'rules' | 'club' | 'strong'
 type GoalChoice = 'tactics' | 'openings' | 'endgames' | 'friends' | 'blunders'
 type DailyMinutesChoice = 5 | 15 | 30
+
+/** The two beginner cards are one level in the data: the app only needs to know "starting out". */
+const SKILL_FOR_CHOICE: Record<SkillLevelChoice, SkillLevel> = {
+  never: 'beginner',
+  rules: 'beginner',
+  club: 'club',
+  strong: 'strong',
+}
+
+const GOAL_CHOICES = ['tactics', 'openings', 'endgames', 'friends', 'blunders'] as const
+
+function isGoalChoice(value: string): value is GoalChoice {
+  return GOAL_CHOICES.some((goal) => goal === value)
+}
+
+/** What the user has changed so far; anything absent falls back to what is already saved. */
+interface Draft {
+  name?: string
+  level?: SkillLevelChoice
+  placement?: boolean
+  goals?: readonly GoalChoice[]
+  minutes?: DailyMinutesChoice
+  provider?: CoachProvider
+}
 
 interface BoardSwatchOption {
   readonly id: BoardTheme
@@ -55,19 +91,61 @@ const BOARD_SWATCHES: readonly BoardSwatchOption[] = [
  * 4. Optional AI Coach (Sage) API key setup or quick skip to play
  */
 export function OnboardingScreen() {
-  const { resolvedTheme, toggleTheme, board, setBoard } = useTheme()
+  const { theme, resolvedTheme, setTheme, board, setBoard } = useTheme()
+  const navigate = useNavigate()
+  const profile = useProfile()
+  const settings = useSettings()
 
   const [currentStep, setCurrentStep] = useState<OnboardingStep>(1)
-  const [skillLevel, setSkillLevel] = useState<SkillLevelChoice>('rules')
-  const [takePlacement, setTakePlacement] = useState(false)
-  const [selectedGoals, setSelectedGoals] = useState<readonly GoalChoice[]>([
-    'tactics',
-    'friends',
-    'blunders',
-  ])
-  const [dailyMinutes, setDailyMinutes] = useState<DailyMinutesChoice>(15)
-  const [coachProvider, setCoachProvider] = useState('Google Gemini')
-  const [coachKey, setCoachKey] = useState('')
+  const [draft, setDraft] = useState<Draft>({})
+  const [finishing, setFinishing] = useState(false)
+
+  // Replaying setup from Settings starts from the saved answers instead of a blank form.
+  const savedLevel: SkillLevelChoice | undefined =
+    profile === undefined
+      ? undefined
+      : profile.skillLevel === 'beginner'
+        ? 'rules'
+        : profile.skillLevel
+  const savedGoals = profile?.goals.filter(isGoalChoice)
+  const displayName = draft.name ?? profile?.displayName ?? ''
+  const skillLevel = draft.level ?? savedLevel ?? 'rules'
+  const takePlacement = draft.placement ?? false
+  const selectedGoals = draft.goals ?? savedGoals ?? ['tactics', 'friends', 'blunders']
+  const dailyMinutes = draft.minutes ?? settings.dailyGoalMinutes
+  const coachProvider = draft.provider ?? settings.coach.provider
+
+  const setSkillLevel = (level: SkillLevelChoice) => {
+    setDraft((d) => ({ ...d, level }))
+  }
+  const setTakePlacement = (placement: boolean) => {
+    setDraft((d) => ({ ...d, placement }))
+  }
+  const setDailyMinutes = (minutes: DailyMinutesChoice) => {
+    setDraft((d) => ({ ...d, minutes }))
+  }
+
+  /** Both endings of step 4 land here: skipping the coach still finishes setup. */
+  function finish(): void {
+    if (finishing) return
+    setFinishing(true)
+    void completeOnboarding({
+      displayName,
+      skillLevel: SKILL_FOR_CHOICE[skillLevel],
+      goals: selectedGoals,
+      dailyMinutes,
+      boardTheme: board,
+      themeMode: theme,
+      coachProvider,
+    }).then((result) => {
+      if (!result.ok) {
+        setFinishing(false)
+        toast.error('Setup was not saved', { description: result.error.message })
+        return
+      }
+      void navigate({ to: takePlacement ? '/puzzles' : '/' })
+    })
+  }
 
   const boardLabelId = useId()
   const goalsLabelId = useId()
@@ -83,9 +161,13 @@ export function OnboardingScreen() {
   )
 
   const toggleGoal = (goal: GoalChoice) => {
-    setSelectedGoals((prev) =>
-      prev.includes(goal) ? prev.filter((g) => g !== goal) : [...prev, goal],
-    )
+    setDraft((d) => {
+      const current = d.goals ?? selectedGoals
+      return {
+        ...d,
+        goals: current.includes(goal) ? current.filter((g) => g !== goal) : [...current, goal],
+      }
+    })
   }
 
   return (
@@ -108,7 +190,9 @@ export function OnboardingScreen() {
           <button
             type="button"
             className="btn btn-ghost btn-icon size-9 min-h-[36px] min-w-[36px] sm:size-8"
-            onClick={toggleTheme}
+            onClick={() => {
+              setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
+            }}
             aria-label="Toggle dark mode"
           >
             {resolvedTheme === 'dark' ? (
@@ -265,6 +349,27 @@ export function OnboardingScreen() {
                 A rough guess is fine. Everything adapts as you play.
               </p>
 
+              <div className="mt-5 space-y-1.5">
+                <label htmlFor="ob-name" className="field-label">
+                  What should we call you?
+                </label>
+                <input
+                  id="ob-name"
+                  className="input"
+                  value={displayName}
+                  maxLength={40}
+                  placeholder="Player"
+                  autoComplete="nickname"
+                  onChange={(e) => {
+                    const name = e.target.value
+                    setDraft((d) => ({ ...d, name }))
+                  }}
+                />
+                <p className="help">
+                  Stays on this device. Shown to friends only if you share a link.
+                </p>
+              </div>
+
               <div
                 className="mt-5 grid gap-2 sm:grid-cols-2"
                 role="radiogroup"
@@ -361,7 +466,9 @@ export function OnboardingScreen() {
                   <label htmlFor="placement-check" className="block cursor-pointer font-medium">
                     Not sure? Take a 5-puzzle placement
                   </label>
-                  <span className="help">About 2 minutes. We&apos;ll pick your level from it.</span>
+                  <span className="help">
+                    We&apos;ll open puzzles first. Your rating adapts as you solve.
+                  </span>
                 </div>
                 <span className="switch">
                   <input
@@ -675,9 +782,11 @@ export function OnboardingScreen() {
                 </div>
               </div>
 
-              <Link
-                to="/"
-                className="mt-5 flex min-h-[56px] items-center gap-3 rounded-2xl border-2 border-primary/30 bg-accent/60 p-3.5 transition hover:border-primary sm:p-4"
+              <button
+                type="button"
+                disabled={finishing}
+                className="mt-5 flex min-h-[56px] w-full items-center gap-3 rounded-2xl border-2 border-primary/30 bg-accent/60 p-3.5 text-left transition hover:border-primary sm:p-4"
+                onClick={finish}
               >
                 <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-card text-primary ring-1 ring-border">
                   <SkipForward className="size-5" aria-hidden="true" />
@@ -691,55 +800,40 @@ export function OnboardingScreen() {
                   </span>
                 </span>
                 <ArrowRight className="size-5 shrink-0 text-primary" aria-hidden="true" />
-              </Link>
+              </button>
 
               <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
                 <span className="h-px flex-1 bg-border" />
-                or add a key now
+                or pick your coach now
                 <span className="h-px flex-1 bg-border" />
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-[160px_minmax(0,1fr)]">
-                <div className="space-y-1.5">
-                  <label htmlFor="ob-prov" className="field-label">
-                    Provider
-                  </label>
-                  <select
-                    id="ob-prov"
-                    className="input min-h-[40px]"
-                    value={coachProvider}
-                    onChange={(e) => {
-                      setCoachProvider(e.target.value)
-                    }}
-                  >
-                    <option value="Google Gemini">Google Gemini</option>
-                    <option value="OpenAI">OpenAI</option>
-                    <option value="Anthropic">Anthropic</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label htmlFor="ob-key" className="field-label">
-                    API key
-                  </label>
-                  <input
-                    id="ob-key"
-                    type="password"
-                    className="input min-h-[40px] font-mono"
-                    placeholder="Paste your key"
-                    autoComplete="off"
-                    spellCheck="false"
-                    value={coachKey}
-                    onChange={(e) => {
-                      setCoachKey(e.target.value)
-                    }}
-                  />
-                </div>
+              <div className="space-y-1.5">
+                <label htmlFor="ob-prov" className="field-label">
+                  Provider
+                </label>
+                <select
+                  id="ob-prov"
+                  className="input min-h-[40px]"
+                  value={coachProvider}
+                  onChange={(e) => {
+                    const next = PROVIDER_OPTIONS.find((option) => option.id === e.target.value)
+                    if (next === undefined) return
+                    setDraft((d) => ({ ...d, provider: next.id }))
+                  }}
+                >
+                  {PROVIDER_OPTIONS.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <p className="mt-2 flex gap-2 text-xs text-muted-foreground">
                 <Lock className="mt-px size-3.5 shrink-0 text-primary" aria-hidden="true" />
-                Encrypted in this browser and sent only to your provider. Gemini has a free tier.
+                Your key is added in Settings once Sage is switched on. It will be encrypted in this
+                browser and sent only to your provider. Gemini has a free tier.
               </p>
 
               <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -754,11 +848,14 @@ export function OnboardingScreen() {
                   <ArrowLeft className="size-4" aria-hidden="true" />
                   Back
                 </Button>
-                <Button asChild className="btn-cta min-h-[44px] w-full sm:w-auto">
-                  <Link to="/">
-                    <Play className="size-[18px]" aria-hidden="true" />
-                    Start playing
-                  </Link>
+                <Button
+                  type="button"
+                  className="btn-cta min-h-[44px] w-full sm:w-auto"
+                  disabled={finishing}
+                  onClick={finish}
+                >
+                  <Play className="size-[18px]" aria-hidden="true" />
+                  Start playing
                 </Button>
               </div>
             </section>

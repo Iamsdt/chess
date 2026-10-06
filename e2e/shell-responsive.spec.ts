@@ -49,8 +49,16 @@ test.describe('shell layout', () => {
     expect((box?.x ?? 0) + (box?.width ?? 0)).toBeCloseTo(1280, -1)
   })
 
-  test('390 · the sidebar gives way to the bottom bar', async ({ page }) => {
+  test('390 · a phone gets the "not for you" message instead of the app', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/')
+
+    await expect(page.getByRole('heading', { name: /too big for your pocket/i })).toBeVisible()
+    await expect(page.getByRole('navigation', { name: 'Main navigation' })).toHaveCount(0)
+  })
+
+  test('820 · a tablet gets the bottom bar in place of the sidebar', async ({ page }) => {
+    await page.setViewportSize({ width: 820, height: 1180 })
     await page.goto('/')
 
     await expect(page.getByRole(sidebar, { name: 'Sidebar' })).toHaveCount(0)

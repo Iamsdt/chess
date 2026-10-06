@@ -5,6 +5,8 @@
  * the viewport, which CSS alone cannot express.
  */
 export const SHELL_BREAKPOINTS = {
+  /** Narrower than this (a phone) the app is not shown at all, only a friendly refusal. */
+  tablet: 768,
   /** At or below this the sidebar gives way to the bottom bar. */
   mobile: 900,
   /** At or below this a page screen uses the icon rail. */

@@ -8,10 +8,20 @@ import {
   RouterProvider,
 } from '@tanstack/react-router'
 import { render, screen, waitFor } from '@testing-library/react'
-import { beforeAll, describe, expect, it, vi } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { axe } from 'vitest-axe'
 
+import { attemptsRepo, clearAllData, KV_KEYS, kvRepo, profileRepo, sessionsRepo } from '@/data'
 import { ThemeProvider } from '@/design'
+import {
+  createProfile,
+  makePuzzleAttempt,
+  toAttemptId,
+  toLocalDate,
+  toSessionId,
+  toTimestamp,
+} from '@/domain'
+import { advanceStreak } from '@/features/habit'
 
 import { TodayScreen } from './today-screen'
 
@@ -94,7 +104,55 @@ function renderTodayScreen() {
   )
 }
 
+const DAY = 86_400_000
+
+async function seedWeek() {
+  await profileRepo.save({
+    ...createProfile({ displayName: 'Ada', skillLevel: 'club', timeZone: 'UTC' }),
+    puzzleRating: 1460,
+  })
+  const now = Date.now()
+  const today = new Date(now).toISOString().slice(0, 10)
+  await sessionsRepo.start({
+    id: toSessionId('s-today'),
+    kind: 'adaptive-puzzles',
+    state: 'completed',
+    day: toLocalDate(today),
+    startedAt: toTimestamp(now - 600_000),
+    updatedAt: toTimestamp(now),
+    endedAt: toTimestamp(now),
+    durationMs: 6 * 60_000,
+    itemsAttempted: 3,
+    itemsCorrect: 3,
+    resumeState: {},
+  })
+  await kvRepo.set(
+    KV_KEYS.streak,
+    advanceStreak(undefined, {
+      today: toLocalDate(today),
+      ms: 6 * 60_000,
+      goalMs: 15 * 60_000,
+      at: toTimestamp(now),
+    }),
+  )
+  for (const [i, days] of [20, 10, 1].entries()) {
+    await attemptsRepo.add(
+      makePuzzleAttempt({
+        id: toAttemptId(`a-${String(i)}`),
+        sessionId: toSessionId('s-today'),
+        endedAt: toTimestamp(now - days * DAY),
+        ratingBefore: 1400 + i * 20,
+        ratingAfter: 1420 + i * 20,
+      }),
+    )
+  }
+}
+
 describe('TodayScreen', () => {
+  beforeEach(async () => {
+    await clearAllData()
+  })
+
   it('renders heading with accessible name "Today"', async () => {
     renderTodayScreen()
     expect(await screen.findByRole('heading', { level: 1, name: 'Today' })).toBeInTheDocument()
@@ -121,9 +179,8 @@ describe('TodayScreen', () => {
 
   it('renders right column metrics (streak, rating, friend challenge, lesson)', async () => {
     renderTodayScreen()
-    expect(await screen.findByText('Goal 5 of 7 days')).toBeInTheDocument()
+    expect(await screen.findByText('Start your streak today')).toBeInTheDocument()
     expect(screen.getByText('Puzzle rating')).toBeInTheDocument()
-    expect(screen.getByText('1482')).toBeInTheDocument()
     expect(screen.getByText(/Rafi played …Qb6/i)).toBeInTheDocument()
     expect(screen.getByText('The royal fork')).toBeInTheDocument()
   })
@@ -160,5 +217,30 @@ describe('TodayScreen', () => {
     })
     const results = await axe(container, axeOptions)
     expect(results.violations.map((violation) => violation.id)).toEqual([])
+  })
+
+  it('never shows someone else’s name or rating to a person with no profile', async () => {
+    renderTodayScreen()
+    const heading = await screen.findByRole('heading', { level: 1, name: 'Today' })
+    expect(heading).toHaveTextContent(/^Good (morning|afternoon|evening)$/)
+    expect(screen.queryByText('1482')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Shudipto/)).not.toBeInTheDocument()
+    expect(screen.getByText(/Solve a few rated puzzles/)).toBeInTheDocument()
+    expect(screen.getByText('0 of 15 min')).toBeInTheDocument()
+  })
+
+  it('reads the name, rating, streak, week and goal from what is stored', async () => {
+    await seedWeek()
+    renderTodayScreen()
+
+    expect(await screen.findByText('1 day streak')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/, Ada$/)
+    expect(screen.getByText('1460')).toBeInTheDocument()
+    expect(screen.getByText('+60')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /last 30 days, up 60/ })).toBeInTheDocument()
+    expect(screen.getByText('6 of 15 min')).toBeInTheDocument()
+
+    const week = screen.getByRole('list', { name: 'This week' })
+    expect(week).toHaveTextContent(/practised/)
   })
 })

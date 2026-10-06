@@ -18,13 +18,17 @@ import {
   Target,
   TrendingUp,
 } from 'lucide-react'
-import { useContext, useMemo } from 'react'
+import { useContext, useMemo, useState } from 'react'
 
 import { ChatPanelContext, CommandPaletteContext } from '@/app/shell/shell-contexts'
 import { Board } from '@/board'
-import { useProfile, useStreak } from '@/data'
+import { useAllAttempts, useAllSessions, useProfile, useSettings, useStreak } from '@/data'
 import { Button, CtaButton, SimpleTooltip, ThemeToggle, toast } from '@/design'
 import { emptyBoardShapes, toFen, toSquare, type BoardShapes } from '@/domain'
+import { viewStreak } from '@/features/habit'
+import { practiceMsByDay } from '@/features/progress/progress-stats'
+
+import { ratingTrend, todayIn, weekCells, type WeekCell } from './today-stats'
 
 const MISTAKE_FEN = toFen('r4rk1/pp3ppp/2p5/6n1/3P4/2P5/PP3P1P/R3Q1K1 b - - 0 17')
 
@@ -73,10 +77,27 @@ export function TodayScreen() {
   const chatPanel = useContext(ChatPanelContext)
   const commandPalette = useContext(CommandPaletteContext)
 
-  const displayName = profile?.displayName ?? 'Shudipto'
+  const settings = useSettings()
+  const attempts = useAllAttempts()
+  const sessions = useAllSessions()
+  // Fixed per visit so the card and the trend agree with each other while the page is open.
+  const [nowMs] = useState(() => Date.now())
+
+  const timeZone = profile?.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
+  const today = useMemo(() => todayIn(timeZone, nowMs), [timeZone, nowMs])
+  const streakView = useMemo(() => viewStreak(streak, today), [streak, today])
+  const week = useMemo<WeekCell[]>(
+    () => weekCells(today, practiceMsByDay(sessions ?? [], attempts ?? [], timeZone), streak),
+    [today, sessions, attempts, timeZone, streak],
+  )
+  const trend = useMemo(() => ratingTrend(attempts ?? [], nowMs), [attempts, nowMs])
+  const goalMinutes = settings.dailyGoalMinutes
+  const practisedMinutes = Math.round(streakView.todayMs / 60_000)
+
+  const displayName = profile?.displayName
   const greeting = useMemo(() => getGreeting(), [])
   const dateLabel = useMemo(() => formatDateLabel(), [])
-  const puzzleRating = profile?.puzzleRating ?? 1482
+  const puzzleRating = profile?.puzzleRating
 
   const mistakeBoardShapes: BoardShapes = useMemo(
     () => ({
@@ -114,7 +135,7 @@ export function TodayScreen() {
             aria-label="Today"
             className="mt-1 font-display text-2xl font-bold tracking-tight sm:text-[28px] md:text-[34px]"
           >
-            {greeting}, {displayName}
+            {displayName === undefined ? greeting : `${greeting}, ${displayName}`}
           </h1>
         </div>
         <div className="flex items-center gap-2">
@@ -150,7 +171,10 @@ export function TodayScreen() {
               Today's path
             </h2>
             <div className="flex items-center gap-2 text-xs text-muted-foreground sm:text-sm">
-              <span className="font-medium text-foreground">2 of 3</span> done · about 4 min left
+              <span className="font-medium text-foreground">
+                {practisedMinutes} of {goalMinutes} min
+              </span>{' '}
+              today
             </div>
           </div>
 
@@ -279,79 +303,92 @@ export function TodayScreen() {
             <div className="flex items-center justify-between">
               <span className="label">This week</span>
               <span className="text-xs text-muted-foreground">
-                {streak?.longest ? `${String(streak.current)} day streak` : 'Goal 5 of 7 days'}
+                {streakView.current > 0
+                  ? `${String(streakView.current)} day streak`
+                  : 'Start your streak today'}
               </span>
             </div>
-            <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[11px] text-muted-foreground sm:gap-1.5">
-              <div>
-                <div className="mx-auto grid size-7 place-items-center rounded-full bg-reward text-[#5a3f00] sm:size-8">
-                  <Flame className="size-3 sm:size-3.5" aria-hidden="true" />
-                </div>
-                M
-              </div>
-              <div>
-                <div className="mx-auto grid size-7 place-items-center rounded-full bg-reward text-[#5a3f00] sm:size-8">
-                  <Flame className="size-3 sm:size-3.5" aria-hidden="true" />
-                </div>
-                T
-              </div>
-              <div>
-                <div className="mx-auto grid size-7 place-items-center rounded-full bg-sky text-[#2d5a78] sm:size-8">
-                  <Snowflake className="size-3 sm:size-3.5" aria-hidden="true" />
-                </div>
-                W
-              </div>
-              <div>
-                <div className="mx-auto grid size-7 place-items-center rounded-full bg-reward text-[#5a3f00] sm:size-8">
-                  <Flame className="size-3 sm:size-3.5" aria-hidden="true" />
-                </div>
-                T
-              </div>
-              <div>
-                <div className="mx-auto grid size-7 place-items-center rounded-full bg-reward text-[#5a3f00] sm:size-8">
-                  <Flame className="size-3 sm:size-3.5" aria-hidden="true" />
-                </div>
-                F
-              </div>
-              <div>
-                <div className="mx-auto grid size-7 place-items-center rounded-full border-2 border-dashed border-reward text-[10px] font-semibold text-[#8a6310] sm:size-8">
-                  2/3
-                </div>
-                S
-              </div>
-              <div>
-                <div className="mx-auto size-7 rounded-full bg-muted sm:size-8" />S
-              </div>
-            </div>
+            <ol
+              className="mt-3 grid grid-cols-7 gap-1 text-center text-[11px] text-muted-foreground sm:gap-1.5"
+              aria-label="This week"
+            >
+              {week.map((cell) => (
+                <li key={cell.name}>
+                  <span className="sr-only">
+                    {cell.name}:{' '}
+                    {cell.kind === 'done'
+                      ? 'practised'
+                      : cell.kind === 'freeze'
+                        ? 'covered by a freeze'
+                        : cell.kind === 'today'
+                          ? 'today, not yet'
+                          : cell.kind === 'missed'
+                            ? 'rest day'
+                            : 'still to come'}
+                  </span>
+                  {cell.kind === 'done' && (
+                    <div className="mx-auto grid size-7 place-items-center rounded-full bg-reward text-[#5a3f00] sm:size-8">
+                      <Flame className="size-3 sm:size-3.5" aria-hidden="true" />
+                    </div>
+                  )}
+                  {cell.kind === 'freeze' && (
+                    <div className="mx-auto grid size-7 place-items-center rounded-full bg-sky text-[#2d5a78] sm:size-8">
+                      <Snowflake className="size-3 sm:size-3.5" aria-hidden="true" />
+                    </div>
+                  )}
+                  {cell.kind === 'today' && (
+                    <div className="mx-auto grid size-7 place-items-center rounded-full border-2 border-dashed border-reward text-[10px] font-semibold text-[#8a6310] sm:size-8">
+                      {cell.minutes}/{goalMinutes}
+                    </div>
+                  )}
+                  {(cell.kind === 'missed' || cell.kind === 'upcoming') && (
+                    <div className="mx-auto size-7 rounded-full bg-muted sm:size-8" />
+                  )}
+                  <span aria-hidden="true">{cell.letter}</span>
+                </li>
+              ))}
+            </ol>
           </div>
 
           {/* Puzzle Rating Card */}
           <div className="card p-4 sm:p-5">
             <div className="flex items-center justify-between">
               <span className="label">Puzzle rating</span>
-              <span className="badge border-transparent bg-accent text-accent-foreground">+64</span>
+              {trend.change !== undefined && (
+                <span className="badge border-transparent bg-accent text-accent-foreground">
+                  {trend.change > 0 ? '+' : ''}
+                  {trend.change}
+                </span>
+              )}
             </div>
             <div className="mt-1 font-display text-3xl font-bold tabular-nums sm:text-4xl">
-              {puzzleRating}
+              {puzzleRating ?? '—'}
             </div>
-            <svg
-              className="mt-2 h-12 w-full sm:h-14"
-              viewBox="0 0 240 56"
-              preserveAspectRatio="none"
-              aria-label="Rating trend up"
-            >
-              <path
-                d="M0,46 C30,44 40,50 70,38 S110,40 130,30 S175,30 195,20 S225,12 240,8"
-                fill="none"
-                stroke="#5f8b6c"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                vectorEffect="non-scaling-stroke"
-              />
-            </svg>
-            <p className="text-xs text-muted-foreground">
-              Better than you were 30 days ago at <span className="text-foreground">forks</span> and{' '}
-              <span className="text-foreground">pins</span>.
+            {trend.path !== undefined && (
+              <svg
+                className="mt-2 h-12 w-full sm:h-14"
+                viewBox="0 0 240 56"
+                preserveAspectRatio="none"
+                role="img"
+                aria-label={`Puzzle rating over the last 30 days, ${trend.change !== undefined && trend.change < 0 ? 'down' : 'up'} ${String(Math.abs(trend.change ?? 0))}`}
+              >
+                <path
+                  d={trend.path}
+                  fill="none"
+                  stroke="#5f8b6c"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </svg>
+            )}
+            <p className="mt-2 text-xs text-muted-foreground">
+              {trend.change === undefined
+                ? 'Solve a few rated puzzles and your 30-day trend appears here.'
+                : trend.change >= 0
+                  ? `Up ${String(trend.change)} points in the last 30 days.`
+                  : `Down ${String(Math.abs(trend.change))} points in the last 30 days. Rough weeks happen.`}
             </p>
           </div>
 

@@ -29,6 +29,7 @@ import {
   type Timestamp,
   type Uci,
 } from '@/domain'
+import { recordPractice } from '@/features/habit'
 
 import { DEFAULT_DEVIATION, DEFAULT_RATING, type GlickoRating } from './glicko2'
 import { type ThemeAttemptRecord } from './mastery'
@@ -390,7 +391,12 @@ export async function closeSession(
 ): Promise<Result<PracticeSession>> {
   const saved = await saveSession(id, state)
   if (!saved.ok) return saved
-  return sessionsRepo.finish(id, outcome)
+  const finished = await sessionsRepo.finish(id, outcome)
+  // The streak counts the time actually spent, abandoned runs included; a failure to
+  // record it must not turn a saved session into an error on the summary screen.
+  if (finished.ok && state.elapsedMs > 0)
+    await recordPractice(state.elapsedMs).catch(() => undefined)
+  return finished
 }
 
 /** The most recently finished session, which is what the summary screen opens with. */

@@ -1,12 +1,20 @@
 import { Link } from '@tanstack/react-router'
 import { Crown, Settings } from 'lucide-react'
+import { lazy, Suspense } from 'react'
 
 import { cn, SimpleTooltip, ThemeToggle } from '@/design'
 
+import { importLazy } from '../lazy-import'
 import { NAV_GROUPS, SETTINGS_NAV_ITEM, chordHint, type NavItem } from '../navigation'
 import { screenPath } from '../screens'
 
 import type { ShellScreen } from '../screens'
+
+const importSidebarLive = () => importLazy(() => import('./sidebar-live'))
+
+const GardenSummary = lazy(async () => ({ default: (await importSidebarLive()).GardenSummary }))
+const GardenLevel = lazy(async () => ({ default: (await importSidebarLive()).GardenLevel }))
+const ProfileLabel = lazy(async () => ({ default: (await importSidebarLive()).ProfileLabel }))
 
 export interface SidebarProps {
   screen: ShellScreen
@@ -105,7 +113,11 @@ export function Sidebar({ screen, compact }: SidebarProps) {
         >
           <div className="flex items-center justify-between">
             <span className="label">Your chess garden</span>
-            <span className="badge badge-soft">Lv 4</span>
+            <span className="badge badge-soft">
+              <Suspense fallback={null}>
+                <GardenLevel />
+              </Suspense>
+            </span>
           </div>
           <svg viewBox="0 0 180 70" className="mt-2 h-14 w-full" aria-hidden="true">
             <path d="M0 62 Q90 54 180 62 L180 70 L0 70Z" fill="var(--accent)" />
@@ -120,8 +132,9 @@ export function Sidebar({ screen, compact }: SidebarProps) {
             <path d="M91 32 C101 28 110 22 112 12 C100 12 92 20 91 32Z" fill="#6c9d73" />
             <circle cx="91" cy="22" r="5" fill="var(--reward)" />
           </svg>
-          <p className="text-sm font-medium">Sapling · 12-day streak</p>
-          <p className="text-xs text-muted-foreground">3 more days to bloom · 1 freeze saved</p>
+          <Suspense fallback={<p className="text-sm font-medium">Your garden</p>}>
+            <GardenSummary />
+          </Suspense>
         </Link>
       )}
 
@@ -131,11 +144,11 @@ export function Sidebar({ screen, compact }: SidebarProps) {
           className="flex min-w-0 flex-1 items-center gap-2 rounded-lg p-1.5 hover:bg-card"
           title="Profile & settings"
         >
-          <span className="avatar size-8 bg-primary text-primary-foreground">SK</span>
-          <span className={cn('min-w-0 leading-tight', compact && 'sr-only')}>
-            <span className="block truncate text-sm font-medium">Shudipto</span>
-            <span className="block text-xs text-muted-foreground">Local profile</span>
-          </span>
+          <Suspense
+            fallback={<span className="avatar size-8 bg-primary text-primary-foreground">·</span>}
+          >
+            <ProfileLabel compact={compact} />
+          </Suspense>
         </Link>
         <SimpleTooltip
           content={`Settings · ${chordHint(SETTINGS_NAV_ITEM)}`}

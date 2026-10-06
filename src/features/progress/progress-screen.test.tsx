@@ -7,11 +7,32 @@ import {
   createRouter,
   RouterProvider,
 } from '@tanstack/react-router'
-import { fireEvent, render, screen } from '@testing-library/react'
-import { beforeAll, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen, within } from '@testing-library/react'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { axe } from 'vitest-axe'
 
+import {
+  attemptsRepo,
+  clearAllData,
+  gamesRepo,
+  profileRepo,
+  puzzlesRepo,
+  sessionsRepo,
+} from '@/data'
 import { ThemeProvider } from '@/design'
+import {
+  createProfile,
+  makeGame,
+  makeGameMeta,
+  makePuzzle,
+  makePuzzleAttempt,
+  toAttemptId,
+  toGameId,
+  toLocalDate,
+  toPuzzleId,
+  toSessionId,
+  toTimestamp,
+} from '@/domain'
 
 import { ProgressScreen } from './progress-screen'
 
@@ -99,161 +120,186 @@ function renderProgressScreen() {
   )
 }
 
+const DAY = 86_400_000
+
+async function seed() {
+  await profileRepo.save({
+    ...createProfile({
+      displayName: 'Ada',
+      skillLevel: 'club',
+      timeZone: 'UTC',
+      onboardingCompleted: true,
+    }),
+    puzzleRating: 1482,
+  })
+
+  const themes = ['fork', 'pin', 'mateIn2']
+  await puzzlesRepo.bulkUpsert(
+    themes.map((theme) => makePuzzle({ id: toPuzzleId(`p-${theme}`), theme })),
+  )
+
+  const now = Date.now()
+  const startOfToday = now - (now % DAY)
+  let n = 0
+  for (const [index, theme] of themes.entries()) {
+    for (let i = 0; i < 4; i += 1) {
+      n += 1
+      // Noon UTC, two puzzles a day for six days, so the run is the same whatever the clock says.
+      const at = toTimestamp(startOfToday - (Math.floor((n - 1) / 2) + 1) * DAY + 12 * 3_600_000)
+      await attemptsRepo.add(
+        makePuzzleAttempt({
+          id: toAttemptId(`attempt-${String(n)}`),
+          puzzleId: toPuzzleId(`p-${theme}`),
+          sessionId: undefined,
+          startedAt: at,
+          endedAt: at,
+          durationMs: 120_000,
+          firstTry: i < 3 - index,
+          ratingBefore: 1400 + n * 5,
+          ratingAfter: 1405 + n * 5,
+        }),
+      )
+    }
+  }
+
+  const today = new Date(now).toISOString().slice(0, 10)
+  await sessionsRepo.start({
+    id: toSessionId('session-today'),
+    kind: 'adaptive-puzzles',
+    state: 'completed',
+    day: toLocalDate(today),
+    startedAt: toTimestamp(now - 3_600_000),
+    updatedAt: toTimestamp(now),
+    endedAt: toTimestamp(now),
+    durationMs: 20 * 60_000,
+    itemsAttempted: 12,
+    itemsCorrect: 9,
+    resumeState: {},
+  })
+
+  await gamesRepo.save(
+    makeGame({
+      meta: makeGameMeta({
+        id: toGameId('g-progress'),
+        startedAt: toTimestamp(now - 2 * DAY),
+        accuracy: { white: 82, black: 60 },
+      }),
+      moves: [],
+    }),
+  )
+}
+
 describe('ProgressScreen', () => {
+  beforeEach(async () => {
+    await clearAllData()
+  })
+
   it('renders heading with accessible name "Growth"', async () => {
     renderProgressScreen()
-
-    const heading = await screen.findByRole('heading', { level: 1, name: 'Growth' })
-    expect(heading).toBeInTheDocument()
-
+    expect(await screen.findByRole('heading', { level: 1, name: 'Growth' })).toBeInTheDocument()
     expect(screen.getByText('Only you vs you. No leaderboards, ever.')).toBeInTheDocument()
   })
 
-  it('passes automated accessibility checks', async () => {
-    const { container } = renderProgressScreen()
-    await screen.findByRole('heading', { level: 1, name: 'Growth' })
+  it('passes automated accessibility checks, empty and filled', async () => {
+    const empty = renderProgressScreen()
+    await screen.findByRole('heading', { level: 2, name: /A seed, waiting/ })
+    expect((await axe(empty.container, axeOptions)).violations.map((v) => v.id)).toEqual([])
+    empty.unmount()
 
-    const results = await axe(container, axeOptions)
-    expect(results.violations.map((violation) => violation.id)).toEqual([])
+    await seed()
+    const filled = renderProgressScreen()
+    await screen.findByRole('img', { name: /Puzzle rating from/ })
+    expect((await axe(filled.container, axeOptions)).violations.map((v) => v.id)).toEqual([])
   })
 
-  it('renders garden hero with streak, sapling stage, and bloom progress', async () => {
+  it('says what it is waiting for instead of showing made-up numbers', async () => {
     renderProgressScreen()
-    await screen.findByRole('heading', { level: 1, name: 'Growth' })
-
-    expect(screen.getByText('12-day streak')).toBeInTheDocument()
-    expect(screen.getByText('Your chess garden · Level 4')).toBeInTheDocument()
     expect(
-      screen.getByRole('heading', { level: 2, name: 'Sapling, and nearly in bloom' }),
+      await screen.findByRole('heading', { level: 2, name: 'A seed, waiting for its first day' }),
     ).toBeInTheDocument()
+
+    expect(screen.getByText('0-day streak')).toBeInTheDocument()
+    expect(screen.getByText('Your chess garden · Level 1')).toBeInTheDocument()
+    expect(screen.getByText(/Solve a few rated puzzles/)).toBeInTheDocument()
+    expect(screen.getByText(/Review a game and its accuracy/)).toBeInTheDocument()
+    expect(screen.getByText(/Practise a few puzzles in three different themes/)).toBeInTheDocument()
+    expect(screen.queryByText('1482')).not.toBeInTheDocument()
+    expect(screen.queryByText('Shudipto')).not.toBeInTheDocument()
+  })
+
+  it('draws the garden, metrics and charts from the stored rows', async () => {
+    await seed()
+    renderProgressScreen()
+
+    expect(await screen.findByText('7-day streak')).toBeInTheDocument()
     expect(screen.getByRole('list', { name: 'Garden stages' })).toBeInTheDocument()
-    expect(screen.getAllByText('12 of 15')).toHaveLength(2)
     expect(screen.getByRole('progressbar', { name: 'Practice days to Bloom' })).toBeInTheDocument()
 
-    const waterBtn = screen.getByRole('link', { name: /Water it today/i })
-    expect(waterBtn).toHaveAttribute('href', '/')
+    const puzzleCard = screen.getByText('Puzzle rating', { selector: '.label' }).closest('.card')
+    expect(puzzleCard).not.toBeNull()
+    expect(within(puzzleCard as HTMLElement).getByText('1482')).toBeInTheDocument()
+    expect(within(puzzleCard as HTMLElement).getByText(/\+\d+ from 14\d\d/)).toBeInTheDocument()
 
-    const howItGrowsBtn = screen.getByRole('button', { name: /How it grows/i })
-    expect(howItGrowsBtn).toBeInTheDocument()
-    fireEvent.click(howItGrowsBtn)
+    expect(
+      screen.getByRole('img', { name: /Puzzle rating from 14\d\d to 14\d\d/ }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('img', { name: /Game accuracy from 82 to 82 percent/ }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('82.0%')).toBeInTheDocument()
   })
 
-  it('switches time range between 30 days, 90 days, and All time', async () => {
+  it('builds the skill map from puzzle themes and offers somewhere to train', async () => {
+    await seed()
+    renderProgressScreen()
+
+    expect(await screen.findByRole('img', { name: /^Theme mastery\./ })).toHaveAccessibleName(
+      'Theme mastery. Fork 75, Mate in 2 25, Pin 50.',
+    )
+    expect(screen.getByRole('heading', { level: 3, name: /Getting stronger/i })).toBeInTheDocument()
+    const trainLinks = screen.getAllByRole('link', { name: /Train this/i })
+    expect(trainLinks[0]).toHaveAttribute('href', '/puzzles')
+    expect(screen.getByRole('button', { name: /Ask Sage about Mate in 2/ })).toBeInTheDocument()
+  })
+
+  it('switches time range and re-labels the comparison', async () => {
     renderProgressScreen()
     await screen.findByRole('heading', { level: 1, name: 'Growth' })
 
     expect(
-      screen.getByRole('heading', { level: 2, name: 'You vs you, 30 days ago' }),
+      await screen.findByRole('heading', { level: 2, name: 'You vs you, 30 days ago' }),
     ).toBeInTheDocument()
-    expect(screen.getByText('20 Aug → 19 Sep')).toBeInTheDocument()
-    expect(screen.getByText('+64 from 1418')).toBeInTheDocument()
-
-    const btn90 = screen.getByRole('button', { name: '90 days' })
-    fireEvent.click(btn90)
+    fireEvent.click(screen.getByRole('button', { name: '90 days' }))
     expect(
       screen.getByRole('heading', { level: 2, name: 'You vs you, 90 days ago' }),
     ).toBeInTheDocument()
-    expect(screen.getByText('21 Jun → 19 Sep')).toBeInTheDocument()
-    expect(screen.getByText('+142 from 1340')).toBeInTheDocument()
-
-    const btnAll = screen.getByRole('button', { name: 'All time' })
-    fireEvent.click(btnAll)
+    fireEvent.click(screen.getByRole('button', { name: 'All time' }))
     expect(
       screen.getByRole('heading', { level: 2, name: 'You vs you, from the start' }),
     ).toBeInTheDocument()
     expect(screen.getByText('All-time journey')).toBeInTheDocument()
-    expect(screen.getByText('+282 from 1200')).toBeInTheDocument()
   })
 
-  it('renders rating charts for puzzles and sparring', async () => {
+  it('lists earned and upcoming milestones with real progress', async () => {
+    await seed()
     renderProgressScreen()
-    await screen.findByRole('heading', { level: 1, name: 'Growth' })
 
-    expect(
-      screen.getByRole('img', { name: 'Puzzle rating rose from 1418 to 1482 over 30 days' }),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('img', { name: 'Sparring rating rose from 1124 to 1180 over 30 days' }),
-    ).toBeInTheDocument()
-  })
-
-  it('renders skill map radar, getting stronger links, and focus areas with Sage trigger', async () => {
-    renderProgressScreen()
-    await screen.findByRole('heading', { level: 1, name: 'Growth' })
-
-    expect(screen.getByRole('heading', { level: 2, name: 'Skill map' })).toBeInTheDocument()
-    expect(
-      screen.getByRole('img', {
-        name: 'Skill radar. Tactics 78, Openings 72, Endgames 42, Calculation 60, Time use 50, Board vision 66. Every skill grew except Endgames, which is flat.',
-      }),
-    ).toBeInTheDocument()
-
-    expect(screen.getByText('+2 · flat')).toBeInTheDocument()
-
-    // Strengths
-    expect(screen.getByRole('heading', { level: 3, name: /Getting stronger/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Repertoire' })).toHaveAttribute('href', '/openings')
-
-    // Weaknesses
-    expect(
-      screen.getByRole('heading', { level: 3, name: /Needs a little love/i }),
-    ).toBeInTheDocument()
-    const trainLinks = screen.getAllByRole('link', { name: /Train this/i })
-    expect(trainLinks).toHaveLength(3)
-    expect(trainLinks[0]).toHaveAttribute('href', '/drills/endgames')
-    expect(trainLinks[1]).toHaveAttribute('href', '/play')
-    expect(trainLinks[2]).toHaveAttribute('href', '/mistakes')
-
-    const sageBtn = screen.getByRole('button', { name: 'Ask Sage why Endgames is flat' })
-    expect(sageBtn).toBeInTheDocument()
-    fireEvent.click(sageBtn)
-  })
-
-  it('renders 16-week practice heatmap and activity stats', async () => {
-    renderProgressScreen()
-    await screen.findByRole('heading', { level: 1, name: 'Growth' })
-
-    expect(
-      screen.getByRole('heading', { level: 2, name: 'Practice, last 16 weeks' }),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('img', { name: 'Practice heatmap for the last 16 weeks' }),
-    ).toBeInTheDocument()
-
-    expect(screen.getByText('Evenings, around 8pm')).toBeInTheDocument()
-    expect(screen.getByText('14 min')).toBeInTheDocument()
-    expect(screen.getByText('Thursdays')).toBeInTheDocument()
-    expect(screen.getByText('17 of 19 days')).toBeInTheDocument()
-  })
-
-  it('renders milestones with badges and progress indicators', async () => {
-    renderProgressScreen()
-    await screen.findByRole('heading', { level: 1, name: 'Growth' })
-
-    expect(screen.getByRole('heading', { level: 2, name: 'Milestones' })).toBeInTheDocument()
-
-    // Completed
-    expect(screen.getByText('A week without blunders')).toBeInTheDocument()
-    expect(screen.getByText('Earned 14 Sep')).toBeInTheDocument()
-    expect(screen.getByText('Beat Stockfish 1200')).toBeInTheDocument()
-    expect(screen.getByText('Earned 9 Sep')).toBeInTheDocument()
-    expect(screen.getByText('First mistake mastered')).toBeInTheDocument()
-    expect(screen.getByText('Earned 28 Aug')).toBeInTheDocument()
-
-    // In progress
-    expect(screen.getByText('Build the bridge')).toBeInTheDocument()
-    expect(
-      screen.getByRole('progressbar', { name: 'Build the bridge progress' }),
-    ).toBeInTheDocument()
-    expect(screen.getByText('1 of 3')).toBeInTheDocument()
-
+    expect(await screen.findByText('10 puzzles solved')).toBeInTheDocument()
+    expect(screen.getByText('7 days practised')).toBeInTheDocument()
+    expect(screen.getByRole('progressbar', { name: '50 puzzles solved progress' })).toHaveAttribute(
+      'aria-valuenow',
+      '12',
+    )
     expect(screen.getByText('Puzzle rating 1500')).toBeInTheDocument()
-    expect(
-      screen.getByRole('progressbar', { name: 'Puzzle rating 1500 progress' }),
-    ).toBeInTheDocument()
-    expect(screen.getByText('1482 of 1500')).toBeInTheDocument()
+  })
 
-    expect(screen.getByText('First bloom')).toBeInTheDocument()
-    expect(screen.getByRole('progressbar', { name: 'First bloom progress' })).toBeInTheDocument()
+  it('paints today on the heatmap', async () => {
+    await seed()
+    renderProgressScreen()
+    await screen.findByText('7-day streak')
+    expect(
+      screen.getByRole('img', { name: /Practice heatmap.*7 days practised/ }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Average session').nextSibling).toHaveTextContent('20 min')
   })
 })

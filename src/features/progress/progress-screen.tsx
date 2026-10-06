@@ -15,224 +15,50 @@ import {
   RotateCcw,
   ShieldCheck,
   Sprout,
-  Swords,
   Target,
   Trees,
   TrendingUp,
 } from 'lucide-react'
-import { useContext, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 
 import { ChatPanelContext } from '@/app/shell/shell-contexts'
+import {
+  useAllAttempts,
+  useAllSessions,
+  useGames,
+  useMistakes,
+  useProfile,
+  usePuzzlesByIds,
+  useStreak,
+} from '@/data'
 import { Button, cn, toast } from '@/design'
+import { localDateOf, toTimestamp, type PuzzleId } from '@/domain'
+import { viewStreak } from '@/features/habit'
 
-export type TimeRange = '30d' | '90d' | 'all'
+import {
+  buildProgress,
+  GARDEN_STAGES,
+  themeLabel,
+  type ChartGeometry,
+  type HeatmapKind,
+  type Milestone,
+  type ProgressModel,
+  type RadarGeometry,
+  type ThemeSkill,
+  type TimeRange,
+} from './progress-stats'
 
-interface MetricCard {
-  readonly label: string
-  readonly value: string
-  readonly delta: string
-  readonly deltaType: 'success' | 'neutral'
-  readonly deltaIcon: 'up' | 'down' | 'rotate'
-}
+export type { TimeRange } from './progress-stats'
 
-interface SkillStat {
-  readonly name: string
-  readonly value: number
-  readonly delta: string
-  readonly status: 'success' | 'highlight'
-}
+const STAGE_ICONS = [CircleDot, Sprout, Leaf, Flower2, Trees] as const
 
-interface CompletedMilestone {
-  readonly id: string
-  readonly title: string
-  readonly description: string
-  readonly earnedDate: string
-  readonly icon: 'shield' | 'swords' | 'mistake'
-}
-
-interface InProgressMilestone {
-  readonly id: string
-  readonly title: string
-  readonly description: string
-  readonly current: number
-  readonly total: number
-  readonly progressPercent: number
-  readonly currentDisplay: string
-  readonly icon: 'castle' | 'puzzle' | 'flower'
-}
-
-type HeatmapCellKind = 'none' | 'low' | 'med' | 'high' | 'max' | 'freeze' | 'future'
-
-interface HeatmapCell {
-  readonly kind: HeatmapCellKind
-  readonly title: string
-}
-
-// 16 weeks of practice data from prototype (7 days per week, Mon-Sun)
-const PRACTICE_WEEKS: readonly (readonly HeatmapCell[])[] = [
-  // W1
-  [
-    { kind: 'low', title: '5 min' },
-    { kind: 'none', title: 'no practice' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'none', title: 'no practice' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'none', title: 'no practice' },
-  ],
-  // W2
-  [
-    { kind: 'med', title: '12 min' },
-    { kind: 'none', title: 'no practice' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'none', title: 'no practice' },
-    { kind: 'none', title: 'no practice' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'high', title: '20 min' },
-  ],
-  // W3
-  [
-    { kind: 'none', title: 'no practice' },
-    { kind: 'none', title: 'no practice' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'max', title: '35 min' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'max', title: '35 min' },
-  ],
-  // W4
-  [
-    { kind: 'none', title: 'no practice' },
-    { kind: 'high', title: '20 min' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'none', title: 'no practice' },
-    { kind: 'none', title: 'no practice' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'high', title: '20 min' },
-  ],
-  // W5
-  [
-    { kind: 'none', title: 'no practice' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'none', title: 'no practice' },
-    { kind: 'none', title: 'no practice' },
-  ],
-  // W6
-  [
-    { kind: 'none', title: 'no practice' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'low', title: '5 min' },
-  ],
-  // W7
-  [
-    { kind: 'high', title: '20 min' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'high', title: '20 min' },
-    { kind: 'high', title: '20 min' },
-  ],
-  // W8
-  [
-    { kind: 'low', title: '5 min' },
-    { kind: 'max', title: '35 min' },
-    { kind: 'none', title: 'no practice' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'high', title: '20 min' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'med', title: '12 min' },
-  ],
-  // W9
-  [
-    { kind: 'none', title: 'no practice' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'high', title: '20 min' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'high', title: '20 min' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'med', title: '12 min' },
-  ],
-  // W10
-  [
-    { kind: 'med', title: '12 min' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'high', title: '20 min' },
-    { kind: 'max', title: '35 min' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'med', title: '12 min' },
-  ],
-  // W11
-  [
-    { kind: 'none', title: 'no practice' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'max', title: '35 min' },
-    { kind: 'high', title: '20 min' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'low', title: '5 min' },
-  ],
-  // W12
-  [
-    { kind: 'med', title: '12 min' },
-    { kind: 'none', title: 'no practice' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'none', title: 'no practice' },
-    { kind: 'none', title: 'no practice' },
-    { kind: 'high', title: '20 min' },
-  ],
-  // W13
-  [
-    { kind: 'low', title: '5 min' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'high', title: '20 min' },
-    { kind: 'none', title: 'no practice' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'med', title: '12 min' },
-  ],
-  // W14
-  [
-    { kind: 'high', title: '20 min' },
-    { kind: 'high', title: '20 min' },
-    { kind: 'high', title: '20 min' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'none', title: 'no practice' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'high', title: '20 min' },
-  ],
-  // W15
-  [
-    { kind: 'max', title: '35 min' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'med', title: '12 min' },
-  ],
-  // W16
-  [
-    { kind: 'low', title: '5 min' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'freeze', title: 'streak freeze' },
-    { kind: 'low', title: '5 min' },
-    { kind: 'med', title: '12 min' },
-    { kind: 'max', title: '35 min' },
-    { kind: 'future', title: 'tomorrow' },
-  ],
+const RANGES: readonly { readonly id: TimeRange; readonly label: string }[] = [
+  { id: '30d', label: '30 days' },
+  { id: '90d', label: '90 days' },
+  { id: 'all', label: 'All time' },
 ]
 
-function getHeatmapCellClasses(kind: HeatmapCellKind): string {
+function heatmapCellClasses(kind: HeatmapKind): string {
   switch (kind) {
     case 'none':
       return 'aspect-square rounded-[3px] bg-muted'
@@ -251,228 +77,309 @@ function getHeatmapCellClasses(kind: HeatmapCellKind): string {
   }
 }
 
-const METRICS_BY_RANGE: Record<TimeRange, readonly MetricCard[]> = {
-  '30d': [
-    {
-      label: 'Puzzle rating',
-      value: '1482',
-      delta: '+64 from 1418',
-      deltaType: 'success',
-      deltaIcon: 'up',
-    },
-    {
-      label: 'Sparring rating',
-      value: '1180',
-      delta: '+56 from 1124',
-      deltaType: 'success',
-      deltaIcon: 'up',
-    },
-    {
-      label: 'Blunders / game',
-      value: '1.4',
-      delta: 'was 2.3',
-      deltaType: 'success',
-      deltaIcon: 'down',
-    },
-    {
-      label: 'Game accuracy',
-      value: '78.6%',
-      delta: '+4.1 pts',
-      deltaType: 'success',
-      deltaIcon: 'up',
-    },
-    {
-      label: 'Mistakes cleared',
-      value: '23',
-      delta: '7 due this week',
-      deltaType: 'neutral',
-      deltaIcon: 'rotate',
-    },
-    {
-      label: 'Time practised',
-      value: '6h 10m',
-      delta: '+1h 20m',
-      deltaType: 'success',
-      deltaIcon: 'up',
-    },
-  ],
-  '90d': [
-    {
-      label: 'Puzzle rating',
-      value: '1482',
-      delta: '+142 from 1340',
-      deltaType: 'success',
-      deltaIcon: 'up',
-    },
-    {
-      label: 'Sparring rating',
-      value: '1180',
-      delta: '+118 from 1062',
-      deltaType: 'success',
-      deltaIcon: 'up',
-    },
-    {
-      label: 'Blunders / game',
-      value: '1.4',
-      delta: 'was 3.1',
-      deltaType: 'success',
-      deltaIcon: 'down',
-    },
-    {
-      label: 'Game accuracy',
-      value: '78.6%',
-      delta: '+8.3 pts',
-      deltaType: 'success',
-      deltaIcon: 'up',
-    },
-    {
-      label: 'Mistakes cleared',
-      value: '64',
-      delta: '7 due this week',
-      deltaType: 'neutral',
-      deltaIcon: 'rotate',
-    },
-    {
-      label: 'Time practised',
-      value: '18h 40m',
-      delta: '+4h 15m',
-      deltaType: 'success',
-      deltaIcon: 'up',
-    },
-  ],
-  all: [
-    {
-      label: 'Puzzle rating',
-      value: '1482',
-      delta: '+282 from 1200',
-      deltaType: 'success',
-      deltaIcon: 'up',
-    },
-    {
-      label: 'Sparring rating',
-      value: '1180',
-      delta: '+230 from 950',
-      deltaType: 'success',
-      deltaIcon: 'up',
-    },
-    {
-      label: 'Blunders / game',
-      value: '1.4',
-      delta: 'was 4.0',
-      deltaType: 'success',
-      deltaIcon: 'down',
-    },
-    {
-      label: 'Game accuracy',
-      value: '78.6%',
-      delta: '+15.2 pts',
-      deltaType: 'success',
-      deltaIcon: 'up',
-    },
-    {
-      label: 'Mistakes cleared',
-      value: '112',
-      delta: '7 due this week',
-      deltaType: 'neutral',
-      deltaIcon: 'rotate',
-    },
-    {
-      label: 'Time practised',
-      value: '42h 20m',
-      delta: 'Total learning',
-      deltaType: 'success',
-      deltaIcon: 'up',
-    },
-  ],
+function shortDate(at: number): string {
+  return new Date(at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 }
 
-const SKILL_STATS: readonly SkillStat[] = [
-  { name: 'Tactics', value: 78, delta: '+16', status: 'success' },
-  { name: 'Openings', value: 72, delta: '+6', status: 'success' },
-  { name: 'Endgames', value: 42, delta: '+2 · flat', status: 'highlight' },
-  { name: 'Calculation', value: 60, delta: '+8', status: 'success' },
-  { name: 'Time use', value: 50, delta: '+6', status: 'success' },
-  { name: 'Board vision', value: 66, delta: '+11', status: 'success' },
-]
+function dateRangeLabel(range: TimeRange, from: number, to: number): string {
+  return range === 'all' ? 'All-time journey' : `${shortDate(from)} → ${shortDate(to)}`
+}
 
-const COMPLETED_MILESTONES: readonly CompletedMilestone[] = [
-  {
-    id: 'blunder-week',
-    title: 'A week without blunders',
-    description: '7 games in a row, no piece left hanging',
-    earnedDate: 'Earned 14 Sep',
-    icon: 'shield',
-  },
-  {
-    id: 'beat-stockfish',
-    title: 'Beat Stockfish 1200',
-    description: 'Won with the Italian, no take-backs',
-    earnedDate: 'Earned 9 Sep',
-    icon: 'swords',
-  },
-  {
-    id: 'mistake-mastered',
-    title: 'First mistake mastered',
-    description: 'Recalled it at 3, 7 and 21 days',
-    earnedDate: 'Earned 28 Aug',
-    icon: 'mistake',
-  },
-]
+function MilestoneIcon({ icon }: { readonly icon: Milestone['icon'] }) {
+  switch (icon) {
+    case 'puzzle':
+      return <Puzzle className="size-5" aria-hidden="true" />
+    case 'flower':
+      return <Flower2 className="size-5" aria-hidden="true" />
+    case 'rating':
+      return <Castle className="size-5" aria-hidden="true" />
+    case 'review':
+      return <ShieldCheck className="size-5" aria-hidden="true" />
+    case 'mistake':
+      return <RotateCcw className="size-5" aria-hidden="true" />
+  }
+}
 
-const IN_PROGRESS_MILESTONES: readonly InProgressMilestone[] = [
-  {
-    id: 'lucena-bridge',
-    title: 'Build the bridge',
-    description: 'Win the Lucena position 3 times',
-    current: 1,
-    total: 3,
-    progressPercent: 33,
-    currentDisplay: '1 of 3',
-    icon: 'castle',
-  },
-  {
-    id: 'rating-1500',
-    title: 'Puzzle rating 1500',
-    description: '18 points to go at this pace: about 6 days',
-    current: 1482,
-    total: 1500,
-    progressPercent: 78,
-    currentDisplay: '1482 of 1500',
-    icon: 'puzzle',
-  },
-  {
-    id: 'first-bloom',
-    title: 'First bloom',
-    description: 'Practise 15 days in a row',
-    current: 12,
-    total: 15,
-    progressPercent: 80,
-    currentDisplay: '12 of 15',
-    icon: 'flower',
-  },
-]
+interface LineChartProps {
+  readonly title: string
+  readonly caption: string
+  readonly badge: string | undefined
+  readonly chart: ChartGeometry | undefined
+  readonly colour: string
+  readonly from: number
+  readonly to: number
+  readonly summary: string
+  readonly empty: string
+}
+
+/** One line chart on the shared 320×160 canvas; every coordinate comes from `chartGeometry`. */
+function LineChart({
+  title,
+  caption,
+  badge,
+  chart,
+  colour,
+  from,
+  to,
+  summary,
+  empty,
+}: LineChartProps) {
+  return (
+    <figure className="card p-4 sm:p-5">
+      <figcaption className="flex items-center justify-between">
+        <div>
+          <h3 className="text-base font-bold">{title}</h3>
+          <p className="text-xs text-muted-foreground">{caption}</p>
+        </div>
+        {badge !== undefined && <span className="badge badge-soft">{badge}</span>}
+      </figcaption>
+      {chart === undefined ? (
+        <p className="mt-6 rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
+          {empty}
+        </p>
+      ) : (
+        <svg viewBox="0 0 320 160" className="mt-3 w-full" role="img" aria-label={summary}>
+          <g className="text-[10px]" fill="var(--muted-foreground)">
+            {chart.gridlines.map((line) => (
+              <g key={line.label}>
+                <line x1="40" x2="312" y1={line.y} y2={line.y} stroke="var(--border)" />
+                <text x="32" y={line.y + 3} textAnchor="end">
+                  {line.label}
+                </text>
+              </g>
+            ))}
+            <text x="40" y="150">
+              {shortDate(from)}
+            </text>
+            <text x="310" y="150" textAnchor="end">
+              {shortDate(to)}
+            </text>
+          </g>
+          <path d={chart.area} fill={colour} opacity=".12" />
+          <polyline
+            points={chart.line}
+            fill="none"
+            stroke={colour}
+            strokeWidth="2.5"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+          <circle
+            cx={chart.first.x}
+            cy={chart.first.y}
+            r="3.5"
+            fill="var(--card)"
+            stroke="var(--muted-foreground)"
+            strokeWidth="1.5"
+          />
+          <circle
+            cx={chart.last.x}
+            cy={chart.last.y}
+            r="4.5"
+            fill={colour}
+            stroke="var(--card)"
+            strokeWidth="2"
+          />
+          <text
+            x={Math.min(chart.last.x - 8, 302)}
+            y={chart.last.y - 10}
+            textAnchor="end"
+            className="text-[11px] font-semibold"
+            fill="var(--foreground)"
+          >
+            {Math.round(chart.last.value)}
+          </text>
+        </svg>
+      )}
+    </figure>
+  )
+}
+
+function Radar({ radar, summary }: { readonly radar: RadarGeometry; readonly summary: string }) {
+  return (
+    <svg
+      viewBox="-56 -10 372 262"
+      className="mx-auto mt-3 w-full max-w-[440px]"
+      role="img"
+      aria-label={summary}
+    >
+      {radar.rings.map((ring) => (
+        <polygon key={ring} points={ring} fill="none" stroke="var(--border)" strokeWidth="1" />
+      ))}
+      {radar.axes.map((axis) => (
+        <line
+          key={`${String(axis.x)}-${String(axis.y)}`}
+          x1="130"
+          y1="120"
+          x2={axis.x}
+          y2={axis.y}
+          stroke="var(--border)"
+          strokeWidth="1"
+        />
+      ))}
+      {radar.previous !== undefined && (
+        <polygon
+          points={radar.previous}
+          fill="none"
+          stroke="var(--muted-foreground)"
+          strokeWidth="1.5"
+          strokeDasharray="4 3"
+        />
+      )}
+      <polygon
+        points={radar.current}
+        fill="var(--q-best)"
+        fillOpacity=".22"
+        stroke="var(--q-best)"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      {radar.dots.map((dot) => (
+        <circle
+          key={`${String(dot.x)}-${String(dot.y)}`}
+          cx={dot.x}
+          cy={dot.y}
+          r="3.5"
+          fill="var(--q-best)"
+          stroke="var(--card)"
+          strokeWidth="1.5"
+        />
+      ))}
+      {radar.labels.map((label) => (
+        <text
+          key={label.text}
+          x={label.x}
+          y={label.y}
+          textAnchor={label.anchor}
+          className="fill-foreground text-[12.5px] font-medium"
+        >
+          {label.text} <tspan className="fill-muted-foreground">{label.value}</tspan>
+        </text>
+      ))}
+    </svg>
+  )
+}
+
+function skillDelta(skill: ThemeSkill): string {
+  if (skill.previous === undefined) return `${String(skill.attempts)} tries`
+  const change = skill.score - skill.previous
+  return `${change > 0 ? '+' : ''}${String(change)}`
+}
 
 /**
- * Growth / Progress Screen (`/progress`) — ported from `prototype/progress.html`.
+ * Growth Screen (`/progress`) — ported from `prototype/progress.html`, drawn from the
+ * stored attempts, sessions, games and mistakes by `buildProgress`.
  *
- * Provides a serene, personal progress sanctuary:
- * - Garden hero visualizing practice consistency through a botanical metaphor
- * - Rating progression tracking against previous self
- * - 6-axis skill radar highlighting strengths and areas needing focus
- * - 16-week practice heatmap with freeze detection
- * - Milestones celebrating personal growth
+ * - Garden hero: grows with days practised, never with wins
+ * - You vs you: six figures against the equally long stretch before
+ * - Rating and accuracy charts, a theme-mastery radar, a 16-week heatmap, milestones
+ *
+ * Nothing is invented: with no data a card says what it is waiting for.
  */
 export function ProgressScreen() {
   const chatPanel = useContext(ChatPanelContext)
   const [timeRange, setTimeRange] = useState<TimeRange>('30d')
+  // Fixed per visit, so the charts do not shift while the page is open.
+  const [now] = useState(() => toTimestamp(Date.now()))
 
-  const metrics = METRICS_BY_RANGE[timeRange]
-  const dateRangeLabel =
-    timeRange === '30d'
-      ? '20 Aug → 19 Sep'
-      : timeRange === '90d'
-        ? '21 Jun → 19 Sep'
-        : 'All-time journey'
+  const profile = useProfile()
+  const streak = useStreak()
+  const attempts = useAllAttempts()
+  const sessions = useAllSessions()
+  const games = useGames()
+  const mistakes = useMistakes()
+
+  const puzzleIds = useMemo(
+    () => [...new Set((attempts ?? []).map((attempt) => attempt.puzzleId))] as PuzzleId[],
+    [attempts],
+  )
+  const puzzles = usePuzzlesByIds(puzzleIds)
+
+  const model: ProgressModel | undefined = useMemo(() => {
+    if (
+      attempts === undefined ||
+      sessions === undefined ||
+      games === undefined ||
+      mistakes === undefined ||
+      puzzles === undefined
+    ) {
+      return undefined
+    }
+    return buildProgress({
+      now,
+      range: timeRange,
+      timeZone: profile?.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
+      profile,
+      streak,
+      attempts,
+      sessions,
+      games,
+      mistakes,
+      themeOf: new Map(puzzles.map((puzzle) => [puzzle.id, puzzle.theme])),
+    })
+  }, [attempts, sessions, games, mistakes, puzzles, profile, streak, now, timeRange])
+
+  const header = (
+    <header className="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p className="label">Only you vs you. No leaderboards, ever.</p>
+        <h1 className="page-title mt-1">Growth</h1>
+      </div>
+      <div className="seg flex w-full sm:w-auto" role="group" aria-label="Time range">
+        {RANGES.map((range) => (
+          <button
+            key={range.id}
+            type="button"
+            className={cn(
+              'min-h-[36px] flex-1 sm:min-h-0 sm:flex-none',
+              timeRange === range.id && 'is-active',
+            )}
+            onClick={() => {
+              setTimeRange(range.id)
+            }}
+          >
+            {range.label}
+          </button>
+        ))}
+      </div>
+    </header>
+  )
+
+  if (model === undefined) {
+    return (
+      <div className="page pb-12" aria-busy="true">
+        {header}
+        <p className="mt-8 text-sm text-muted-foreground">Gathering your practice…</p>
+      </div>
+    )
+  }
+
+  const { garden, heatmap } = model
+  // The stored streak knows about freezes; the heatmap only knows about sessions. Whichever
+  // is longer is the truer count, since practice recorded without a session still counts.
+  const timeZone = profile?.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
+  const streakDays = Math.max(
+    heatmap.currentStreak,
+    viewStreak(streak, localDateOf(now, timeZone)).current,
+  )
+  const stage = GARDEN_STAGES[garden.stageIndex]
+  const gardenAlt =
+    garden.next === undefined
+      ? `Your chess garden: a grown ${stage?.label.toLowerCase() ?? 'tree'}`
+      : `Your chess garden: a ${stage?.label.toLowerCase() ?? 'seed'}, ${String(garden.daysToNext)} practice days from ${garden.next.label.toLowerCase()}`
+  const progressPercent =
+    garden.next === undefined || stage === undefined
+      ? 100
+      : Math.round(((garden.practicedDays - stage.days) / (garden.next.days - stage.days)) * 100)
+
+  const puzzleRange = model.metrics[0]
+  const strongest = [...model.skills].sort((a, b) => b.score - a.score).slice(0, 3)
+  const weakest = [...model.skills]
+    .sort((a, b) => a.score - b.score)
+    .filter((skill) => !strongest.includes(skill) || model.skills.length <= 3)
+    .slice(0, 3)
+  const weakestSkill = weakest[0]
+  const radarSummary = `Theme mastery. ${model.skills.map((skill) => `${themeLabel(skill.theme)} ${String(skill.score)}`).join(', ')}.`
 
   return (
     <div className="page pb-12">
@@ -485,69 +392,27 @@ export function ProgressScreen() {
           transform-origin: 180px 170px;
           animation: garden-sway 6s ease-in-out infinite;
         }
+        @media (prefers-reduced-motion: reduce) {
+          .garden-sway { animation: none; }
+        }
       `}</style>
 
-      {/* Header */}
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="label">Only you vs you. No leaderboards, ever.</p>
-          <h1 className="page-title mt-1">Growth</h1>
-        </div>
-        <div className="seg flex w-full sm:w-auto" role="group" aria-label="Time range">
-          <button
-            type="button"
-            className={cn(
-              'min-h-[36px] flex-1 sm:min-h-0 sm:flex-none',
-              timeRange === '30d' && 'is-active',
-            )}
-            onClick={() => {
-              setTimeRange('30d')
-            }}
-          >
-            30 days
-          </button>
-          <button
-            type="button"
-            className={cn(
-              'min-h-[36px] flex-1 sm:min-h-0 sm:flex-none',
-              timeRange === '90d' && 'is-active',
-            )}
-            onClick={() => {
-              setTimeRange('90d')
-            }}
-          >
-            90 days
-          </button>
-          <button
-            type="button"
-            className={cn(
-              'min-h-[36px] flex-1 sm:min-h-0 sm:flex-none',
-              timeRange === 'all' && 'is-active',
-            )}
-            onClick={() => {
-              setTimeRange('all')
-            }}
-          >
-            All time
-          </button>
-        </div>
-      </header>
+      {header}
 
       {/* Garden Hero */}
       <section className="card mt-6 overflow-hidden" aria-labelledby="garden-h">
         <div className="grid gap-0 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-          {/* Garden Graphic */}
           <div className="relative flex flex-col bg-accent/60 p-4 sm:p-6">
             <span className="badge badge-reward self-start">
               <Flame className="size-3.5" aria-hidden="true" />
-              12-day streak
+              {streakDays}-day streak
             </span>
 
             <svg
               viewBox="70 14 220 186"
               className="mx-auto my-auto w-full max-w-[280px] pt-2 sm:max-w-[360px]"
               role="img"
-              aria-label="Your chess garden: a sapling with a yellow bud, three days from blooming"
+              aria-label={gardenAlt}
             >
               <circle cx="252" cy="50" r="22" fill="var(--reward)" opacity=".35" />
               <circle cx="252" cy="50" r="13" fill="var(--reward)" opacity=".7" />
@@ -567,28 +432,58 @@ export function ProgressScreen() {
                 <circle cx="202" cy="56" r="11" />
               </g>
 
-              {/* Living sapling */}
-              <g className="garden-sway">
-                <path
-                  d="M180 176 C180 146 178 116 181 70"
-                  stroke="#5f8b6c"
-                  strokeWidth="5"
-                  fill="none"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M180 140 C160 134 142 120 138 98 C160 98 176 114 180 140Z"
-                  fill="#8fb88f"
-                />
-                <path d="M181 118 C200 110 218 96 222 74 C198 74 184 92 181 118Z" fill="#6c9d73" />
-                <path
-                  d="M180 158 C198 154 212 146 218 132 C200 130 186 140 180 158Z"
-                  fill="#8fb88f"
-                />
-                <path d="M181 96 C166 92 156 82 152 68 C168 68 178 78 181 96Z" fill="#6c9d73" />
-                <circle cx="181" cy="66" r="9" fill="var(--reward)" />
-                <circle cx="181" cy="66" r="4" fill="var(--cta)" opacity=".6" />
-              </g>
+              {garden.stageIndex < 2 ? (
+                /* A seed or a sprout: the full sapling is what the dashed outline promises. */
+                <g className="garden-sway">
+                  <path
+                    d="M180 176 C180 168 180 160 181 150"
+                    stroke="#5f8b6c"
+                    strokeWidth="4"
+                    fill="none"
+                    strokeLinecap="round"
+                  />
+                  {garden.stageIndex === 1 && (
+                    <>
+                      <path
+                        d="M181 154 C168 152 158 144 156 134 C170 134 179 142 181 154Z"
+                        fill="#8fb88f"
+                      />
+                      <path
+                        d="M181 150 C194 146 204 138 206 128 C192 128 183 138 181 150Z"
+                        fill="#6c9d73"
+                      />
+                    </>
+                  )}
+                  {garden.stageIndex === 0 && (
+                    <circle cx="181" cy="172" r="5" fill="var(--reward)" />
+                  )}
+                </g>
+              ) : (
+                <g className="garden-sway">
+                  <path
+                    d="M180 176 C180 146 178 116 181 70"
+                    stroke="#5f8b6c"
+                    strokeWidth="5"
+                    fill="none"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M180 140 C160 134 142 120 138 98 C160 98 176 114 180 140Z"
+                    fill="#8fb88f"
+                  />
+                  <path
+                    d="M181 118 C200 110 218 96 222 74 C198 74 184 92 181 118Z"
+                    fill="#6c9d73"
+                  />
+                  <path
+                    d="M180 158 C198 154 212 146 218 132 C200 130 186 140 180 158Z"
+                    fill="#8fb88f"
+                  />
+                  <path d="M181 96 C166 92 156 82 152 68 C168 68 178 78 181 96Z" fill="#6c9d73" />
+                  <circle cx="181" cy="66" r="9" fill="var(--reward)" />
+                  <circle cx="181" cy="66" r="4" fill="var(--cta)" opacity=".6" />
+                </g>
+              )}
               <path
                 d="M150 180 Q180 170 210 180"
                 stroke="#5f8b6c"
@@ -598,15 +493,20 @@ export function ProgressScreen() {
               />
             </svg>
             <p className="text-center text-xs text-muted-foreground">
-              Dashed outline: what it becomes at Bloom
+              {garden.next === undefined
+                ? 'Fully grown. It stays that way as long as you keep visiting.'
+                : `Dashed outline: what it becomes at ${garden.next.label}`}
             </p>
           </div>
 
-          {/* Garden Status & Stages */}
           <div className="flex flex-col p-4 sm:p-6">
-            <p className="eyebrow">Your chess garden · Level 4</p>
+            <p className="eyebrow">Your chess garden · Level {garden.level}</p>
             <h2 id="garden-h" className="mt-1 text-2xl leading-tight font-bold sm:text-[28px]">
-              Sapling, and nearly in bloom
+              {garden.practicedDays === 0
+                ? 'A seed, waiting for its first day'
+                : garden.next === undefined
+                  ? `${stage?.label ?? 'Tree'}, fully grown`
+                  : `${stage?.label ?? 'Seed'}, ${String(garden.daysToNext)} days from ${garden.next.label.toLowerCase()}`}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
               It grows with steady practice, not with wins. Missed days don&apos;t kill it. A freeze
@@ -617,65 +517,74 @@ export function ProgressScreen() {
               className="mt-5 grid grid-cols-5 gap-1 text-center text-[11px] font-medium"
               aria-label="Garden stages"
             >
-              <li>
-                <span className="mx-auto grid size-8 place-items-center rounded-full bg-primary text-primary-foreground sm:size-9">
-                  <CircleDot className="size-3.5 sm:size-4" aria-hidden="true" />
-                </span>
-                <span className="mt-1.5 block">Seed</span>
-              </li>
-              <li>
-                <span className="mx-auto grid size-8 place-items-center rounded-full bg-primary text-primary-foreground sm:size-9">
-                  <Sprout className="size-3.5 sm:size-4" aria-hidden="true" />
-                </span>
-                <span className="mt-1.5 block">Sprout</span>
-              </li>
-              <li aria-current="step">
-                <span className="mx-auto grid size-8 place-items-center rounded-full border-[2.5px] border-cta bg-card text-cta shadow-[0_0_0_5px_rgba(224,103,60,.12)] sm:size-9">
-                  <Leaf className="size-3.5 sm:size-4" aria-hidden="true" />
-                </span>
-                <span className="mt-1.5 block font-semibold text-cta">Sapling</span>
-              </li>
-              <li>
-                <span className="mx-auto grid size-8 place-items-center rounded-full border border-dashed bg-card text-muted-foreground sm:size-9">
-                  <Flower2 className="size-3.5 sm:size-4" aria-hidden="true" />
-                </span>
-                <span className="mt-1.5 block text-muted-foreground">Bloom</span>
-              </li>
-              <li>
-                <span className="mx-auto grid size-8 place-items-center rounded-full border border-dashed bg-card text-muted-foreground sm:size-9">
-                  <Trees className="size-3.5 sm:size-4" aria-hidden="true" />
-                </span>
-                <span className="mt-1.5 block text-muted-foreground">Tree</span>
-              </li>
+              {GARDEN_STAGES.map((entry, index) => {
+                const Icon = STAGE_ICONS[index] ?? CircleDot
+                const reached = index < garden.stageIndex
+                const current = index === garden.stageIndex
+                return (
+                  <li key={entry.id} aria-current={current ? 'step' : undefined}>
+                    <span
+                      className={cn(
+                        'mx-auto grid size-8 place-items-center rounded-full sm:size-9',
+                        reached && 'bg-primary text-primary-foreground',
+                        current &&
+                          'border-[2.5px] border-cta bg-card text-cta shadow-[0_0_0_5px_rgba(224,103,60,.12)]',
+                        !reached &&
+                          !current &&
+                          'border border-dashed bg-card text-muted-foreground',
+                      )}
+                    >
+                      <Icon className="size-3.5 sm:size-4" aria-hidden="true" />
+                    </span>
+                    <span
+                      className={cn(
+                        'mt-1.5 block',
+                        current && 'font-semibold text-cta',
+                        !reached && !current && 'text-muted-foreground',
+                      )}
+                    >
+                      {entry.label}
+                    </span>
+                  </li>
+                )
+              })}
             </ol>
 
-            <div className="mt-6">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">To Bloom</span>
-                <span className="text-muted-foreground">
-                  <span className="font-semibold text-foreground">12 of 15</span> practice days
-                </span>
+            {garden.next !== undefined && stage !== undefined && (
+              <div className="mt-6">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium">To {garden.next.label}</span>
+                  <span className="text-muted-foreground">
+                    <span className="font-semibold text-foreground">
+                      {garden.practicedDays} of {garden.next.days}
+                    </span>{' '}
+                    practice days
+                  </span>
+                </div>
+                <div
+                  role="progressbar"
+                  aria-valuenow={garden.practicedDays}
+                  aria-valuemin={0}
+                  aria-valuemax={garden.next.days}
+                  aria-label={`Practice days to ${garden.next.label}`}
+                  className="progress mt-2 h-2.5"
+                >
+                  <span className="bg-cta" style={{ width: `${String(progressPercent)}%` }} />
+                </div>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {garden.daysToNext} more {garden.daysToNext === 1 ? 'day' : 'days'}.
+                  {streak !== undefined && streak.freezesAvailable > 0
+                    ? ' 1 freeze saved in case life gets busy.'
+                    : ''}
+                </p>
               </div>
-              <div
-                role="progressbar"
-                aria-valuenow={12}
-                aria-valuemin={0}
-                aria-valuemax={15}
-                aria-label="Practice days to Bloom"
-                className="progress mt-2 h-2.5"
-              >
-                <span className="w-[80%] bg-cta" />
-              </div>
-              <p className="mt-2 text-xs text-muted-foreground">
-                3 more days. 1 freeze saved in case life gets busy.
-              </p>
-            </div>
+            )}
 
             <div className="mt-auto flex flex-col gap-3 pt-6 sm:flex-row sm:flex-wrap sm:items-center">
               <Button asChild className="btn-cta min-h-[44px] w-full sm:w-auto">
                 <Link to="/">
                   <Droplets className="size-[18px]" aria-hidden="true" />
-                  Water it today · 4 min
+                  Water it today
                 </Link>
               </Button>
               <Button
@@ -706,513 +615,206 @@ export function ProgressScreen() {
                 ? '90 days ago'
                 : 'from the start'}
           </h2>
-          <span className="text-xs text-muted-foreground">{dateRangeLabel}</span>
+          <span className="text-xs text-muted-foreground">
+            {dateRangeLabel(timeRange, model.window.from, model.window.to)}
+          </span>
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-6 @[520px]:grid-cols-3 @[980px]:grid-cols-6">
-          {metrics.map((m) => (
-            <div key={m.label} className="card p-3 sm:p-4">
-              <div className="label truncate text-[11px] sm:text-xs">{m.label}</div>
+          {model.metrics.map((metric) => (
+            <div key={metric.label} className="card p-3 sm:p-4">
+              <div className="label truncate text-[11px] sm:text-xs">{metric.label}</div>
               <div className="mt-1 font-display text-xl font-bold tabular-nums sm:text-2xl">
-                {m.value}
+                {metric.value}
               </div>
               <div
                 className={cn(
                   'mt-0.5 flex items-center gap-1 truncate text-[11px] font-medium sm:text-xs',
-                  m.deltaType === 'success' ? 'text-success' : 'text-muted-foreground',
+                  metric.tone === 'success' ? 'text-success' : 'text-muted-foreground',
                 )}
               >
-                {m.deltaIcon === 'up' && (
+                {metric.icon === 'up' && (
                   <ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" />
                 )}
-                {m.deltaIcon === 'down' && (
+                {metric.icon === 'down' && (
                   <ArrowDownRight className="size-3.5 shrink-0" aria-hidden="true" />
                 )}
-                {m.deltaIcon === 'rotate' && (
+                {metric.icon === 'rotate' && (
                   <RotateCcw className="size-3.5 shrink-0" aria-hidden="true" />
                 )}
-                <span className="truncate">{m.delta}</span>
+                <span className="truncate">{metric.delta}</span>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Rating Charts */}
+      {/* Charts */}
       <section className="mt-6 grid gap-4 lg:grid-cols-2" aria-label="Rating charts">
-        {/* Puzzle Rating */}
-        <figure className="card p-4 sm:p-5">
-          <figcaption className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-bold">Puzzle rating</h3>
-              <p className="text-xs text-muted-foreground">Last 30 days · 412 puzzles</p>
-            </div>
-            <span className="badge badge-soft">+64</span>
-          </figcaption>
-          <svg
-            viewBox="0 0 320 160"
-            className="mt-3 w-full"
-            role="img"
-            aria-label="Puzzle rating rose from 1418 to 1482 over 30 days"
-          >
-            <g className="text-[10px]" fill="var(--muted-foreground)">
-              <line x1="40" x2="312" y1="20" y2="20" stroke="var(--border)" />
-              <text x="32" y="23" textAnchor="end">
-                1500
-              </text>
-              <line x1="40" x2="312" y1="75" y2="75" stroke="var(--border)" />
-              <text x="32" y="78" textAnchor="end">
-                1450
-              </text>
-              <line x1="40" x2="312" y1="130" y2="130" stroke="var(--border)" />
-              <text x="32" y="133" textAnchor="end">
-                1400
-              </text>
-              <text x="40" y="150">
-                20 Aug
-              </text>
-              <text x="175" y="150" textAnchor="middle">
-                4 Sep
-              </text>
-              <text x="310" y="150" textAnchor="end">
-                Today
-              </text>
-            </g>
-            <path
-              d="M40,110.2 L70,102.5 L100,116.8 L130,90.4 L160,84.9 L190,93.7 L220,72.8 L250,64 L280,51.9 L310,39.8 L310,130 L40,130Z"
-              fill="var(--q-best)"
-              opacity=".12"
-            />
-            <polyline
-              points="40,110.2 70,102.5 100,116.8 130,90.4 160,84.9 190,93.7 220,72.8 250,64 280,51.9 310,39.8"
-              fill="none"
-              stroke="var(--q-best)"
-              strokeWidth="2.5"
-              strokeLinejoin="round"
-              strokeLinecap="round"
-            />
-            <circle
-              cx="40"
-              cy="110.2"
-              r="3.5"
-              fill="var(--card)"
-              stroke="var(--muted-foreground)"
-              strokeWidth="1.5"
-            />
-            <circle
-              cx="310"
-              cy="39.8"
-              r="4.5"
-              fill="var(--q-best)"
-              stroke="var(--card)"
-              strokeWidth="2"
-            />
-            <text
-              x="302"
-              y="30"
-              textAnchor="end"
-              className="text-[11px] font-semibold"
-              fill="var(--foreground)"
-            >
-              1482
-            </text>
-          </svg>
-        </figure>
-
-        {/* Sparring Rating */}
-        <figure className="card p-5">
-          <figcaption className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-bold">Sparring rating</h3>
-              <p className="text-xs text-muted-foreground">Last 30 days · 18 games vs Stockfish</p>
-            </div>
-            <span className="badge badge-soft">+56</span>
-          </figcaption>
-          <svg
-            viewBox="0 0 320 160"
-            className="mt-3 w-full"
-            role="img"
-            aria-label="Sparring rating rose from 1124 to 1180 over 30 days"
-          >
-            <g className="text-[10px]" fill="var(--muted-foreground)">
-              <line x1="40" x2="312" y1="20" y2="20" stroke="var(--border)" />
-              <text x="32" y="23" textAnchor="end">
-                1200
-              </text>
-              <line x1="40" x2="312" y1="75" y2="75" stroke="var(--border)" />
-              <text x="32" y="78" textAnchor="end">
-                1150
-              </text>
-              <line x1="40" x2="312" y1="130" y2="130" stroke="var(--border)" />
-              <text x="32" y="133" textAnchor="end">
-                1100
-              </text>
-              <text x="40" y="150">
-                20 Aug
-              </text>
-              <text x="175" y="150" textAnchor="middle">
-                4 Sep
-              </text>
-              <text x="310" y="150" textAnchor="end">
-                Today
-              </text>
-            </g>
-            <path
-              d="M40,103.6 L70,95.9 L100,109.1 L130,86 L160,72.8 L190,79.4 L220,66.2 L250,60.7 L280,51.9 L310,42 L310,130 L40,130Z"
-              fill="var(--sky-ink)"
-              opacity=".12"
-            />
-            <polyline
-              points="40,103.6 70,95.9 100,109.1 130,86 160,72.8 190,79.4 220,66.2 250,60.7 280,51.9 310,42"
-              fill="none"
-              stroke="var(--sky-ink)"
-              strokeWidth="2.5"
-              strokeLinejoin="round"
-              strokeLinecap="round"
-            />
-            <circle
-              cx="40"
-              cy="103.6"
-              r="3.5"
-              fill="var(--card)"
-              stroke="var(--muted-foreground)"
-              strokeWidth="1.5"
-            />
-            <circle
-              cx="310"
-              cy="42"
-              r="4.5"
-              fill="var(--sky-ink)"
-              stroke="var(--card)"
-              strokeWidth="2"
-            />
-            <text
-              x="302"
-              y="32"
-              textAnchor="end"
-              className="text-[11px] font-semibold"
-              fill="var(--foreground)"
-            >
-              1180
-            </text>
-          </svg>
-        </figure>
+        <LineChart
+          title="Puzzle rating"
+          caption={`${timeRange === 'all' ? 'All time' : timeRange === '30d' ? 'Last 30 days' : 'Last 90 days'} · ${String(model.puzzleCount)} rated puzzles`}
+          badge={puzzleRange?.icon === 'none' ? undefined : puzzleRange?.delta.split(' ')[0]}
+          chart={model.puzzleChart}
+          colour="var(--q-best)"
+          from={model.window.from}
+          to={model.window.to}
+          summary={
+            model.puzzleChart === undefined
+              ? ''
+              : `Puzzle rating from ${String(Math.round(model.puzzleChart.first.value))} to ${String(Math.round(model.puzzleChart.last.value))}`
+          }
+          empty="Solve a few rated puzzles and your rating line appears here."
+        />
+        <LineChart
+          title="Game accuracy"
+          caption={`${timeRange === 'all' ? 'All time' : timeRange === '30d' ? 'Last 30 days' : 'Last 90 days'} · ${String(model.gameCount)} reviewed games`}
+          badge={undefined}
+          chart={model.accuracyChart}
+          colour="var(--sky-ink)"
+          from={model.window.from}
+          to={model.window.to}
+          summary={
+            model.accuracyChart === undefined
+              ? ''
+              : `Game accuracy from ${String(Math.round(model.accuracyChart.first.value))} to ${String(Math.round(model.accuracyChart.last.value))} percent`
+          }
+          empty="Review a game and its accuracy is plotted here."
+        />
       </section>
 
-      {/* Skills Map & Focus Areas */}
+      {/* Skills */}
       <section
         className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
         aria-labelledby="skills-h"
       >
-        {/* Radar Map */}
         <div className="card p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h2 id="skills-h" className="text-base font-bold">
                 Skill map
               </h2>
-              <p className="text-xs text-muted-foreground">From your games, puzzles and drills</p>
+              <p className="text-xs text-muted-foreground">
+                Puzzle themes you practise most, by first-try solves
+              </p>
             </div>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <span className="h-2.5 w-4 rounded-sm bg-q-best/40 ring-1 ring-q-best" />
-                Now
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-0 w-4 border-t-2 border-dashed border-muted-foreground" />
-                30 days ago
-              </span>
-            </div>
+            {model.radar?.previous !== undefined && (
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2.5 w-4 rounded-sm bg-q-best/40 ring-1 ring-q-best" />
+                  Now
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="h-0 w-4 border-t-2 border-dashed border-muted-foreground" />
+                  Before
+                </span>
+              </div>
+            )}
           </div>
 
-          <svg
-            viewBox="-56 -10 372 262"
-            className="mx-auto mt-3 w-full max-w-[440px]"
-            role="img"
-            aria-label="Skill radar. Tactics 78, Openings 72, Endgames 42, Calculation 60, Time use 50, Board vision 66. Every skill grew except Endgames, which is flat."
-          >
-            {/* Radar Grid Rings */}
-            <polygon
-              points="130.0,98.5 148.6,109.2 148.6,130.8 130.0,141.5 111.4,130.8 111.4,109.2"
-              fill="none"
-              stroke="var(--border)"
-              strokeWidth="1"
-            />
-            <polygon
-              points="130.0,77.0 167.2,98.5 167.2,141.5 130.0,163.0 92.8,141.5 92.8,98.5"
-              fill="none"
-              stroke="var(--border)"
-              strokeWidth="1"
-            />
-            <polygon
-              points="130.0,55.5 185.9,87.8 185.9,152.2 130.0,184.5 74.1,152.2 74.1,87.8"
-              fill="none"
-              stroke="var(--border)"
-              strokeWidth="1"
-            />
-            <polygon
-              points="130.0,34.0 204.5,77.0 204.5,163.0 130.0,206.0 55.5,163.0 55.5,77.0"
-              fill="none"
-              stroke="var(--border)"
-              strokeWidth="1"
-            />
+          {model.radar !== undefined ? (
+            <Radar radar={model.radar} summary={radarSummary} />
+          ) : (
+            <p className="mt-4 rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
+              {model.skills.length === 0
+                ? 'Practise a few puzzles in three different themes and your map takes shape.'
+                : 'Practise one more theme and your map takes shape.'}
+            </p>
+          )}
 
-            {/* Axes */}
-            <line x1="130" y1="120" x2="130.0" y2="34.0" stroke="var(--border)" strokeWidth="1" />
-            <line x1="130" y1="120" x2="204.5" y2="77.0" stroke="var(--border)" strokeWidth="1" />
-            <line x1="130" y1="120" x2="204.5" y2="163.0" stroke="var(--border)" strokeWidth="1" />
-            <line x1="130" y1="120" x2="130.0" y2="206.0" stroke="var(--border)" strokeWidth="1" />
-            <line x1="130" y1="120" x2="55.5" y2="163.0" stroke="var(--border)" strokeWidth="1" />
-            <line x1="130" y1="120" x2="55.5" y2="77.0" stroke="var(--border)" strokeWidth="1" />
-
-            {/* 30 days ago polygon */}
-            <polygon
-              points="130.0,66.7 179.2,91.6 159.8,137.2 130.0,164.7 97.2,138.9 89.0,96.3"
-              fill="none"
-              stroke="var(--muted-foreground)"
-              strokeWidth="1.5"
-              strokeDasharray="4 3"
-            />
-
-            {/* Current polygon */}
-            <polygon
-              points="130.0,52.9 183.6,89.0 161.3,138.1 130.0,171.6 92.8,141.5 80.8,91.6"
-              fill="var(--q-best)"
-              fillOpacity=".22"
-              stroke="var(--q-best)"
-              strokeWidth="2"
-              strokeLinejoin="round"
-            />
-            <circle
-              cx="130.0"
-              cy="52.9"
-              r="3.5"
-              fill="var(--q-best)"
-              stroke="var(--card)"
-              strokeWidth="1.5"
-            />
-            <circle
-              cx="183.6"
-              cy="89.0"
-              r="3.5"
-              fill="var(--q-best)"
-              stroke="var(--card)"
-              strokeWidth="1.5"
-            />
-            <circle
-              cx="161.3"
-              cy="138.1"
-              r="3.5"
-              fill="var(--q-best)"
-              stroke="var(--card)"
-              strokeWidth="1.5"
-            />
-            <circle
-              cx="130.0"
-              cy="171.6"
-              r="3.5"
-              fill="var(--q-best)"
-              stroke="var(--card)"
-              strokeWidth="1.5"
-            />
-            <circle
-              cx="92.8"
-              cy="141.5"
-              r="3.5"
-              fill="var(--q-best)"
-              stroke="var(--card)"
-              strokeWidth="1.5"
-            />
-            <circle
-              cx="80.8"
-              cy="91.6"
-              r="3.5"
-              fill="var(--q-best)"
-              stroke="var(--card)"
-              strokeWidth="1.5"
-            />
-
-            {/* Skill Labels */}
-            <text
-              x="130.0"
-              y="20.8"
-              textAnchor="middle"
-              className="fill-foreground text-[12.5px] font-medium"
-            >
-              Tactics <tspan className="fill-muted-foreground">78</tspan>
-            </text>
-            <text
-              x="219.4"
-              y="72.4"
-              textAnchor="start"
-              className="fill-foreground text-[12.5px] font-medium"
-            >
-              Openings <tspan className="fill-muted-foreground">72</tspan>
-            </text>
-            <text
-              x="219.4"
-              y="175.6"
-              textAnchor="start"
-              className="fill-foreground text-[12.5px] font-medium"
-            >
-              Endgames <tspan className="fill-muted-foreground">42</tspan>
-            </text>
-            <text
-              x="130.0"
-              y="227.2"
-              textAnchor="middle"
-              className="fill-foreground text-[12.5px] font-medium"
-            >
-              Calculation <tspan className="fill-muted-foreground">60</tspan>
-            </text>
-            <text
-              x="40.6"
-              y="175.6"
-              textAnchor="end"
-              className="fill-foreground text-[12.5px] font-medium"
-            >
-              Time use <tspan className="fill-muted-foreground">50</tspan>
-            </text>
-            <text
-              x="40.6"
-              y="72.4"
-              textAnchor="end"
-              className="fill-foreground text-[12.5px] font-medium"
-            >
-              Board vision <tspan className="fill-muted-foreground">66</tspan>
-            </text>
-          </svg>
-
-          {/* Skill deltas */}
-          <dl className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-            {SKILL_STATS.map((s) => (
-              <div
-                key={s.name}
-                className={cn(
-                  'rounded-lg p-2',
-                  s.status === 'highlight' ? 'bg-cta-soft' : 'bg-muted/60',
-                )}
-              >
-                <dt className="text-muted-foreground">{s.name}</dt>
-                <dd
-                  className={cn(
-                    'font-semibold',
-                    s.status === 'highlight' ? 'text-cta' : 'text-success',
-                  )}
-                >
-                  {s.delta}
-                </dd>
-              </div>
-            ))}
-          </dl>
+          {model.skills.length > 0 && (
+            <dl className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
+              {model.skills.map((skill) => (
+                <div key={skill.theme} className="rounded-lg bg-muted/60 p-2">
+                  <dt className="text-muted-foreground">{themeLabel(skill.theme)}</dt>
+                  <dd className="font-semibold text-foreground">{skillDelta(skill)}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
         </div>
 
-        {/* Strengths and Focus Cards */}
         <div className="grid content-start gap-4">
-          {/* Getting Stronger */}
           <div className="card p-5">
             <h3 className="flex items-center gap-2 text-base font-bold">
               <TrendingUp className="text-success" aria-hidden="true" />
               Getting stronger
             </h3>
-            <ul className="mt-3 divide-y text-sm">
-              <li className="flex items-center gap-3 py-2.5">
-                <span className="flex-1">
-                  <span className="block font-medium">Tactics: forks and pins</span>
-                  <span className="text-xs text-muted-foreground">
-                    +16 this month · you spot them 2s faster
-                  </span>
-                </span>
-                <Button asChild variant="ghost" size="sm" className="min-h-[36px]">
-                  <Link to="/puzzles">Keep sharp</Link>
-                </Button>
-              </li>
-              <li className="flex items-center gap-3 py-2.5">
-                <span className="flex-1">
-                  <span className="block font-medium">Italian Game</span>
-                  <span className="text-xs text-muted-foreground">84.6% accuracy in 11 games</span>
-                </span>
-                <Button asChild variant="ghost" size="sm" className="min-h-[36px]">
-                  <Link to="/openings">Repertoire</Link>
-                </Button>
-              </li>
-              <li className="flex items-center gap-3 py-2.5">
-                <span className="flex-1">
-                  <span className="block font-medium">Board vision</span>
-                  <span className="text-xs text-muted-foreground">
-                    +11 · fewer pieces left hanging
-                  </span>
-                </span>
-                <Button asChild variant="ghost" size="sm" className="min-h-[36px]">
-                  <Link to="/drills/vision">Keep sharp</Link>
-                </Button>
-              </li>
-            </ul>
+            {strongest.length === 0 ? (
+              <p className="mt-3 text-sm text-muted-foreground">
+                Your strongest themes show up here once you have a few puzzles behind you.
+              </p>
+            ) : (
+              <ul className="mt-3 divide-y text-sm">
+                {strongest.map((skill) => (
+                  <li key={skill.theme} className="flex items-center gap-3 py-2.5">
+                    <span className="flex-1">
+                      <span className="block font-medium">{themeLabel(skill.theme)}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {skill.score}% first try in {skill.attempts} puzzles
+                      </span>
+                    </span>
+                    <Button asChild variant="ghost" size="sm" className="min-h-[36px]">
+                      <Link to="/puzzles">Keep sharp</Link>
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
-          {/* Needs a Little Love */}
           <div className="card border-cta/25 bg-cta-soft p-4 sm:p-5">
             <h3 className="flex items-center gap-2 text-base font-bold">
               <HeartHandshake className="text-cta" aria-hidden="true" />
               Needs a little love
             </h3>
-            <ul className="mt-3 divide-y divide-cta/15 text-sm">
-              <li className="flex items-center gap-3 py-2.5">
-                <span className="flex-1">
-                  <span className="block font-medium">Rook endgames</span>
-                  <span className="text-xs text-muted-foreground">
-                    3 won positions ended in draws
-                  </span>
-                </span>
-                <Button
-                  asChild
-                  size="sm"
-                  className="min-h-[36px] bg-cta text-white hover:brightness-105"
-                >
-                  <Link to="/drills/endgames">
-                    <Target className="size-3.5" aria-hidden="true" />
-                    Train this
-                  </Link>
-                </Button>
-              </li>
-              <li className="flex items-center gap-3 py-2.5">
-                <span className="flex-1">
-                  <span className="block font-medium">Time use</span>
-                  <span className="text-xs text-muted-foreground">
-                    You spend 40% of your clock on moves 8–12
-                  </span>
-                </span>
-                <Button asChild variant="outline" size="sm" className="min-h-[36px]">
-                  <Link to="/play">Train this</Link>
-                </Button>
-              </li>
-              <li className="flex items-center gap-3 py-2.5">
-                <span className="flex-1">
-                  <span className="block font-medium">Defending knight forks</span>
-                  <span className="text-xs text-muted-foreground">Started 4 of your 5 losses</span>
-                </span>
-                <Button asChild variant="outline" size="sm" className="min-h-[36px]">
-                  <Link to="/mistakes">Train this</Link>
-                </Button>
-              </li>
-            </ul>
-            <button
-              type="button"
-              className="mt-2 inline-flex min-h-[36px] items-center gap-1.5 text-xs font-medium text-cta hover:underline"
-              aria-label="Ask Sage why Endgames is flat"
-              onClick={() => {
-                chatPanel?.open()
-                toast("Asking Sage why Endgames is flat and what's the smallest fix")
-              }}
-            >
-              <MessageCircle className="size-3.5" aria-hidden="true" />
-              Ask Sage why Endgames is flat
-            </button>
+            {weakest.length === 0 ? (
+              <p className="mt-3 text-sm text-muted-foreground">
+                Nothing yet. Themes that need attention appear after a few more puzzles.
+              </p>
+            ) : (
+              <ul className="mt-3 divide-y divide-cta/15 text-sm">
+                {weakest.map((skill) => (
+                  <li key={skill.theme} className="flex items-center gap-3 py-2.5">
+                    <span className="flex-1">
+                      <span className="block font-medium">{themeLabel(skill.theme)}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {skill.score}% first try in {skill.attempts} puzzles
+                      </span>
+                    </span>
+                    <Button
+                      asChild
+                      size="sm"
+                      className="min-h-[36px] bg-cta text-white hover:brightness-105"
+                    >
+                      <Link to="/puzzles">
+                        <Target className="size-3.5" aria-hidden="true" />
+                        Train this
+                      </Link>
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {weakestSkill !== undefined && (
+              <button
+                type="button"
+                className="mt-2 inline-flex min-h-[36px] items-center gap-1.5 text-xs font-medium text-cta hover:underline"
+                aria-label={`Ask Sage about ${themeLabel(weakestSkill.theme)}`}
+                onClick={() => {
+                  chatPanel?.open()
+                  toast(`Asking Sage about ${themeLabel(weakestSkill.theme)}`)
+                }}
+              >
+                <MessageCircle className="size-3.5" aria-hidden="true" />
+                Ask Sage about {themeLabel(weakestSkill.theme)}
+              </button>
+            )}
           </div>
         </div>
       </section>
 
-      {/* Heatmap Section */}
+      {/* Heatmap */}
       <section className="card mt-6 p-4 sm:p-5" aria-labelledby="heat-h">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
@@ -1220,7 +822,8 @@ export function ProgressScreen() {
               Practice, last 16 weeks
             </h2>
             <p className="text-xs text-muted-foreground">
-              88 days practised · longest streak 19 days · 1 freeze used
+              {heatmap.practicedDays} days practised · longest streak {heatmap.longestStreak} days ·{' '}
+              {heatmap.freezesUsed} {heatmap.freezesUsed === 1 ? 'freeze' : 'freezes'} used
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
@@ -1239,18 +842,20 @@ export function ProgressScreen() {
         <div className="mt-4 flex flex-col items-start gap-x-10 gap-y-6 lg:flex-row">
           <div className="w-full max-w-full overflow-x-auto pb-2 lg:max-w-[480px]">
             <div className="min-w-[340px]">
-              {/* Months Header */}
               <div
                 className="ml-9 grid grid-cols-16 gap-[3px] text-[10px] text-muted-foreground"
                 aria-hidden="true"
               >
-                <span className="col-span-5">June</span>
-                <span className="col-span-4">July</span>
-                <span className="col-span-5">August</span>
-                <span className="col-span-2">Sep</span>
+                {heatmap.months.map((month, index) => (
+                  <span
+                    key={`${month.label}-${String(index)}`}
+                    style={{ gridColumn: `span ${String(month.weeks)}` }}
+                  >
+                    {month.weeks >= 2 ? month.label : ''}
+                  </span>
+                ))}
               </div>
 
-              {/* Days and Grid */}
               <div className="mt-1.5 flex gap-1.5">
                 <div
                   className="grid w-7.5 shrink-0 grid-rows-7 gap-[3px] text-[10px] leading-none text-muted-foreground"
@@ -1269,14 +874,14 @@ export function ProgressScreen() {
                   <div
                     className="grid grid-cols-16 gap-[3px]"
                     role="img"
-                    aria-label="Practice heatmap for the last 16 weeks"
+                    aria-label={`Practice heatmap for the last 16 weeks: ${String(heatmap.practicedDays)} days practised`}
                   >
-                    {PRACTICE_WEEKS.map((week, weekIndex) => (
+                    {heatmap.weeks.map((week, weekIndex) => (
                       <div key={`week-${String(weekIndex)}`} className="grid grid-rows-7 gap-[3px]">
                         {week.map((cell, dayIndex) => (
                           <span
                             key={`cell-${String(weekIndex)}-${String(dayIndex)}`}
-                            className={getHeatmapCellClasses(cell.kind)}
+                            className={heatmapCellClasses(cell.kind)}
                             title={cell.title}
                           />
                         ))}
@@ -1288,29 +893,38 @@ export function ProgressScreen() {
             </div>
           </div>
 
-          {/* Activity Breakdown */}
           <dl className="grid w-full grid-cols-2 gap-x-4 gap-y-3 text-sm sm:gap-x-6 sm:gap-y-4 lg:flex-1">
             <div>
               <dt className="label">Favourite time</dt>
-              <dd className="mt-0.5 font-semibold">Evenings, around 8pm</dd>
+              <dd className="mt-0.5 font-semibold">
+                {heatmap.favouriteHour === undefined
+                  ? 'Not enough sessions yet'
+                  : `Around ${String(heatmap.favouriteHour).padStart(2, '0')}:00`}
+              </dd>
             </div>
             <div>
               <dt className="label">Average session</dt>
-              <dd className="mt-0.5 font-semibold">14 min</dd>
+              <dd className="mt-0.5 font-semibold">
+                {heatmap.averageSessionMs === undefined
+                  ? '—'
+                  : `${String(Math.max(1, Math.round(heatmap.averageSessionMs / 60_000)))} min`}
+              </dd>
             </div>
             <div>
               <dt className="label">Most consistent</dt>
-              <dd className="mt-0.5 font-semibold">Thursdays</dd>
+              <dd className="mt-0.5 font-semibold">{heatmap.busiestWeekday ?? '—'}</dd>
             </div>
             <div>
               <dt className="label">This month</dt>
-              <dd className="mt-0.5 font-semibold">17 of 19 days</dd>
+              <dd className="mt-0.5 font-semibold">
+                {heatmap.daysThisMonth.practiced} of {heatmap.daysThisMonth.elapsed} days
+              </dd>
             </div>
           </dl>
         </div>
       </section>
 
-      {/* Milestones Section */}
+      {/* Milestones */}
       <section className="mt-8" aria-labelledby="ms-h">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 id="ms-h" className="text-xl font-bold">
@@ -1320,47 +934,49 @@ export function ProgressScreen() {
         </div>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {/* Completed Milestones */}
-          {COMPLETED_MILESTONES.map((ms) => (
-            <div key={ms.id} className="card flex items-start gap-3 p-3.5 sm:p-4">
+          {model.earned.map((milestone) => (
+            <div key={milestone.id} className="card flex items-start gap-3 p-3.5 sm:p-4">
               <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-reward text-[#5a3f00] sm:size-11">
-                {ms.icon === 'shield' && <ShieldCheck className="size-5" aria-hidden="true" />}
-                {ms.icon === 'swords' && <Swords className="size-5" aria-hidden="true" />}
-                {ms.icon === 'mistake' && <RotateCcw className="size-5" aria-hidden="true" />}
+                <MilestoneIcon icon={milestone.icon} />
               </span>
               <div className="min-w-0">
-                <div className="truncate text-sm font-semibold">{ms.title}</div>
-                <div className="text-xs text-muted-foreground">{ms.description}</div>
-                <div className="mt-1 text-[11px] font-medium text-reward-ink">{ms.earnedDate}</div>
+                <div className="truncate text-sm font-semibold">{milestone.title}</div>
+                <div className="text-xs text-muted-foreground">{milestone.description}</div>
+                <div className="mt-1 text-[11px] font-medium text-reward-ink">
+                  {milestone.earnedOn}
+                </div>
               </div>
             </div>
           ))}
 
-          {/* In-Progress Milestones */}
-          {IN_PROGRESS_MILESTONES.map((ms) => (
+          {model.pending.map((milestone) => (
             <div
-              key={ms.id}
+              key={milestone.id}
               className="flex items-start gap-3 rounded-xl border border-dashed p-3.5 sm:p-4"
             >
               <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-muted text-muted-foreground sm:size-11">
-                {ms.icon === 'castle' && <Castle className="size-5" aria-hidden="true" />}
-                {ms.icon === 'puzzle' && <Puzzle className="size-5" aria-hidden="true" />}
-                {ms.icon === 'flower' && <Flower2 className="size-5" aria-hidden="true" />}
+                <MilestoneIcon icon={milestone.icon} />
               </span>
               <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-semibold">{ms.title}</div>
-                <div className="text-xs text-muted-foreground">{ms.description}</div>
+                <div className="truncate text-sm font-semibold">{milestone.title}</div>
+                <div className="text-xs text-muted-foreground">{milestone.description}</div>
                 <div
                   role="progressbar"
-                  aria-valuenow={ms.current}
+                  aria-valuenow={milestone.current}
                   aria-valuemin={0}
-                  aria-valuemax={ms.total}
-                  aria-label={`${ms.title} progress`}
+                  aria-valuemax={milestone.total}
+                  aria-label={`${milestone.title} progress`}
                   className="progress mt-2 h-1.5"
                 >
-                  <span style={{ width: `${String(ms.progressPercent)}%` }} />
+                  <span
+                    style={{
+                      width: `${String(Math.min(100, Math.round((milestone.current / milestone.total) * 100)))}%`,
+                    }}
+                  />
                 </div>
-                <div className="mt-1 text-[11px] text-muted-foreground">{ms.currentDisplay}</div>
+                <div className="mt-1 text-[11px] text-muted-foreground">
+                  {milestone.currentDisplay}
+                </div>
               </div>
             </div>
           ))}

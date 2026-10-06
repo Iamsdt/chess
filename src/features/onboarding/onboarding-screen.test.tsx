@@ -7,11 +7,13 @@ import {
   createRouter,
   RouterProvider,
 } from '@tanstack/react-router'
-import { fireEvent, render, screen } from '@testing-library/react'
-import { beforeAll, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { axe } from 'vitest-axe'
 
+import { clearAllData, profileRepo, settingsRepo } from '@/data'
 import { ThemeProvider } from '@/design'
+import { createProfile } from '@/domain'
 
 import { OnboardingScreen } from './onboarding-screen'
 
@@ -48,8 +50,13 @@ function renderOnboardingScreen() {
     path: '/',
     component: () => <div>Today Screen</div>,
   })
+  const puzzlesRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/puzzles',
+    component: () => <div>Puzzles Screen</div>,
+  })
 
-  const routeTree = rootRoute.addChildren([onboardingRoute, homeRoute])
+  const routeTree = rootRoute.addChildren([onboardingRoute, homeRoute, puzzlesRoute])
   const history = createMemoryHistory({ initialEntries: ['/onboarding'] })
   const router = createRouter({ routeTree, history })
 
@@ -61,6 +68,11 @@ function renderOnboardingScreen() {
 }
 
 describe('OnboardingScreen', () => {
+  beforeEach(async () => {
+    await clearAllData()
+    localStorage.clear()
+  })
+
   it('renders heading with accessible name "Welcome"', async () => {
     renderOnboardingScreen()
 
@@ -150,19 +162,78 @@ describe('OnboardingScreen', () => {
       screen.getByRole('heading', { level: 2, name: 'Want Sage, your AI coach?' }),
     ).toBeInTheDocument()
 
-    const skipCard = screen.getByRole('link', { name: /Skip — everything works without it/i })
-    expect(skipCard).toHaveAttribute('href', '/')
-
     const provSelect = screen.getByLabelText('Provider')
-    fireEvent.change(provSelect, { target: { value: 'OpenAI' } })
-    expect(provSelect).toHaveValue('OpenAI')
+    fireEvent.change(provSelect, { target: { value: 'openai' } })
+    expect(provSelect).toHaveValue('openai')
 
-    const keyInput = screen.getByPlaceholderText('Paste your key')
-    fireEvent.change(keyInput, { target: { value: 'sk-test-1234' } })
-    expect(keyInput).toHaveValue('sk-test-1234')
+    fireEvent.click(screen.getByRole('button', { name: /Start playing/i }))
 
-    const startPlayingBtn = screen.getByRole('link', { name: /Start playing/i })
-    expect(startPlayingBtn).toHaveAttribute('href', '/')
+    // Nothing is written until the end, and then all of it is written at once.
+    expect(await screen.findByText('Puzzles Screen')).toBeInTheDocument()
+    const profile = await profileRepo.get()
+    expect(profile?.skillLevel).toBe('club')
+    expect(profile?.puzzleRating).toBe(1200)
+    expect(profile?.goals).toEqual(['tactics', 'friends', 'blunders', 'openings'])
+    expect(profile?.onboardingCompletedAt).not.toBeNull()
+    const settings = await settingsRepo.peek()
+    expect(settings?.dailyGoalMinutes).toBe(30)
+    expect(settings?.board.theme).toBe('walnut')
+    expect(settings?.coach.provider).toBe('openai')
+    expect(settings?.coach.model).toBe('gpt-4.1-mini')
+  })
+
+  it('writes nothing if the person leaves before the last step', async () => {
+    renderOnboardingScreen()
+    await screen.findByRole('heading', { level: 1, name: 'Welcome' })
+    fireEvent.click(screen.getByRole('radio', { name: /Club player/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Continue/i }))
+    expect(await profileRepo.get()).toBeUndefined()
+    expect(await settingsRepo.peek()).toBeUndefined()
+  })
+
+  it('skipping the coach still finishes setup and goes to Today', async () => {
+    renderOnboardingScreen()
+    await screen.findByRole('heading', { level: 1, name: 'Welcome' })
+
+    fireEvent.change(screen.getByLabelText('What should we call you?'), {
+      target: { value: 'Magnus' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Step 4: AI coach' }))
+    fireEvent.click(screen.getByRole('button', { name: /Skip — everything works without it/i }))
+
+    expect(await screen.findByText('Today Screen')).toBeInTheDocument()
+    const profile = await profileRepo.get()
+    expect(profile?.displayName).toBe('Magnus')
+    expect(profile?.skillLevel).toBe('beginner')
+    expect(profile?.onboardingCompletedAt).not.toBeNull()
+  })
+
+  it('replaying setup starts from the saved answers and keeps earned ratings', async () => {
+    await profileRepo.save({
+      ...createProfile({
+        displayName: 'Ada',
+        skillLevel: 'strong',
+        goals: ['openings'],
+        timeZone: 'UTC',
+        onboardingCompleted: true,
+      }),
+      puzzleRating: 1777,
+    })
+    renderOnboardingScreen()
+    await screen.findByRole('heading', { level: 1, name: 'Welcome' })
+
+    expect(await screen.findByLabelText('What should we call you?')).toHaveValue('Ada')
+    expect(screen.getByRole('radio', { name: /Strong/i })).toHaveAttribute('aria-checked', 'true')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Step 4: AI coach' }))
+    fireEvent.click(screen.getByRole('button', { name: /Start playing/i }))
+    expect(await screen.findByText('Today Screen')).toBeInTheDocument()
+
+    await waitFor(async () => {
+      const profile = await profileRepo.get()
+      expect(profile?.puzzleRating).toBe(1777)
+      expect(profile?.goals).toEqual(['openings'])
+    })
   })
 
   it('navigates between steps via stepper indicators', async () => {

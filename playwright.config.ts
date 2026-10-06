@@ -20,7 +20,16 @@ export default defineConfig({
   // exactOptionalPropertyTypes: omit the key rather than pass `undefined`.
   ...(process.env.CI ? { workers: 1 } : {}),
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
-  use: { baseURL, trace: 'on-first-retry' },
+  use: {
+    baseURL,
+    trace: 'on-first-retry',
+    // Every spec starts as a returning visitor: a brand-new browser is sent to first-run
+    // setup once, which is covered by its own spec rather than by every other one.
+    storageState: {
+      cookies: [],
+      origins: [{ origin: baseURL, localStorage: [{ name: 'ck-setup-prompted', value: '1' }] }],
+    },
+  },
   projects: [
     {
       name: 'desktop',
@@ -30,7 +39,12 @@ export default defineConfig({
         viewport: { width: 1440, height: 900 },
       },
     },
-    { name: 'mobile', use: { ...devices['Pixel 7'], ...channelOption } },
+    {
+      // Phones are turned away by the desktop-only gate, so the smallest width the app
+      // supports is a tablet. Touch and a mobile user agent stay on, as they would be.
+      name: 'tablet',
+      use: { ...devices['Pixel 7'], ...channelOption, viewport: { width: 820, height: 1180 } },
+    },
   ],
   webServer: {
     // Bind the host explicitly: `vite preview` defaults to `localhost`, which resolves to

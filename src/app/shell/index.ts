@@ -1,5 +1,6 @@
 /** S04 · The app shell: layout frame, navigation, Sage panel slot, command palette. */
 export { AppShell, type AppShellProps } from './app-shell'
+export { DesktopOnlyGate } from './desktop-only-gate'
 export { SHELL_BREAKPOINTS, SHELL_SIZES } from './breakpoints'
 export { initialChatState, shouldPersistChatState } from './chat-state'
 export { readStoredChatState, writeStoredChatState, type StoredChatState } from './chat-storage'
