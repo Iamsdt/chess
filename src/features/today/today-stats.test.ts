@@ -9,7 +9,7 @@ import {
   toTimestamp,
 } from '@/domain'
 
-import { ratingTrend, todayIn, weekCells } from './today-stats'
+import { buildInsights, ratingTrend, todayIn, weekCells } from './today-stats'
 
 const day = toLocalDate
 const MIN = 60_000
@@ -101,5 +101,51 @@ describe('todayIn', () => {
     const at = Date.parse('2026-09-19T23:30:00Z')
     expect(todayIn('UTC', at)).toBe('2026-09-19')
     expect(todayIn('Asia/Dhaka', at)).toBe('2026-09-20')
+  })
+})
+
+describe('buildInsights', () => {
+  const skill = (theme: string, score: number, attempts = 6) => ({
+    theme,
+    score,
+    attempts,
+    previous: undefined,
+  })
+
+  it('says nothing until there is something to say', () => {
+    expect(buildInsights([], { favouriteHour: undefined, busiestWeekday: undefined })).toEqual([])
+  })
+
+  it('needs two themes before calling one weak and another strong', () => {
+    const one = buildInsights([skill('fork', 40)], {
+      favouriteHour: undefined,
+      busiestWeekday: undefined,
+    })
+    expect(one).toEqual([])
+  })
+
+  it('names the toughest and the strongest theme with the real numbers', () => {
+    const insights = buildInsights([skill('fork', 80), skill('mateIn2', 25, 8), skill('pin', 50)], {
+      favouriteHour: undefined,
+      busiestWeekday: undefined,
+    })
+    expect(insights.map((i) => i.id)).toEqual(['weak', 'strong'])
+    expect(insights[0]).toMatchObject({
+      title: 'Mate in 2 is your toughest theme',
+      body: '25% solved first time, over 8 puzzles this month.',
+      action: { label: 'Practise mate in 2', to: '/puzzles' },
+    })
+    expect(insights[1]).toMatchObject({ title: 'Fork is working', action: undefined })
+  })
+
+  it('adds the habit when sessions have a favourite hour', () => {
+    const insights = buildInsights([], { favouriteHour: 20, busiestWeekday: 'Thursdays' })
+    expect(insights).toHaveLength(1)
+    expect(insights[0]).toMatchObject({
+      id: 'habit',
+      title: 'You practise most around 20:00',
+      action: { to: '/settings' },
+    })
+    expect(insights[0]?.body).toContain('Thursdays')
   })
 })

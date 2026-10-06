@@ -5,6 +5,7 @@ import {
   type PuzzleAttempt,
   type StreakState,
 } from '@/domain'
+import { themeLabel, type Heatmap, type ThemeSkill } from '@/features/progress/progress-stats'
 
 const DAY_MS = 86_400_000
 const LETTERS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'] as const
@@ -98,4 +99,61 @@ export function ratingTrend(attempts: readonly PuzzleAttempt[], now: number): Ra
 /** Today's local date, in the user's zone rather than the browser's. */
 export function todayIn(timeZone: string, at: number = Date.now()): LocalDate {
   return localDateOf(toTimestamp(at), timeZone)
+}
+
+export interface Insight {
+  readonly id: 'weak' | 'strong' | 'habit'
+  readonly label: string
+  readonly title: string
+  readonly body: string
+  readonly action: { readonly label: string; readonly to: '/puzzles' | '/settings' } | undefined
+}
+
+/**
+ * What the last 30 days say, in plain words — computed from the same figures the Growth
+ * screen shows, so the two can never disagree. A pattern needs at least two themes to be
+ * a contrast: with one, "weakest" and "strongest" would be the same sentence.
+ */
+export function buildInsights(
+  skills: readonly ThemeSkill[],
+  heatmap: Pick<Heatmap, 'favouriteHour' | 'busiestWeekday'>,
+): Insight[] {
+  const insights: Insight[] = []
+  const ranked = [...skills].sort((a, b) => a.score - b.score || b.attempts - a.attempts)
+  const weakest = ranked[0]
+  const strongest = ranked.at(-1)
+
+  if (ranked.length >= 2 && weakest !== undefined && strongest !== undefined) {
+    const weakName = themeLabel(weakest.theme)
+    insights.push({
+      id: 'weak',
+      label: 'Needs a little love',
+      title: `${weakName} is your toughest theme`,
+      body: `${String(weakest.score)}% solved first time, over ${String(weakest.attempts)} puzzles this month.`,
+      action: { label: `Practise ${weakName.toLowerCase()}`, to: '/puzzles' },
+    })
+    const strongName = themeLabel(strongest.theme)
+    insights.push({
+      id: 'strong',
+      label: 'Strength',
+      title: `${strongName} is working`,
+      body: `${String(strongest.score)}% solved first time, over ${String(strongest.attempts)} puzzles this month.`,
+      action: undefined,
+    })
+  }
+
+  if (heatmap.favouriteHour !== undefined) {
+    const hour = `${String(heatmap.favouriteHour).padStart(2, '0')}:00`
+    insights.push({
+      id: 'habit',
+      label: 'Habit',
+      title: `You practise most around ${hour}`,
+      body:
+        heatmap.busiestWeekday === undefined
+          ? 'A reminder at that time makes the habit easier to keep.'
+          : `${heatmap.busiestWeekday} are your most consistent day. A reminder at that time makes the habit easier to keep.`,
+      action: { label: 'Set a reminder', to: '/settings' },
+    })
+  }
+  return insights
 }
