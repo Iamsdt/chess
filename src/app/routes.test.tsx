@@ -1,3 +1,5 @@
+import 'fake-indexeddb/auto'
+
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { render, screen, waitFor } from '@testing-library/react'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
@@ -41,9 +43,12 @@ async function renderRoute(path: string) {
       <RouterProvider router={router} />
     </ThemeProvider>,
   )
-  await waitFor(() => {
-    expect(router.state.status).toBe('idle')
-  })
+  await waitFor(
+    () => {
+      expect(router.state.status).toBe('idle')
+    },
+    { timeout: 5000 },
+  )
   return router
 }
 
@@ -52,7 +57,9 @@ const routableScreens = SCREEN_LIST.map((entry) => [entry.path, entry.title] as 
 describe('route table', () => {
   it.each(routableScreens)('serves %s as "%s"', async (path, title) => {
     await renderRoute(path)
-    expect(await screen.findByRole('heading', { level: 1, name: title })).toBeVisible()
+    expect(
+      await screen.findByRole('heading', { level: 1, name: title }, { timeout: 5000 }),
+    ).toBeVisible()
   })
 
   it('titles the browser tab after the screen', async () => {

@@ -7,7 +7,7 @@ import {
   createRouter,
   RouterProvider,
 } from '@tanstack/react-router'
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { axe } from 'vitest-axe'
 
@@ -16,7 +16,9 @@ import {
   clearAllData,
   KV_KEYS,
   kvRepo,
+  gamesRepo,
   mistakesRepo,
+  packsRepo,
   profileRepo,
   puzzlesRepo,
   sessionsRepo,
@@ -25,6 +27,8 @@ import {
 import { ThemeProvider } from '@/design'
 import {
   createProfile,
+  makeGame,
+  makeGameMeta,
   makeMistakeEntry,
   makePuzzle,
   makePuzzleAttempt,
@@ -33,13 +37,19 @@ import {
   toPuzzleId,
   toSrsCardId,
   toAttemptId,
+  toGameId,
   toLocalDate,
   toSessionId,
   toTimestamp,
 } from '@/domain'
 import { advanceStreak } from '@/features/habit'
+import { testPack } from '@/features/learn/learn-fixtures'
 
 import { TodayScreen } from './today-screen'
+
+vi.mock('@/features/learn/lesson-store', () => ({
+  ensureBuiltinLessons: () => Promise.resolve({ ok: true, value: { skipped: 0 } }),
+}))
 
 beforeAll(() => {
   class ResizeObserverStub implements ResizeObserver {
@@ -104,6 +114,11 @@ function renderTodayScreen() {
     path: '/games',
     component: () => <div>Games</div>,
   })
+  const dummyReview = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/games/review',
+    component: () => <div>Review</div>,
+  })
   const dummySettings = createRoute({
     getParentRoute: () => rootRoute,
     path: '/settings',
@@ -126,6 +141,7 @@ function renderTodayScreen() {
     dummyPlay,
     dummyGames,
     dummySettings,
+    dummyReview,
   ])
 
   const history = createMemoryHistory({ initialEntries: ['/'] })
@@ -143,7 +159,7 @@ const DAY = 86_400_000
 const todayString = () => new Date().toISOString().slice(0, 10)
 
 async function addSession(
-  kind: 'daily-puzzle' | 'adaptive-puzzles' | 'sparring',
+  kind: 'daily-puzzle' | 'adaptive-puzzles' | 'sparring' | 'lesson',
   minutes: number,
   id: string,
 ) {
@@ -286,7 +302,7 @@ describe('TodayScreen', () => {
     const path = screen.getByRole('list', { name: '', hidden: true })
     expect(path).toBeDefined()
     expect(screen.getByText('Done')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Start · 5 min/ })).toHaveAttribute('href', '/puzzles')
+    expect(screen.getByRole('button', { name: /Start · 5 min/ })).toBeInTheDocument()
   })
 
   it('finishes the day when every step is done, and offers a game for anyone with time', async () => {
@@ -331,6 +347,108 @@ describe('TodayScreen', () => {
       'href',
       '/puzzles',
     )
+  })
+
+  it('puts the next lesson in the day and opens that lesson', async () => {
+    await seedProfile()
+    await packsRepo.install(testPack())
+    await addSession('daily-puzzle', 2, 's-daily')
+    renderTodayScreen()
+
+    const step = await screen.findByText('Lesson: Pins')
+    expect(step).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Start · 3 min/ })).toHaveAttribute(
+      'href',
+      '/learn/lesson?id=lesson-pins',
+    )
+  })
+
+  it('ticks the lesson off once one has been finished today', async () => {
+    await seedProfile()
+    await packsRepo.install(testPack())
+    await addSession('daily-puzzle', 2, 's-daily')
+    await addSession('lesson', 4, 's-lesson')
+    renderTodayScreen()
+
+    expect(await screen.findByText(/2 of 4/)).toBeInTheDocument()
+    expect(screen.getAllByText('Done')).toHaveLength(2)
+  })
+
+  it('starts the daily puzzle itself, so Start lands on a puzzle and not a menu', async () => {
+    await seedProfile()
+    await puzzlesRepo.bulkUpsert([makePuzzle({ id: toPuzzleId('p-daily') })])
+    renderTodayScreen()
+
+    fireEvent.click(await screen.findByRole('button', { name: /Start · 2 min/ }))
+
+    expect(await screen.findByText('Solve')).toBeInTheDocument()
+    await waitFor(async () => {
+      const active = await sessionsRepo.findActive('daily-puzzle')
+      expect(active?.kind).toBe('daily-puzzle')
+    })
+  })
+
+  it('starts puzzles on the weakest theme', async () => {
+    await seedProfile()
+    await seedThemes()
+    // Puzzles already attempted recently are not offered again, so give the theme fresh ones.
+    await puzzlesRepo.bulkUpsert(
+      ['a', 'b', 'c'].map((n) => makePuzzle({ id: toPuzzleId(`p-fresh-${n}`), theme: 'mateIn2' })),
+    )
+    await addSession('daily-puzzle', 2, 's-daily')
+    renderTodayScreen()
+
+    // The weak theme is worked out once the attempts' puzzles have loaded.
+    await screen.findByText('Sharpen mate in 2')
+    fireEvent.click(screen.getByRole('button', { name: /Start · 5 min/ }))
+    expect(await screen.findByText('Solve')).toBeInTheDocument()
+    await waitFor(async () => {
+      expect((await sessionsRepo.findActive('theme-puzzles'))?.kind).toBe('theme-puzzles')
+    })
+  })
+
+  it('puts the newest unreviewed game in the day and opens its review', async () => {
+    await seedProfile()
+    await addSession('daily-puzzle', 2, 's-daily')
+    await addSession('adaptive-puzzles', 5, 's-puzzles')
+    await gamesRepo.save(
+      makeGame({
+        meta: makeGameMeta({
+          id: toGameId('g-new'),
+          reviewState: 'not-reviewed',
+          startedAt: toTimestamp(Date.now() - 3_600_000),
+        }),
+        moves: [],
+      }),
+    )
+    renderTodayScreen()
+
+    expect(await screen.findByText('Review your game against Stockfish 1200')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Start · 5 min/ })).toHaveAttribute(
+      'href',
+      '/games/review?id=g-new',
+    )
+  })
+
+  it('ticks the review off when a game was reviewed today', async () => {
+    await seedProfile()
+    await addSession('daily-puzzle', 2, 's-daily')
+    await addSession('adaptive-puzzles', 5, 's-puzzles')
+    await gamesRepo.save(
+      makeGame({
+        meta: makeGameMeta({
+          id: toGameId('g-done'),
+          reviewState: 'reviewed',
+          startedAt: toTimestamp(Date.now() - 7_200_000),
+          updatedAt: toTimestamp(Date.now() - 60_000),
+        }),
+        moves: [],
+      }),
+    )
+    renderTodayScreen()
+
+    expect(await screen.findByText('Review a game')).toBeInTheDocument()
+    expect(screen.getAllByText('Done')).toHaveLength(3)
   })
 
   it('reads the name, rating, streak, week and goal from what is stored', async () => {

@@ -21,21 +21,49 @@ const shellRoute = createRoute({
   component: ShellLayout,
 })
 
-/**
- * One placeholder route per prototype screen. The path is passed alongside the id, and
- * typed as that screen's own path, so this file reads as the route table while the
- * compiler keeps it in step with `SCREENS` and `<Link to>` stays checked.
- */
-function screenRoute<Id extends ScreenId>(id: Id, path: (typeof SCREENS)[Id]['path']) {
+/** The component a screen renders: its feature's, or the "not built yet" placeholder. */
+function componentFor(id: ScreenId) {
   const screen = SCREENS[id]
   function ScreenPlaceholder() {
     return <PlaceholderPage screen={screen} />
   }
   // A feature sprint claims its screen in `SCREEN_COMPONENTS`; until then the placeholder
   // stands in, so the route table never waits on a feature to exist.
-  const component = SCREEN_COMPONENTS[id] ?? ScreenPlaceholder
-  return createRoute({ getParentRoute: () => shellRoute, path, component })
+  return SCREEN_COMPONENTS[id] ?? ScreenPlaceholder
 }
+
+/**
+ * One placeholder route per prototype screen. The path is passed alongside the id, and
+ * typed as that screen's own path, so this file reads as the route table while the
+ * compiler keeps it in step with `SCREENS` and `<Link to>` stays checked.
+ */
+function screenRoute<Id extends ScreenId>(id: Id, path: (typeof SCREENS)[Id]['path']) {
+  return createRoute({ getParentRoute: () => shellRoute, path, component: componentFor(id) })
+}
+
+/** `/learn/lesson?id=…` — which lesson to open. Anything else in the query is ignored. */
+function lessonSearch(search: Record<string, unknown>): { id?: string } {
+  return typeof search.id === 'string' && search.id !== '' ? { id: search.id } : {}
+}
+
+/** `/games/review?id=…` — which game to review. */
+function reviewSearch(search: Record<string, unknown>): { id?: string } {
+  return typeof search.id === 'string' && search.id !== '' ? { id: search.id } : {}
+}
+
+const reviewRoute = createRoute({
+  getParentRoute: () => shellRoute,
+  path: SCREENS.review.path,
+  component: componentFor('review'),
+  validateSearch: reviewSearch,
+})
+
+const lessonRoute = createRoute({
+  getParentRoute: () => shellRoute,
+  path: SCREENS.lesson.path,
+  component: componentFor('lesson'),
+  validateSearch: lessonSearch,
+})
 
 const shellRoutes = [
   screenRoute('today', '/'),
@@ -46,12 +74,12 @@ const shellRoutes = [
   screenRoute('puzzle-rush', '/puzzles/rush'),
   screenRoute('session-summary', '/puzzles/summary'),
   screenRoute('learn', '/learn'),
-  screenRoute('lesson', '/learn/lesson'),
+  lessonRoute,
   screenRoute('endgames', '/drills/endgames'),
   screenRoute('vision', '/drills/vision'),
   screenRoute('mistakes', '/mistakes'),
   screenRoute('games', '/games'),
-  screenRoute('review', '/games/review'),
+  reviewRoute,
   screenRoute('analysis', '/analysis'),
   screenRoute('openings', '/openings'),
   screenRoute('opening-drill', '/openings/drill'),

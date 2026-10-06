@@ -3,9 +3,11 @@ import { useCallback, useEffect, useState } from 'react'
 
 import type {
   Color,
+  ContentPack,
   GameId,
   Job,
   JobState,
+  Lesson,
   LessonId,
   MistakeEntry,
   MoveRecord,
@@ -66,6 +68,14 @@ export function useRecentGames(limit = 10): GameRow[] | undefined {
 export function useGame(id: GameId | undefined): GameRow | undefined {
   return useLiveQuery(
     () => (id === undefined ? Promise.resolve(undefined) : repositories.games.get(id)),
+    [id],
+  )
+}
+
+/** `null` once the query has run and found nothing, so a bad link is told from a slow read. */
+export function useGameLookup(id: GameId | undefined): GameRow | null | undefined {
+  return useLiveQuery(
+    async () => (id === undefined ? null : ((await repositories.games.get(id)) ?? null)),
     [id],
   )
 }
@@ -140,6 +150,23 @@ export function useLessonProgress(lessonId: LessonId | undefined): LessonProgres
         : repositories.lessonsProgress.get(lessonId),
     [lessonId],
   )
+}
+
+/** Every lesson of every installed pack. `undefined` until the query has answered. */
+export function useLessons(): Lesson[] | undefined {
+  return useLiveQuery(() => repositories.packs.listLessons(), [])
+}
+
+export function useLesson(id: LessonId | undefined): Lesson | null | undefined {
+  // `null` is "looked and not found", so a bad link is told apart from a slow read.
+  return useLiveQuery(
+    async () => (id === undefined ? null : ((await repositories.packs.findLesson(id)) ?? null)),
+    [id],
+  )
+}
+
+export function useInstalledPacks(): ContentPack[] | undefined {
+  return useLiveQuery(() => repositories.packs.list(), [])
 }
 
 export function useAllLessonProgress(): LessonProgress[] | undefined {

@@ -9,9 +9,16 @@ import type { SessionKind } from '@/domain'
  * the Mistake Bank — when nothing is waiting any more.
  */
 
-export type PathStepId = 'daily-puzzle' | 'weak-theme' | 'puzzles' | 'mistakes' | 'play' | 'review'
+export type PathStepId =
+  'daily-puzzle' | 'weak-theme' | 'puzzles' | 'lesson' | 'mistakes' | 'play' | 'review'
 
-export type PathLink = '/puzzles' | '/mistakes' | '/play' | '/games'
+export type PathLink = '/puzzles' | '/mistakes' | '/play' | '/games/review' | '/learn/lesson'
+
+/** Which puzzle set a step starts, so "Start" lands on a puzzle and not on a menu. */
+export type PuzzleLaunch =
+  | { readonly kind: 'daily-puzzle' }
+  | { readonly kind: 'theme-puzzles'; readonly theme: string }
+  | { readonly kind: 'adaptive-puzzles' }
 
 export interface PathStep {
   readonly id: PathStepId
@@ -20,6 +27,12 @@ export interface PathStep {
   readonly minutes: number
   readonly done: boolean
   readonly href: PathLink
+  /** Set on puzzle steps: the set to open before going to the solver. */
+  readonly launch?: PuzzleLaunch
+  /** Set on the lesson step: which lesson to open. */
+  readonly lessonId?: string
+  /** Set on the review step: which game to open. */
+  readonly gameId?: string
 }
 
 export interface PathInput {
@@ -28,10 +41,15 @@ export interface PathInput {
   /** Mistake cards due now, and how many mistakes the bank holds in all. */
   readonly dueMistakes: number
   readonly totalMistakes: number
-  /** The theme the user is weakest at, as a readable name, when there is enough data. */
-  readonly weakestTheme: string | undefined
-  /** Games played but never reviewed. */
-  readonly unreviewedGames: number
+  /** The theme the user is weakest at, when there is enough data to say. */
+  readonly weakestTheme: { readonly id: string; readonly label: string } | undefined
+  /** The lesson worth doing next, if any is installed and unfinished. */
+  readonly nextLesson:
+    { readonly id: string; readonly title: string; readonly minutes: number } | undefined
+  /** The most recent game that has not been reviewed, if there is one. */
+  readonly reviewTarget: { readonly id: string; readonly opponent: string } | undefined
+  /** A game was reviewed today, so the step counts as done. */
+  readonly reviewedToday: boolean
   readonly dailyMinutes: number
 }
 
@@ -51,17 +69,32 @@ export function planPath(input: PathInput): PathStep[] {
       minutes: 2,
       done: didToday(input, 'daily-puzzle'),
       href: '/puzzles',
+      launch: { kind: 'daily-puzzle' },
     },
   ]
 
+  if (input.nextLesson !== undefined) {
+    steps.push({
+      id: 'lesson',
+      title: `Lesson: ${input.nextLesson.title}`,
+      detail: 'Learn it by playing the moves. It picks up where you left off.',
+      minutes: input.nextLesson.minutes,
+      done: didToday(input, 'lesson'),
+      href: '/learn/lesson',
+      lessonId: input.nextLesson.id,
+    })
+  }
+
   if (input.weakestTheme !== undefined) {
+    const name = input.weakestTheme.label.toLowerCase()
     steps.push({
       id: 'weak-theme',
-      title: `Sharpen ${input.weakestTheme.toLowerCase()}`,
-      detail: `A few ${input.weakestTheme.toLowerCase()} puzzles: the theme you solve least often first time.`,
+      title: `Sharpen ${name}`,
+      detail: `A few ${name} puzzles: the theme you solve least often first time.`,
       minutes: 5,
       done: didToday(input, 'theme-puzzles', 'adaptive-puzzles'),
       href: '/puzzles',
+      launch: { kind: 'theme-puzzles', theme: input.weakestTheme.id },
     })
   } else {
     steps.push({
@@ -71,6 +104,7 @@ export function planPath(input: PathInput): PathStep[] {
       minutes: 5,
       done: didToday(input, 'theme-puzzles', 'adaptive-puzzles'),
       href: '/puzzles',
+      launch: { kind: 'adaptive-puzzles' },
     })
   }
 
@@ -92,18 +126,23 @@ export function planPath(input: PathInput): PathStep[] {
     })
   }
 
-  // A game fills the remaining time for anyone with a goal of 15 minutes or more, and a
-  // finished game that was never reviewed is the best use of ten minutes there is.
-  if (input.unreviewedGames > 0 && steps.length < MAX_STEPS) {
+  // A finished game that was never reviewed is the best use of ten minutes there is; a game
+  // reviewed today keeps its step, ticked, so the day reads as what was actually done.
+  if ((input.reviewTarget !== undefined || input.reviewedToday) && steps.length < MAX_STEPS) {
     steps.push({
       id: 'review',
-      title: 'Review your last game',
+      title:
+        input.reviewTarget === undefined
+          ? 'Review a game'
+          : `Review your game against ${input.reviewTarget.opponent}`,
       detail: 'Find the one moment that decided it, and keep the idea.',
       minutes: 5,
-      done: false,
-      href: '/games',
+      done: input.reviewedToday,
+      href: '/games/review',
+      ...(input.reviewTarget === undefined ? {} : { gameId: input.reviewTarget.id }),
     })
   } else if (input.dailyMinutes >= 15 && steps.length < MAX_STEPS) {
+    // Otherwise a game fills the time for anyone with a goal of 15 minutes or more.
     steps.push({
       id: 'play',
       title: 'Play a game against Stockfish',

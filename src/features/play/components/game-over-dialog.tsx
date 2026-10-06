@@ -20,6 +20,8 @@ export interface GameOverDialogProps {
   readonly termination: GameTermination
   readonly youPlay: Color
   readonly review: ReviewQueueState
+  /** The finished game, so the review can be opened from here. */
+  readonly gameId?: string
   readonly onClose: () => void
 }
 
@@ -52,6 +54,7 @@ export function GameOverDialog({
   termination,
   youPlay,
   review,
+  gameId,
   onClose,
 }: GameOverDialogProps) {
   return (
@@ -79,6 +82,13 @@ export function GameOverDialog({
           <Button variant="ghost" onClick={onClose}>
             Stay on the board
           </Button>
+          {gameId !== undefined && review.status === 'queued' && (
+            <Button variant="outline" asChild>
+              <Link to="/games/review" search={{ id: gameId }}>
+                Open the review
+              </Link>
+            </Button>
+          )}
           <Button variant="outline" asChild>
             <Link to="/games">My games</Link>
           </Button>

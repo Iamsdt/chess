@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import {
   AlertTriangle,
   Check,
@@ -12,15 +12,17 @@ import {
   Target,
   TrendingUp,
 } from 'lucide-react'
-import { useMemo, useContext, useState } from 'react'
+import { useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 
 import { CommandPaletteContext } from '@/app/shell/shell-contexts'
 import { Board } from '@/board'
 import {
   useAllAttempts,
+  useAllLessonProgress,
   useAllSessions,
   useDueCount,
   useGames,
+  useLessons,
   useMistakes,
   useProfile,
   usePuzzlesByIds,
@@ -29,8 +31,12 @@ import {
 } from '@/data'
 import { Button, CtaButton, SimpleTooltip, ThemeToggle, toast } from '@/design'
 import { emptyBoardShapes, toSquare, toTimestamp, type BoardShapes, type PuzzleId } from '@/domain'
-import { pathProgress, planPath, viewStreak } from '@/features/habit'
+import { pathProgress, planPath, viewStreak, type PathStep } from '@/features/habit'
+import { buildCourse } from '@/features/learn/course'
+import { ensureBuiltinLessons } from '@/features/learn/lesson-store'
 import { buildProgress, practiceMsByDay, themeLabel } from '@/features/progress/progress-stats'
+import { startNewSession } from '@/features/puzzles/queue'
+import { configFor } from '@/features/puzzles/session'
 
 import { buildInsights, ratingTrend, todayIn, weekCells, type WeekCell } from './today-stats'
 
@@ -53,6 +59,55 @@ function formatDateLabel(date: Date = new Date()): string {
     day: 'numeric',
     month: 'long',
   }).format(date)
+}
+
+/** The one place a step becomes a link or a button, so every step opens the same way. */
+function StepAction({
+  step,
+  busy,
+  onStart,
+  className,
+  children,
+}: {
+  readonly step: PathStep
+  readonly busy: boolean
+  readonly onStart: (step: PathStep) => void
+  readonly className?: string
+  readonly children: ReactNode
+}) {
+  if (step.launch !== undefined) {
+    return (
+      <button
+        type="button"
+        className={className}
+        disabled={busy}
+        onClick={() => {
+          onStart(step)
+        }}
+      >
+        {children}
+      </button>
+    )
+  }
+  if (step.lessonId !== undefined) {
+    return (
+      <Link to="/learn/lesson" search={{ id: step.lessonId }} className={className}>
+        {children}
+      </Link>
+    )
+  }
+  if (step.gameId !== undefined) {
+    return (
+      <Link to="/games/review" search={{ id: step.gameId }} className={className}>
+        {children}
+      </Link>
+    )
+  }
+  return (
+    <Link to={step.href} className={className}>
+      {children}
+    </Link>
+  )
 }
 
 /**
@@ -78,6 +133,15 @@ export function TodayScreen() {
   const games = useGames()
   const mistakes = useMistakes()
   const dueMistakes = useDueCount()
+  const lessons = useLessons()
+  const lessonProgress = useAllLessonProgress()
+  const navigate = useNavigate()
+  const [launching, setLaunching] = useState<string | null>(null)
+
+  // The shipped lessons install on first use; Today is where the plan first needs one.
+  useEffect(() => {
+    void ensureBuiltinLessons()
+  }, [])
   // Fixed per visit so every card agrees with the others while the page is open.
   const [nowMs] = useState(() => Date.now())
 
@@ -123,6 +187,38 @@ export function TodayScreen() {
     [progress.skills],
   )
 
+  const nextLesson = useMemo(() => {
+    if (lessons === undefined || lessonProgress === undefined) return undefined
+    const next = buildCourse(lessons, lessonProgress).next
+    return next === undefined
+      ? undefined
+      : {
+          id: next.lesson.id,
+          title: next.lesson.title,
+          minutes: next.lesson.estimatedMinutes,
+        }
+  }, [lessons, lessonProgress])
+
+  /** The newest game still waiting for a review, and whether one was finished today. */
+  const { reviewTarget, reviewedToday } = useMemo(() => {
+    const newestFirst = [...(games ?? [])].sort((a, b) => b.startedAt - a.startedAt)
+    const waiting = newestFirst.find(
+      (game) => game.reviewState === 'not-reviewed' || game.reviewState === 'failed',
+    )
+    return {
+      reviewTarget:
+        waiting === undefined
+          ? undefined
+          : {
+              id: waiting.id,
+              opponent: (waiting.youPlay === 'white' ? waiting.black : waiting.white).name,
+            },
+      reviewedToday: newestFirst.some(
+        (game) => game.reviewState === 'reviewed' && todayIn(timeZone, game.updatedAt) === today,
+      ),
+    }
+  }, [games, timeZone, today])
+
   const steps = useMemo(
     () =>
       planPath({
@@ -131,11 +227,26 @@ export function TodayScreen() {
           .map((session) => session.kind),
         dueMistakes: dueMistakes ?? 0,
         totalMistakes: mistakes?.length ?? 0,
-        weakestTheme: weakest === undefined ? undefined : themeLabel(weakest.theme),
-        unreviewedGames: (games ?? []).filter((game) => game.reviewState === 'not-reviewed').length,
+        weakestTheme:
+          weakest === undefined
+            ? undefined
+            : { id: weakest.theme, label: themeLabel(weakest.theme) },
+        nextLesson,
+        reviewTarget,
+        reviewedToday,
         dailyMinutes: goalMinutes,
       }),
-    [sessions, today, dueMistakes, mistakes, weakest, games, goalMinutes],
+    [
+      sessions,
+      today,
+      dueMistakes,
+      mistakes,
+      weakest,
+      nextLesson,
+      reviewTarget,
+      reviewedToday,
+      goalMinutes,
+    ],
   )
   const pathState = pathProgress(steps)
   const insights = useMemo(
@@ -158,6 +269,23 @@ export function TodayScreen() {
     }),
     [featuredMistake],
   )
+
+  /** Puzzle steps open their set first, so "Start" lands on a puzzle and not on a menu. */
+  function startPuzzles(step: PathStep): void {
+    const launch = step.launch
+    if (launch === undefined || launching !== null) return
+    setLaunching(step.id)
+    const config =
+      launch.kind === 'theme-puzzles'
+        ? configFor('theme-puzzles', { theme: launch.theme })
+        : configFor(launch.kind)
+    void startNewSession(config)
+      .catch(() => undefined)
+      .then(() => navigate({ to: '/puzzles/solve' }))
+      .finally(() => {
+        setLaunching(null)
+      })
+  }
 
   const handleSearchClick = () => {
     if (commandPalette) {
@@ -245,8 +373,10 @@ export function TodayScreen() {
                     <span className="z-10 grid size-10 shrink-0 place-items-center rounded-full border bg-card font-display font-bold text-muted-foreground">
                       {index + 1}
                     </span>
-                    <Link
-                      to={step.href}
+                    <StepAction
+                      step={step}
+                      busy={launching !== null}
+                      onStart={startPuzzles}
                       className="card flex min-w-0 flex-1 items-center gap-3 px-3 py-2.5 transition hover:-translate-y-0.5 sm:px-4 sm:py-3"
                     >
                       <div className="min-w-0 flex-1">
@@ -256,7 +386,7 @@ export function TodayScreen() {
                       <span className="badge shrink-0 text-muted-foreground">
                         {step.minutes} min
                       </span>
-                    </Link>
+                    </StepAction>
                   </li>
                 )
               }
@@ -285,10 +415,14 @@ export function TodayScreen() {
                         <p className="mt-2 text-sm text-muted-foreground">{step.detail}</p>
                         <div className="mt-4 flex flex-wrap items-center gap-3 sm:mt-5">
                           <CtaButton asChild className="h-11">
-                            <Link to={step.href}>
+                            <StepAction
+                              step={step}
+                              busy={launching !== null}
+                              onStart={startPuzzles}
+                            >
                               <Play className="size-[18px]" aria-hidden="true" />
                               Start · {step.minutes} min
-                            </Link>
+                            </StepAction>
                           </CtaButton>
                         </div>
                       </div>

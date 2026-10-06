@@ -7,13 +7,20 @@ import {
   createRouter,
   RouterProvider,
 } from '@tanstack/react-router'
-import { fireEvent, render, screen } from '@testing-library/react'
-import { beforeAll, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { axe } from 'vitest-axe'
 
+import { clearAllData, lessonsProgressRepo, packsRepo } from '@/data'
 import { ThemeProvider } from '@/design'
+import { domainError, err, FIXTURE_NOW, ok, toLessonId, toTimestamp } from '@/domain'
 
+import { TEST_PACK_ID, testPack } from './learn-fixtures'
 import { LearnScreen } from './learn-screen'
+
+const ensure = vi.hoisted(() => vi.fn())
+vi.mock('./lesson-store', () => ({ ensureBuiltinLessons: ensure }))
 
 beforeAll(() => {
   class ResizeObserverStub implements ResizeObserver {
@@ -36,33 +43,20 @@ beforeAll(() => {
 
 const axeOptions = { rules: { 'color-contrast': { enabled: false } } }
 
-function renderLearnScreen() {
-  const rootRoute = createRootRoute()
-  const learnRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: '/learn',
-    component: LearnScreen,
+function renderLearn() {
+  const root = createRootRoute()
+  const routes = [
+    createRoute({ getParentRoute: () => root, path: '/learn', component: LearnScreen }),
+    createRoute({
+      getParentRoute: () => root,
+      path: '/learn/lesson',
+      component: () => <div>Lesson player</div>,
+    }),
+  ]
+  const router = createRouter({
+    routeTree: root.addChildren(routes),
+    history: createMemoryHistory({ initialEntries: ['/learn'] }),
   })
-  const lessonRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: '/learn/lesson',
-    component: () => <div>Interactive Lesson</div>,
-  })
-  const openingsRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: '/openings',
-    component: () => <div>Openings Repertoire</div>,
-  })
-  const endgamesRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: '/drills/endgames',
-    component: () => <div>Endgame Drills</div>,
-  })
-
-  const routeTree = rootRoute.addChildren([learnRoute, lessonRoute, openingsRoute, endgamesRoute])
-  const history = createMemoryHistory({ initialEntries: ['/learn'] })
-  const router = createRouter({ routeTree, history })
-
   return render(
     <ThemeProvider>
       <RouterProvider router={router} />
@@ -70,84 +64,172 @@ function renderLearnScreen() {
   )
 }
 
+/** The count is split across a bold number and plain text, so match the whole line. */
+function summaryOf(text: string) {
+  return (_: string, element: Element | null) =>
+    element?.tagName === 'P' && element.textContent === text
+}
+
+function lessonPack(source: 'imported' | 'builtin' = 'imported') {
+  return testPack({ source })
+}
+
 describe('LearnScreen', () => {
-  it('renders heading with accessible name "Learn" and track overview', async () => {
-    renderLearnScreen()
+  beforeEach(async () => {
+    await clearAllData()
+    ensure.mockReset()
+    ensure.mockResolvedValue(ok({ skipped: 0 }))
+  })
 
-    const heading = await screen.findByRole('heading', { level: 1, name: 'Learn' })
-    expect(heading).toBeInTheDocument()
+  it('shows a calm loading line, then the course', async () => {
+    await packsRepo.install(lessonPack())
+    renderLearn()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Learn' })).toBeInTheDocument()
+    expect(await screen.findByText(summaryOf('0 of 3 lessons finished'))).toBeInTheDocument()
+  })
 
-    expect(screen.getByRole('tab', { name: /Tactics Foundations/i })).toBeInTheDocument()
-    expect(screen.getByText('Checkmate Patterns')).toBeInTheDocument()
-    expect(screen.getByText('Opening Principles')).toBeInTheDocument()
-    expect(screen.getByText('Endgame Essentials')).toBeInTheDocument()
-    expect(screen.getByText('Strategy Basics')).toBeInTheDocument()
+  it('groups lessons into tracks, biggest first, each linking to its own lesson', async () => {
+    await packsRepo.install(lessonPack())
+    renderLearn()
+
+    const tactics = await screen.findByRole('button', { name: /Tactics/ })
+    expect(tactics).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: /Open games/ })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+
+    const pins = screen.getByRole('link', { name: /Pins/ })
+    expect(pins).toHaveAttribute('href', '/learn/lesson?id=lesson-pins')
+
+    fireEvent.click(screen.getByRole('button', { name: /Open games/ }))
+    expect(await screen.findByRole('link', { name: /Take the centre/ })).toHaveAttribute(
+      'href',
+      '/learn/lesson?id=lesson-centre',
+    )
+  })
+
+  it('reads progress: finished lessons, steps reached, and where to continue', async () => {
+    await packsRepo.install(lessonPack())
+    const base = {
+      packId: TEST_PACK_ID,
+      lessonVersion: 1,
+      completedStepIds: [],
+      hintsUsed: 0,
+      wrongMoves: 0,
+      timeSpentMs: 0,
+      startedAt: FIXTURE_NOW,
+    }
+    await lessonsProgressRepo.put({
+      ...base,
+      lessonId: toLessonId('lesson-pins'),
+      status: 'completed',
+      currentStepIndex: 2,
+      updatedAt: FIXTURE_NOW,
+      completedAt: FIXTURE_NOW,
+    })
+    await lessonsProgressRepo.put({
+      ...base,
+      lessonId: toLessonId('lesson-forks'),
+      status: 'in-progress',
+      currentStepIndex: 1,
+      updatedAt: toTimestamp(FIXTURE_NOW + 5),
+      completedAt: null,
+    })
+    renderLearn()
+
+    expect(await screen.findByText(summaryOf('1 of 3 lessons finished'))).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 2, name: 'Forks' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Continue lesson' })).toHaveAttribute(
+      'href',
+      '/learn/lesson?id=lesson-forks',
+    )
+    const bar = screen.getByRole('progressbar', { name: 'Tactics progress' })
+    expect(bar).toHaveAttribute('aria-valuenow', '50')
+    expect(screen.getByText(/step 2 of 3/)).toBeInTheDocument()
+  })
+
+  it('offers the first lesson to a new learner', async () => {
+    await packsRepo.install(lessonPack())
+    renderLearn()
+    expect(await screen.findByText('Up next')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Start lesson' })).toBeInTheDocument()
+  })
+
+  it('says so, and offers a retry, when the lessons could not be installed', async () => {
+    ensure.mockResolvedValueOnce(err(domainError('io', 'No network', { where: 'lessons' })))
+    renderLearn()
+    expect(await screen.findByText('The lessons could not be loaded')).toBeInTheDocument()
+    expect(screen.getByText('No network')).toBeInTheDocument()
+
+    await packsRepo.install(lessonPack())
+    fireEvent.click(screen.getByRole('button', { name: /Try again/ }))
+    expect(await screen.findByRole('button', { name: /Tactics/ })).toBeInTheDocument()
+    expect(ensure).toHaveBeenCalledTimes(2)
+  })
+
+  it('lists installed packs and removes only the ones that were imported', async () => {
+    await packsRepo.install(lessonPack('imported'))
+    renderLearn()
+    const packs = await screen.findByRole('region', { name: 'Lesson packs' })
+    expect(within(packs).getByText('Test pack')).toBeInTheDocument()
+    expect(within(packs).getByText(/Imported/)).toBeInTheDocument()
+
+    fireEvent.click(within(packs).getByRole('button', { name: 'Remove Test pack' }))
+    await waitFor(async () => {
+      expect(await packsRepo.count()).toBe(0)
+    })
+    expect(await screen.findByText('No lessons installed')).toBeInTheDocument()
+  })
+
+  it('never offers to remove the pack that ships with the app', async () => {
+    await packsRepo.install(lessonPack('builtin'))
+    renderLearn()
+    const packs = await screen.findByRole('region', { name: 'Lesson packs' })
+    expect(within(packs).getByText(/Ships with the app/)).toBeInTheDocument()
+    expect(within(packs).queryByRole('button', { name: /Remove/ })).not.toBeInTheDocument()
+  })
+
+  it('imports a pack from a file and adds its lessons to the map', async () => {
+    await packsRepo.install(lessonPack())
+    renderLearn()
+    await screen.findByRole('button', { name: /Tactics/ })
+
+    const base = testPack()
+    const first = base.lessons[0]
+    if (first === undefined) throw new Error('fixture has no lessons')
+    // The file format carries no install metadata; that is stamped on when it is imported.
+    const { source: _source, importedAt: _importedAt, updatedAt: _updatedAt, ...fileFields } = base
+    const extra = {
+      ...fileFields,
+      id: 'extra-pack',
+      name: 'Extra pack',
+      itemCount: 1,
+      lessons: [
+        { ...first, id: 'extra-1', packId: 'extra-pack', title: 'Skewers', trackId: 'tactics' },
+      ],
+    }
+    const file = new File([JSON.stringify(extra)], 'extra.json', { type: 'application/json' })
+    await userEvent.upload(screen.getByLabelText('Content pack file'), file)
+
+    expect(await screen.findByText('Extra pack')).toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: /Skewers/ })).toBeInTheDocument()
+  })
+
+  it('refuses a file that is not a pack and installs nothing', async () => {
+    await packsRepo.install(lessonPack())
+    renderLearn()
+    await screen.findByRole('button', { name: /Tactics/ })
+    const file = new File(['{"not":"a pack"}'], 'bad.json', { type: 'application/json' })
+    await userEvent.upload(screen.getByLabelText('Content pack file'), file)
+    await new Promise((resolve) => setTimeout(resolve, 150))
+    expect(await packsRepo.count()).toBe(1)
   })
 
   it('passes automated accessibility checks', async () => {
-    const { container } = renderLearnScreen()
-    await screen.findByRole('heading', { level: 1, name: 'Learn' })
-
-    const results = await axe(container, axeOptions)
-    expect(results.violations.map((violation) => violation.id)).toEqual([])
-  })
-
-  it('allows switching tracks to update the path header', async () => {
-    renderLearnScreen()
-    await screen.findByRole('heading', { level: 1, name: 'Learn' })
-
-    const checkmateTrack = screen.getByRole('tab', { name: /Checkmate Patterns/i })
-    fireEvent.click(checkmateTrack)
-
-    expect(
-      screen.getByRole('heading', { level: 2, name: 'Checkmate Patterns' }),
-    ).toBeInTheDocument()
-  })
-
-  it('renders the active lesson hero card and interactive links', async () => {
-    renderLearnScreen()
-    await screen.findByRole('heading', { level: 1, name: 'Learn' })
-
-    expect(screen.getByRole('heading', { level: 4, name: 'Royal fork' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Continue: Royal fork/i })).toBeInTheDocument()
-    expect(screen.getByRole('img', { name: 'Lesson position: White to move' })).toBeInTheDocument()
-  })
-
-  it('renders practice rooms and navigates to drills and openings', async () => {
-    renderLearnScreen()
-    await screen.findByRole('heading', { level: 1, name: 'Learn' })
-
-    expect(screen.getByRole('heading', { level: 2, name: 'Practice rooms' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Openings/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Endgames/i })).toBeInTheDocument()
-  })
-
-  it('allows managing content packs and importing packs', async () => {
-    renderLearnScreen()
-    await screen.findByRole('heading', { level: 1, name: 'Learn' })
-
-    expect(screen.getByText('Chess King Core')).toBeInTheDocument()
-    expect(screen.getByText('Mating Nets 101')).toBeInTheDocument()
-
-    const removeBtn = screen.getByRole('button', { name: 'Remove Mating Nets 101' })
-    fireEvent.click(removeBtn)
-
-    expect(screen.queryByText('Mating Nets 101')).not.toBeInTheDocument()
-
-    const importBtn = screen.getByRole('button', { name: /Import/i })
-    fireEvent.click(importBtn)
-  })
-
-  it('supports asking Sage for guidance', async () => {
-    renderLearnScreen()
-    await screen.findByRole('heading', { level: 1, name: 'Learn' })
-
-    const askSageLessonBtn = screen.getByRole('button', { name: 'Ask Sage about royal fork' })
-    fireEvent.click(askSageLessonBtn)
-
-    const askSageOrderBtn = screen.getByRole('button', {
-      name: 'Ask Sage to suggest a lesson order',
-    })
-    fireEvent.click(askSageOrderBtn)
+    await packsRepo.install(lessonPack())
+    const { container } = renderLearn()
+    await screen.findByRole('button', { name: /Tactics/ })
+    expect((await axe(container, axeOptions)).violations.map((v) => v.id)).toEqual([])
   })
 })

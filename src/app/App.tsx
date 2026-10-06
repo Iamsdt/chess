@@ -8,6 +8,10 @@ import { AppearanceSync } from './appearance-sync'
 import { router } from './router'
 import { DesktopOnlyGate } from './shell/desktop-only-gate'
 
+const BackgroundWork = lazy(async () => ({
+  default: (await import('./background-work')).BackgroundWork,
+}))
+
 const FirstRunGuard = lazy(async () => ({
   default: (await import('./first-run-guard')).FirstRunGuard,
 }))
@@ -32,6 +36,7 @@ export function App() {
             <AppearanceSync />
             <Suspense fallback={null}>
               <FirstRunGuard />
+              <BackgroundWork />
             </Suspense>
             <RouterProvider router={router} />
           </DesktopOnlyGate>

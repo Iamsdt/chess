@@ -1,12 +1,10 @@
 /**
- * S16 · Learn Course Map — structured tracks, interactive lessons and pack manager.
- * Ported from `prototype/learn.html`.
+ * S16 · Learn — the course map and the lesson player.
+ *
+ * Both are driven by installed content packs and the player's own progress: the shipped
+ * tutorials arrive as the builtin pack on first use, and an imported pack joins the map.
  */
-export {
-  LearnScreen,
-  type ContentPackItem,
-  type TrackData,
-  type UnitData,
-  type UnitLessonItem,
-} from './learn-screen'
+export { LearnScreen } from './learn-screen'
 export { LessonScreen } from './lesson-screen'
+export { buildCourse, trackTitle, type Course, type LessonRow, type TrackSummary } from './course'
+export { ensureBuiltinLessons } from './lesson-store'

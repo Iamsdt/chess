@@ -363,6 +363,7 @@ export function PlayGameScreen({ storage }: PlayGameScreenProps = {}) {
         termination={state.termination}
         youPlay={you}
         review={review}
+        gameId={state.gameId}
         onClose={() => {
           setGameOverDismissed(true)
         }}
