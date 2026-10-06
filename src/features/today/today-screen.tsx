@@ -473,7 +473,7 @@ export function TodayScreen() {
         </section>
 
         {/* Right Column Stack */}
-        <div className="grid content-start gap-4 min-[1500px]:grid-cols-1 sm:grid-cols-2">
+        <div className="grid content-start gap-4 sm:max-[1499px]:grid-cols-2">
           {/* Week Streak Card */}
           <div className="card p-4 sm:p-5">
             <div className="flex items-center justify-between">
