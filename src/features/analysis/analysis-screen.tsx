@@ -5,6 +5,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  GitBranch,
   Grid2x2Plus,
   MousePointerClick,
   Swords,
@@ -13,6 +14,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Board } from '@/board'
 import { detectOpening, parseUci } from '@/chess'
+import { CalculationDialog } from '@/coach/calculation/calculation-dialog'
+import { CALCULATION_CARD } from '@/coach/fixtures/calculation-fixtures'
 import {
   Badge,
   Button,
@@ -70,6 +73,7 @@ export function AnalysisScreen({ engine, explorerFetch, isOnline }: AnalysisScre
   const { pieceSet } = useTheme()
   const board = useAnalysisBoard()
   const [setupOpen, setSetupOpen] = useState(false)
+  const [treeOpen, setTreeOpen] = useState(false)
 
   const limit = searchLimitById(board.settings.limitId)
   const engineAvailable = engine !== undefined || canRunDefaultEngine()
@@ -209,6 +213,19 @@ export function AnalysisScreen({ engine, explorerFetch, isOnline }: AnalysisScre
               >
                 <Grid2x2Plus aria-hidden="true" />
                 <span className="max-sm:hidden">Set up</span>
+              </Button>
+            </SimpleTooltip>
+            <SimpleTooltip content="Sample calculation tree (mock, not computed from this position yet)">
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-label="Calculation tree"
+                onClick={() => {
+                  setTreeOpen(true)
+                }}
+              >
+                <GitBranch aria-hidden="true" />
+                <span className="max-sm:hidden">Calculation tree</span>
               </Button>
             </SimpleTooltip>
             <Button asChild size="sm">
@@ -354,6 +371,8 @@ export function AnalysisScreen({ engine, explorerFetch, isOnline }: AnalysisScre
           board.loadFen(fen)
         }}
       />
+      {/* Mock: the tree is a fixture, labelled "Sample tree", until the builder exists. */}
+      <CalculationDialog attachment={CALCULATION_CARD} open={treeOpen} onOpenChange={setTreeOpen} />
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { useId } from 'react'
 
 import { cn } from '@/design'
-import type { CoachAttachment } from '@/domain'
+import type { CoachPositionAttachment } from '@/domain'
 
 /**
  * A small, static picture of a position for a chat bubble.
@@ -82,7 +82,7 @@ function describe(placement: ReadonlyMap<string, string>): string {
 }
 
 export interface PositionPreviewProps {
-  readonly attachment: CoachAttachment
+  readonly attachment: CoachPositionAttachment
   readonly className?: string
 }
 

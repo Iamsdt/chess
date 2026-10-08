@@ -30,6 +30,7 @@ import {
   isLightSquare,
   orderedSquares,
   parsePlacement,
+  PIECE_BY_FEN_CHAR,
   pieceColorOf,
   rankIndexOf,
   screenRow,
@@ -41,6 +42,7 @@ import { PromotionPicker } from './promotion-picker'
 import { ANIMATION_DURATIONS, usePieceAnimation } from './use-piece-animation'
 import { useReducedMotion } from './use-reduced-motion'
 
+import type { PieceCode } from './placement'
 import type { BoardFlashTone, BoardHandle, BoardMove, BoardProps } from './types'
 import type {
   FocusEvent as ReactFocusEvent,
@@ -161,6 +163,19 @@ export function Board({
 
   const highlightSet = useMemo(() => new Set<Square>(shapes.highlight), [shapes.highlight])
   const focusSet = useMemo(() => new Set<Square>(shapes.focus), [shapes.focus])
+  const dangerSet = useMemo(() => new Set<Square>(shapes.danger ?? NO_SQUARES), [shapes.danger])
+  const controlMap = useMemo(
+    () => new Map((shapes.control ?? []).map((entry) => [entry.square, entry.side])),
+    [shapes.control],
+  )
+  const ghostMap = useMemo(() => {
+    const entries: [Square, PieceCode][] = []
+    for (const ghost of shapes.ghosts ?? []) {
+      const code = PIECE_BY_FEN_CHAR[ghost.piece]
+      if (code !== undefined) entries.push([ghost.square, code])
+    }
+    return new Map(entries)
+  }, [shapes.ghosts])
   const markMap = useMemo(
     () => new Map(shapes.marks.map((mark) => [mark.square, mark.quality])),
     [shapes.marks],
@@ -641,6 +656,9 @@ export function Board({
                 over={dragFrom !== null && dragOver === square}
                 dragging={dragFrom === square}
                 mark={markMap.get(square) ?? null}
+                danger={dangerSet.has(square)}
+                control={controlMap.get(square) ?? null}
+                ghost={ghostMap.get(square) ?? null}
                 rankLabel={
                   coordinates && columnIndex === 0 ? String(rankIndexOf(square) + 1) : null
                 }

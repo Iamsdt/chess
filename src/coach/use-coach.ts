@@ -73,6 +73,8 @@ export function applyCoachDelta(message: CoachMessage, delta: CoachDelta): Coach
       return { ...message, attachments: [...message.attachments, delta.attachment] }
     case 'quickReplies':
       return { ...message, quickReplies: [...delta.replies] }
+    case 'mode':
+      return { ...message, mode: delta.mode }
     case 'usage':
       return {
         ...message,

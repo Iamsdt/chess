@@ -65,7 +65,7 @@ export function squareAt(fileIndex: number, rankIndex: number): Square | null {
 export const isLightSquare = (square: Square): boolean =>
   (fileIndexOf(square) + rankIndexOf(square)) % 2 === 1
 
-const PIECE_BY_FEN_CHAR: Record<string, PieceCode> = {
+export const PIECE_BY_FEN_CHAR: Record<string, PieceCode> = {
   P: 'wP',
   N: 'wN',
   B: 'wB',

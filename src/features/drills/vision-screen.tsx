@@ -6,11 +6,13 @@ import {
   RotateCcw,
   Route,
   ScanEye,
+  Sparkles,
   TriangleAlert,
   type LucideIcon,
 } from 'lucide-react'
 import { useState } from 'react'
 
+import { VisualizationDialog } from '@/coach/visualization'
 import { Button, EmptyState, SimpleTooltip, Skeleton, toast } from '@/design'
 import type { Color } from '@/domain'
 
@@ -66,6 +68,7 @@ export function VisionScreen() {
   const [mode, setMode] = useState<VisionMode>('square')
   const [orientation, setOrientation] = useState<Color>('white')
   const [rounds, setRounds] = useState(0)
+  const [trainOpen, setTrainOpen] = useState(false)
 
   const handleComplete = (finished: VisionMode, score: number) => {
     void ports.records.recordVision(finished, score).then((result) => {
@@ -136,6 +139,35 @@ export function VisionScreen() {
           </SimpleTooltip>
         </div>
       </header>
+
+      {/* Sage's ladder sits above the four drills: the next rungs once they feel easy. */}
+      <section
+        aria-labelledby="train-h"
+        data-slot="train-with-sage"
+        className="card mx-3 mt-3 flex items-center gap-3 p-4 sm:mx-4 sm:mt-4 lg:mx-6 lg:mt-6"
+      >
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-lilac text-lilac-ink">
+          <Sparkles className="size-5" aria-hidden="true" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 id="train-h" className="font-display text-base font-bold sm:text-lg">
+            Train with Sage
+          </h2>
+          <p className="text-xs text-muted-foreground sm:text-sm">
+            Five short exercises that take the board away step by step, and adapt to you.
+          </p>
+        </div>
+        <Button
+          type="button"
+          size="sm"
+          onClick={() => {
+            setTrainOpen(true)
+          }}
+        >
+          Open the ladder
+        </Button>
+      </section>
+      <VisualizationDialog mode="ladder" open={trainOpen} onOpenChange={setTrainOpen} />
 
       {records.state.status === 'loading' ? <LoadingBody /> : null}
 

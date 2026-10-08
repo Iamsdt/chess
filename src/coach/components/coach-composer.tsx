@@ -1,4 +1,4 @@
-import { ArrowUp, Cpu, EyeOff, LayoutGrid, Square, X } from 'lucide-react'
+import { ArrowUp, Cpu, EyeOff, ShieldAlert, LayoutGrid, Square, X } from 'lucide-react'
 import { useState } from 'react'
 
 import { Button, cn, Tooltip, TooltipContent, TooltipTrigger } from '@/design'
@@ -29,6 +29,9 @@ export interface CoachComposerProps {
   readonly onSpoilerGuardChange: (next: boolean) => void
   readonly allowEngineLines: boolean
   readonly onAllowEngineLinesChange: (next: boolean) => void
+  /** Mock-only for now: the companion's "warn me before I hang a piece" switch. */
+  readonly blunderWarning?: boolean | undefined
+  readonly onBlunderWarningChange?: ((next: boolean) => void) | undefined
 }
 
 interface ToggleProps {
@@ -84,6 +87,8 @@ export function CoachComposer({
   onSpoilerGuardChange,
   allowEngineLines,
   onAllowEngineLinesChange,
+  blunderWarning = false,
+  onBlunderWarningChange,
 }: CoachComposerProps) {
   const [draft, setDraft] = useState('')
 
@@ -177,6 +182,16 @@ export function CoachComposer({
             icon={Cpu}
             disabled={disabled}
           />
+          {onBlunderWarningChange === undefined ? null : (
+            <ComposerToggle
+              pressed={blunderWarning}
+              onPressedChange={onBlunderWarningChange}
+              label="Blunder warning"
+              hint="In a live game, Sage speaks up only if a move would hang material"
+              icon={ShieldAlert}
+              disabled={disabled}
+            />
+          )}
           {busy ? (
             <Button
               type="button"
@@ -202,6 +217,15 @@ export function CoachComposer({
         </div>
       </form>
 
+      {onBlunderWarningChange === undefined ? null : (
+        <p
+          className="mt-2 text-center text-[11px] text-muted-foreground"
+          data-slot="coach-blunder-help"
+        >
+          Blunder warning is {blunderWarning ? 'on' : 'off'}: Sage stays quiet in a game unless a
+          move would hang material.
+        </p>
+      )}
       <p className="mt-2 text-center text-[11px] text-muted-foreground">
         Enter to send · your key stays encrypted in this browser
       </p>

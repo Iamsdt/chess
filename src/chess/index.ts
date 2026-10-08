@@ -18,6 +18,13 @@
  *   check this app's numbers against the rest of the chess world (`accuracy.ts`).
  */
 export {
+  attackedSquares,
+  attackersOf,
+  hangingPieces,
+  squareControl,
+  type SquareControl,
+} from './attacks'
+export {
   EVAL_CEILING_CP,
   gameAccuracy,
   gameAccuracyFromEvals,

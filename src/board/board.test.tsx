@@ -665,3 +665,27 @@ describe('<Board> animation', () => {
     expect(cell(container, 'e4').querySelector('[data-piece]')).toHaveStyle({ transform: '' })
   })
 })
+
+describe('Sage overlays', () => {
+  it('draws danger squares, control tints and ghost pieces from the shapes', () => {
+    const { container } = render(
+      <Board
+        fen={START_FEN}
+        shapes={{
+          highlight: [],
+          focus: [],
+          check: null,
+          arrows: [],
+          marks: [],
+          danger: [sq('e4')],
+          ghosts: [{ square: sq('e4'), piece: 'P' }],
+          control: [{ square: sq('d4'), side: 'contested' }],
+        }}
+      />,
+    )
+    expect(cell(container, 'e4').querySelector('[data-tint="danger"]')).not.toBeNull()
+    expect(cell(container, 'e4').querySelector('[data-ghost="wP"]')).not.toBeNull()
+    expect(cell(container, 'd4').querySelector('[data-tint="contested"]')).not.toBeNull()
+    expect(cell(container, 'a4').querySelector('.vb-tint')).toBeNull()
+  })
+})

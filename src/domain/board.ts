@@ -43,6 +43,16 @@ export const BoardShapesSchema = z.object({
   check: SquareSchema.nullable().default(null),
   arrows: z.array(ArrowSchema).default(() => []),
   marks: z.array(BoardMarkSchema).default(() => []),
+  /** Squares in the warning colour: a hanging piece, the square a fork lands on. */
+  danger: z.array(SquareSchema).optional(),
+  /** Faint pieces on squares they are about to reach: the Sage board's ghost view. */
+  ghosts: z
+    .array(z.object({ square: SquareSchema, piece: z.string().regex(/^[KQRBNPkqrbnp]$/) }))
+    .optional(),
+  /** Squares tinted by which side controls them: the Sage board's control map. */
+  control: z
+    .array(z.object({ square: SquareSchema, side: z.enum(['white', 'black', 'contested']) }))
+    .optional(),
 })
 export type BoardShapes = z.infer<typeof BoardShapesSchema>
 

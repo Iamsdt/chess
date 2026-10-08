@@ -781,6 +781,23 @@ export function ProgressScreen() {
             </div>
           ))}
         </div>
+
+        {/* Mock: span comes from the visualization ladder (coach-agent.md §10.3) once it stores results. */}
+        <div
+          data-slot="visualization-span"
+          className="card mt-3 flex items-center gap-3 p-3 sm:max-w-sm sm:p-4"
+        >
+          <div className="min-w-0 flex-1">
+            <div className="label truncate text-[11px] sm:text-xs">Visualization span</div>
+            <div className="mt-1 font-display text-xl font-bold tabular-nums sm:text-2xl">
+              6 plies
+            </div>
+            <div className="mt-0.5 text-[11px] text-muted-foreground sm:text-xs">
+              The longest line you follow at 80% or better
+            </div>
+          </div>
+          <span className="badge shrink-0">Sample · mock</span>
+        </div>
       </section>
 
       {/* Charts */}

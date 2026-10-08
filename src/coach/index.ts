@@ -26,6 +26,10 @@ export {
   type MockCoachReply,
 } from './mock-coach'
 
+/* The scripted replies for every Sage feature, and the modes the panel shows. */
+export { SHOWCASE_SCRIPT } from './showcase-script'
+export { defaultModeFor, MODE_INFO } from './modes'
+
 /* Thread state: streaming, cancellation, retry, history. */
 export {
   applyCoachDelta,
@@ -57,6 +61,9 @@ export { MessageBubble, type MessageBubbleProps } from './components/message-bub
 export { AttachmentCard, type AttachmentCardProps } from './components/attachment-card'
 export { PositionPreview, type PositionPreviewProps } from './components/position-preview'
 export { CoachMarkdown, type CoachMarkdownProps } from './components/coach-markdown'
+export { ModeChip } from './components/mode-chip'
+export { MemorySheet } from './components/memory-sheet'
+export { AttachmentView } from './components/attachment-view'
 export { TypingIndicator } from './components/typing-indicator'
 
 /* Pure helpers, useful to S21's context builder and to tests. */

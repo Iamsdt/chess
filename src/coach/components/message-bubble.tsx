@@ -1,12 +1,16 @@
 import { Brain, RotateCw, TriangleAlert } from 'lucide-react'
 
 import { Button, cn } from '@/design'
-import type { CoachAttachment, CoachMessage } from '@/domain'
+import type { CoachMessage, CoachPositionAttachment, CoachToolAttachment } from '@/domain'
 
+import { estimateCostUsd, formatCost, formatTokens } from '../memory-mock'
+import { MODE_INFO } from '../modes'
 import { formatMessageTime } from '../time'
 
 import { AttachmentCard } from './attachment-card'
+import { AttachmentView } from './attachment-view'
 import { CoachMarkdown } from './coach-markdown'
+import { ToolChips } from './tool-chips'
 
 import type { ReactNode } from 'react'
 
@@ -21,7 +25,7 @@ export interface MessageBubbleProps {
   readonly message: CoachMessage
   readonly onQuickReply?: ((reply: string) => void) | undefined
   readonly onRetry?: (() => void) | undefined
-  readonly renderPreview?: ((attachment: CoachAttachment) => ReactNode) | undefined
+  readonly renderPreview?: ((attachment: CoachPositionAttachment) => ReactNode) | undefined
   readonly locale?: string | undefined
 }
 
@@ -46,6 +50,15 @@ export function MessageBubble({
   }
 
   const failed = message.status === 'error'
+  // Tool chips sit above the words they back up, collapsed into one disclosure when many.
+  const tools = message.attachments.filter(
+    (attachment): attachment is CoachToolAttachment => attachment.kind === 'tool',
+  )
+  const usage = message.usage
+  const cost =
+    usage === undefined
+      ? undefined
+      : (usage.estimatedCostUsd ?? estimateCostUsd(usage.promptTokens, usage.completionTokens))
 
   return (
     <div className="rise flex gap-2.5" data-slot="coach-message" data-role={message.role}>
@@ -53,19 +66,32 @@ export function MessageBubble({
         <Brain className="size-3.5" />
       </div>
       <div className="min-w-0 flex-1 space-y-1.5">
+        {message.mode === undefined ? null : (
+          <div
+            className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase"
+            data-slot="coach-message-mode"
+          >
+            {MODE_INFO[message.mode].label}
+          </div>
+        )}
+        <ToolChips tools={tools} />
         {message.text === '' ? null : (
           <div className="bubble">
             <CoachMarkdown text={message.text} />
           </div>
         )}
 
-        {message.attachments.map((attachment, index) => (
-          <AttachmentCard
-            key={`${attachment.fen}-${String(index)}`}
-            attachment={attachment}
-            renderPreview={renderPreview}
-          />
-        ))}
+        {message.attachments.map((attachment, index) =>
+          attachment.kind === 'tool' ? null : attachment.kind === 'position' ? (
+            <AttachmentCard
+              key={`${attachment.fen}-${String(index)}`}
+              attachment={attachment}
+              renderPreview={renderPreview}
+            />
+          ) : (
+            <AttachmentView key={`${attachment.kind}-${String(index)}`} attachment={attachment} />
+          ),
+        )}
 
         {failed ? (
           <div
@@ -102,7 +128,18 @@ export function MessageBubble({
           </div>
         ) : null}
 
-        {message.status === 'complete' || failed ? <div className="msg-time">{time}</div> : null}
+        {message.status === 'complete' || failed ? (
+          <div className="msg-time">
+            {time}
+            {usage === undefined || cost === undefined ? null : (
+              <span data-slot="coach-cost">
+                {' · '}
+                {formatCost(cost)} · {formatTokens(usage.promptTokens + usage.completionTokens)}{' '}
+                tokens
+              </span>
+            )}
+          </div>
+        ) : null}
       </div>
     </div>
   )

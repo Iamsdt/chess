@@ -1,4 +1,4 @@
-import type { CoachAttachment } from '@/domain'
+import type { CoachPositionAttachment } from '@/domain'
 
 import { CoachMarkdown } from './coach-markdown'
 import { PositionPreview } from './position-preview'
@@ -11,9 +11,9 @@ import type { ReactNode } from 'react'
  */
 
 export interface AttachmentCardProps {
-  readonly attachment: CoachAttachment
+  readonly attachment: CoachPositionAttachment
   /** Replaces the static preview — how S08's real board gets in here later. */
-  readonly renderPreview?: ((attachment: CoachAttachment) => ReactNode) | undefined
+  readonly renderPreview?: ((attachment: CoachPositionAttachment) => ReactNode) | undefined
   readonly linkLabel?: string | undefined
 }
 

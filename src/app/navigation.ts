@@ -42,7 +42,14 @@ export const NAV_GROUPS: readonly NavGroup[] = [
       { id: 'home', label: 'Today', icon: Sun, screen: 'today', key: 'h' },
       { id: 'play', label: 'Play', icon: Swords, screen: 'play-setup', key: 'p' },
       { id: 'puzzles', label: 'Puzzles', icon: Puzzle, screen: 'puzzles', key: 'z' },
-      { id: 'learn', label: 'Learn', icon: Sprout, screen: 'learn', key: 'l' },
+      {
+        id: 'learn',
+        label: 'Learn',
+        icon: Sprout,
+        screen: 'learn',
+        key: 'l',
+        badge: { label: 'Soon' },
+      },
       {
         id: 'mistakes',
         label: 'Mistakes',

@@ -9,6 +9,8 @@ import { pieceImageUrl } from './piece-sets'
 
 import type { PieceCode } from './placement'
 
+type ControlSide = 'white' | 'black' | 'contested'
+
 export interface BoardSquareProps {
   square: Square
   code: PieceCode | null
@@ -29,6 +31,12 @@ export interface BoardSquareProps {
   over: boolean
   dragging: boolean
   mark: MoveQuality | null
+  /** Warning tint: a hanging piece, the square a fork lands on. */
+  danger: boolean
+  /** Soft per-side tint from the Sage board's control map. */
+  control: ControlSide | null
+  /** A faint piece about to arrive here: the Sage board's ghost view. */
+  ghost: PieceCode | null
   rankLabel: string | null
   fileLabel: string | null
   interactive: boolean
@@ -58,6 +66,9 @@ export const BoardSquare = memo(function BoardSquare({
   over,
   dragging,
   mark,
+  danger,
+  control,
+  ghost,
   rankLabel,
   fileLabel,
   interactive,
@@ -87,6 +98,10 @@ export const BoardSquare = memo(function BoardSquare({
       aria-label={interactive ? label : undefined}
       aria-selected={interactive ? selected : undefined}
     >
+      {control === null ? null : (
+        <span className="vb-tint" data-tint={control} aria-hidden="true" />
+      )}
+      {danger ? <span className="vb-tint" data-tint="danger" aria-hidden="true" /> : null}
       {rankLabel === null ? null : <span className="vb-c r">{rankLabel}</span>}
       {fileLabel === null ? null : <span className="vb-c f">{fileLabel}</span>}
       {code === null ? null : (
@@ -94,6 +109,15 @@ export const BoardSquare = memo(function BoardSquare({
           className={cn('vb-p', dragging && 'dragging')}
           data-piece={code}
           src={pieceImageUrl(pieceSet, code)}
+          alt=""
+          draggable={false}
+        />
+      )}
+      {ghost === null ? null : (
+        <img
+          className="vb-ghost"
+          data-ghost={ghost}
+          src={pieceImageUrl(pieceSet, ghost)}
           alt=""
           draggable={false}
         />

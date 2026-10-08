@@ -1,17 +1,28 @@
-import { Brain, KeyRound, PanelRightClose, Plus, SlidersHorizontal, SquarePen } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import {
+  Brain,
+  Eye,
+  KeyRound,
+  PanelRightClose,
+  Plus,
+  SlidersHorizontal,
+  SquarePen,
+} from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { Button, cn, EmptyState, SimpleTooltip, TooltipProvider } from '@/design'
 import { now as nowTimestamp } from '@/domain'
-import type { CoachAttachment, CoachContext, Timestamp } from '@/domain'
+import type { CoachContext, CoachMode, CoachPositionAttachment, Timestamp } from '@/domain'
 
 import { newThreadId } from '../ids'
 import { createMockCoach } from '../mock-coach'
+import { defaultModeFor } from '../modes'
 import { seedThreadFor, type CoachSeedScreen } from '../seeds'
 import { useCoach } from '../use-coach'
 
 import { CoachComposer } from './coach-composer'
 import { CoachThread } from './coach-thread'
+import { MemorySheet } from './memory-sheet'
+import { ModeChip } from './mode-chip'
 import { ThreadHistory } from './thread-history'
 
 import type { CoachPort } from '../port'
@@ -46,7 +57,7 @@ export interface CoachPanelProps {
   readonly hasKey?: boolean | undefined
   readonly settingsHref?: string | undefined
   /** Swap the static position preview for S08's board once it exists. */
-  readonly renderAttachment?: ((attachment: CoachAttachment) => ReactNode) | undefined
+  readonly renderAttachment?: ((attachment: CoachPositionAttachment) => ReactNode) | undefined
   /** Rendered only when given, because S04 owns whether the panel can be closed. */
   readonly onClose?: (() => void) | undefined
   /** The screen is still working out what Sage can see. */
@@ -56,6 +67,11 @@ export interface CoachPanelProps {
   readonly now?: (() => Timestamp) | undefined
   readonly locale?: string | undefined
   readonly className?: string
+  /**
+   * Sends `text` as if the user typed it, each time `id` changes. How a page outside the
+   * panel (the `/dev/sage` showcase) asks a question without reaching into the composer.
+   */
+  readonly prompt?: { readonly id: number; readonly text: string } | undefined
 }
 
 function NoKeyNotice({ settingsHref }: { readonly settingsHref: string }) {
@@ -100,11 +116,15 @@ function CoachPanelContents({
   now,
   locale,
   className,
+  prompt,
 }: CoachPanelProps) {
   const clock = now ?? nowTimestamp
   const [spoilerGuard, setSpoilerGuard] = useState(defaultSpoilerGuard)
   const [allowEngineLines, setAllowEngineLines] = useState(defaultAllowEngineLines)
   const [attachment, setAttachment] = useState(attachmentLabel)
+  const [blunderWarning, setBlunderWarning] = useState(false)
+  const [memoryOpen, setMemoryOpen] = useState(false)
+  const [modeOverride, setModeOverride] = useState<CoachMode | undefined>(undefined)
 
   // The mock is created once so its rotation through the script survives re-renders.
   const fallbackPort = useMemo(() => createMockCoach(), [])
@@ -130,7 +150,20 @@ function CoachPanelContents({
     ...(now === undefined ? {} : { now }),
   })
 
+  // Override wins, then what Sage last answered in, then the screen's default (§3).
+  const latestMode = [...coach.messages].reverse().find((m) => m.role === 'sage' && m.mode)?.mode
+  const mode = modeOverride ?? latestMode ?? defaultModeFor(context.screen)
+  const paused = mode === 'paused'
+
   const busy = coach.status === 'thinking' || coach.status === 'streaming'
+
+  const sentPrompt = useRef<number | undefined>(undefined)
+  const { send } = coach
+  useEffect(() => {
+    if (prompt === undefined || sentPrompt.current === prompt.id) return
+    sentPrompt.current = prompt.id
+    send(prompt.text)
+  }, [prompt, send])
   const summary = contextSummary ?? seed?.contextSummary
   const replies = quickReplies ?? seed?.quickReplies
 
@@ -160,7 +193,10 @@ function CoachPanelContents({
           </div>
           <div className="min-w-0 flex-1 leading-tight">
             <div className="font-display text-base font-bold">Sage</div>
-            <div className="truncate text-xs text-muted-foreground">{statusLine}</div>
+            <div className="flex items-center gap-1.5">
+              <ModeChip mode={mode} onChange={setModeOverride} />
+              <span className="truncate text-xs text-muted-foreground">{statusLine}</span>
+            </div>
           </div>
           <SimpleTooltip content="Coach settings" side="bottom">
             <Button asChild variant="ghost" size="icon-sm">
@@ -194,9 +230,29 @@ function CoachPanelContents({
             className="flex items-center gap-2 border-b bg-muted/40 px-4 py-2 text-xs text-muted-foreground"
             data-slot="coach-context-summary"
           >
-            <span className="truncate">Sage sees: {summary}</span>
+            <span className="min-w-0 flex-1 truncate">Sage sees: {summary}</span>
+            <button
+              type="button"
+              className="inline-flex shrink-0 items-center gap-1 font-medium text-primary hover:underline"
+              onClick={() => {
+                setMemoryOpen(true)
+              }}
+            >
+              <Eye aria-hidden="true" className="size-3" />
+              Details
+            </button>
           </p>
         )}
+
+        {paused ? (
+          <div
+            role="status"
+            data-slot="coach-paused"
+            className="m-3 mb-0 rounded-xl border bg-muted px-3 py-2.5 text-xs"
+          >
+            Paused for fair play during a live game
+          </div>
+        ) : null}
 
         {note === undefined ? null : (
           <div className="m-3 mb-0 flex gap-2 rounded-xl border border-reward/40 bg-reward-soft px-3 py-2.5 text-xs text-reward-ink">
@@ -232,7 +288,7 @@ function CoachPanelContents({
           onSend={coach.send}
           onCancel={coach.cancel}
           busy={busy}
-          disabled={!hasKey}
+          disabled={!hasKey || paused}
           quickReplies={replies}
           onQuickReply={coach.send}
           attachmentLabel={attachment}
@@ -243,7 +299,10 @@ function CoachPanelContents({
           onSpoilerGuardChange={setSpoilerGuard}
           allowEngineLines={allowEngineLines}
           onAllowEngineLinesChange={setAllowEngineLines}
+          blunderWarning={blunderWarning}
+          onBlunderWarningChange={setBlunderWarning}
         />
+        <MemorySheet open={memoryOpen} onOpenChange={setMemoryOpen} />
       </section>
     </TooltipProvider>
   )

@@ -2,7 +2,7 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useMemo, useRef } from 'react'
 
 import { cn } from '@/design'
-import type { CoachAttachment, CoachMessage, Timestamp } from '@/domain'
+import type { CoachMessage, CoachPositionAttachment, Timestamp } from '@/domain'
 
 import { coachMarkdownToPlainText } from '../markdown'
 import { groupMessagesByDay } from '../time'
@@ -38,7 +38,7 @@ export interface CoachThreadProps {
   readonly threadLabel?: string | undefined
   readonly onQuickReply?: ((reply: string) => void) | undefined
   readonly onRetry?: (() => void) | undefined
-  readonly renderPreview?: ((attachment: CoachAttachment) => ReactNode) | undefined
+  readonly renderPreview?: ((attachment: CoachPositionAttachment) => ReactNode) | undefined
   /** Shown while the screen is still working out what Sage can see. */
   readonly loading?: boolean | undefined
   /** Shown when the thread has no messages at all. */

@@ -47,10 +47,6 @@ import { testPack } from '@/features/learn/learn-fixtures'
 
 import { TodayScreen } from './today-screen'
 
-vi.mock('@/features/learn/lesson-store', () => ({
-  ensureBuiltinLessons: () => Promise.resolve({ ok: true, value: { skipped: 0 } }),
-}))
-
 beforeAll(() => {
   class ResizeObserverStub implements ResizeObserver {
     observe(): void {
@@ -349,29 +345,18 @@ describe('TodayScreen', () => {
     )
   })
 
-  it('puts the next lesson in the day and opens that lesson', async () => {
+  it('leaves lessons out of the day while Learn is coming soon', async () => {
     await seedProfile()
     await packsRepo.install(testPack())
     await addSession('daily-puzzle', 2, 's-daily')
     renderTodayScreen()
 
-    const step = await screen.findByText('Lesson: Pins')
-    expect(step).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Start · 3 min/ })).toHaveAttribute(
-      'href',
-      '/learn/lesson?id=lesson-pins',
-    )
-  })
-
-  it('ticks the lesson off once one has been finished today', async () => {
-    await seedProfile()
-    await packsRepo.install(testPack())
-    await addSession('daily-puzzle', 2, 's-daily')
-    await addSession('lesson', 4, 's-lesson')
-    renderTodayScreen()
-
-    expect(await screen.findByText(/2 of 4/)).toBeInTheDocument()
-    expect(screen.getAllByText('Done')).toHaveLength(2)
+    // The path re-renders as its data arrives, so wait for it to settle rather than grab
+    // the first paint.
+    await waitFor(() => {
+      expect(screen.getByText('Daily puzzle')).toBeInTheDocument()
+    })
+    expect(screen.queryByText('Lesson: Pins')).not.toBeInTheDocument()
   })
 
   it('starts the daily puzzle itself, so Start lands on a puzzle and not a menu', async () => {

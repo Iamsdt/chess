@@ -11,6 +11,7 @@ import {
   Microscope,
   RefreshCw,
   RotateCcw,
+  ScanEye,
   Sparkles,
   TriangleAlert,
   UserRound,
@@ -18,6 +19,8 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 
 import { Board } from '@/board'
+import { PICTURE_IT_CARD } from '@/coach/fixtures/visualization-fixtures'
+import { VisualizationDialog } from '@/coach/visualization'
 import { useActiveJobs, useGameLookup, useGameMoves, useSettings } from '@/data'
 import type { GameRow } from '@/data'
 import { Button, cn, EmptyState, QualityGlyph, SimpleTooltip, toast } from '@/design'
@@ -366,6 +369,30 @@ function RetryButton({
   )
 }
 
+/**
+ * "Picture it" (coach-agent.md §10.6). Mock: it replays a sample line over a hidden board
+ * from a fixture; the real one will replay the line the user missed.
+ */
+function PictureItButton() {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <Button
+        variant="outline"
+        size="sm"
+        className="mt-2 ml-2 h-8 text-xs"
+        onClick={() => {
+          setOpen(true)
+        }}
+      >
+        <ScanEye className="size-3.5" aria-hidden="true" />
+        Picture it
+      </Button>
+      <VisualizationDialog attachment={PICTURE_IT_CARD} open={open} onOpenChange={setOpen} />
+    </>
+  )
+}
+
 function Reviewed({
   game,
   moves,
@@ -608,7 +635,12 @@ function Reviewed({
                     {current.explanation}
                   </p>
                 )}
-                {canRetry(current, youAre) && <RetryButton move={current} onRetry={setRetrying} />}
+                {canRetry(current, youAre) && (
+                  <>
+                    <RetryButton move={current} onRetry={setRetrying} />
+                    <PictureItButton />
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -762,6 +794,7 @@ function Reviewed({
                           Show the position before it
                         </Button>
                         <RetryButton move={moment.move} onRetry={setRetrying} />
+                        <PictureItButton />
                       </li>
                     ))}
                   </ol>

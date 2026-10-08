@@ -12,17 +12,15 @@ import {
   Target,
   TrendingUp,
 } from 'lucide-react'
-import { useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useContext, useMemo, useState, type ReactNode } from 'react'
 
 import { CommandPaletteContext } from '@/app/shell/shell-contexts'
 import { Board } from '@/board'
 import {
   useAllAttempts,
-  useAllLessonProgress,
   useAllSessions,
   useDueCount,
   useGames,
-  useLessons,
   useMistakes,
   useProfile,
   usePuzzlesByIds,
@@ -32,8 +30,6 @@ import {
 import { Button, CtaButton, SimpleTooltip, ThemeToggle, toast } from '@/design'
 import { emptyBoardShapes, toSquare, toTimestamp, type BoardShapes, type PuzzleId } from '@/domain'
 import { pathProgress, planPath, viewStreak, type PathStep } from '@/features/habit'
-import { buildCourse } from '@/features/learn/course'
-import { ensureBuiltinLessons } from '@/features/learn/lesson-store'
 import { buildProgress, practiceMsByDay, themeLabel } from '@/features/progress/progress-stats'
 import { startNewSession } from '@/features/puzzles/queue'
 import { configFor } from '@/features/puzzles/session'
@@ -133,15 +129,9 @@ export function TodayScreen() {
   const games = useGames()
   const mistakes = useMistakes()
   const dueMistakes = useDueCount()
-  const lessons = useLessons()
-  const lessonProgress = useAllLessonProgress()
   const navigate = useNavigate()
   const [launching, setLaunching] = useState<string | null>(null)
 
-  // The shipped lessons install on first use; Today is where the plan first needs one.
-  useEffect(() => {
-    void ensureBuiltinLessons()
-  }, [])
   // Fixed per visit so every card agrees with the others while the page is open.
   const [nowMs] = useState(() => Date.now())
 
@@ -187,18 +177,6 @@ export function TodayScreen() {
     [progress.skills],
   )
 
-  const nextLesson = useMemo(() => {
-    if (lessons === undefined || lessonProgress === undefined) return undefined
-    const next = buildCourse(lessons, lessonProgress).next
-    return next === undefined
-      ? undefined
-      : {
-          id: next.lesson.id,
-          title: next.lesson.title,
-          minutes: next.lesson.estimatedMinutes,
-        }
-  }, [lessons, lessonProgress])
-
   /** The newest game still waiting for a review, and whether one was finished today. */
   const { reviewTarget, reviewedToday } = useMemo(() => {
     const newestFirst = [...(games ?? [])].sort((a, b) => b.startedAt - a.startedAt)
@@ -231,22 +209,13 @@ export function TodayScreen() {
           weakest === undefined
             ? undefined
             : { id: weakest.theme, label: themeLabel(weakest.theme) },
-        nextLesson,
+        // Lessons are coming soon, so the day does not send anyone to them yet.
+        nextLesson: undefined,
         reviewTarget,
         reviewedToday,
         dailyMinutes: goalMinutes,
       }),
-    [
-      sessions,
-      today,
-      dueMistakes,
-      mistakes,
-      weakest,
-      nextLesson,
-      reviewTarget,
-      reviewedToday,
-      goalMinutes,
-    ],
+    [sessions, today, dueMistakes, mistakes, weakest, reviewTarget, reviewedToday, goalMinutes],
   )
   const pathState = pathProgress(steps)
   const insights = useMemo(

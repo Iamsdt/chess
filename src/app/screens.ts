@@ -1,3 +1,5 @@
+import { SHOWCASE_PROMPTS } from '@/coach/showcase-prompts'
+
 /**
  * S04 · The screen registry — one entry per page in `prototype/`, plus the dev route.
  *
@@ -107,7 +109,7 @@ export const SCREENS = {
       initial: 'open',
       context: "your last 9 games · today's path",
       attach: "Today's plan",
-      quick: ['What should I work on?', 'Plan my week', 'Explain simply'],
+      quick: [SHOWCASE_PROMPTS.planWeek, SHOWCASE_PROMPTS.history, 'What should I work on?'],
     },
   },
   'play-setup': {
@@ -145,7 +147,7 @@ export const SCREENS = {
       initial: 'open',
       context: "live game · move 7 · you're White · eval hidden",
       attach: 'Current position',
-      quick: ["What's the plan here?", 'Is my position OK?', 'What does Black want?'],
+      quick: [SHOWCASE_PROMPTS.companion, SHOWCASE_PROMPTS.openQa, "What's the plan here?"],
     },
   },
   puzzles: {
@@ -162,7 +164,7 @@ export const SCREENS = {
       initial: 'open',
       context: 'puzzle rating 1482 · theme mastery · last 30 days',
       attach: 'Puzzle stats',
-      quick: ['Why forks today?', "What's my weakest theme?", 'How does adaptive work?'],
+      quick: [SHOWCASE_PROMPTS.queuePuzzles, 'Why forks today?'],
     },
   },
   puzzle: {
@@ -179,7 +181,7 @@ export const SCREENS = {
       initial: 'open',
       context: 'puzzle 4 of 10 · White to play · answer hidden (No spoilers)',
       attach: 'Puzzle 4 of 10',
-      quick: ['Give me a nudge', 'What should I look at first?', 'Explain after I solve it'],
+      quick: [SHOWCASE_PROMPTS.hint, SHOWCASE_PROMPTS.explainWhy, 'Give me a nudge'],
     },
   },
   'puzzle-rush': {
@@ -227,11 +229,11 @@ export const SCREENS = {
     layout: 'page',
     prototype: 'learn.html',
     sprint: 'S16',
+    comingSoon: true,
     chat: {
-      initial: 'open',
-      context: 'your course map · 5 tracks · weak spots from your last 9 games',
-      attach: 'Course map',
-      quick: ['What should I learn next?', 'Why this order?', 'I only have 10 minutes'],
+      initial: 'closed',
+      context: 'lessons · coming soon',
+      quick: [],
     },
   },
   lesson: {
@@ -244,11 +246,11 @@ export const SCREENS = {
     layout: 'board',
     prototype: 'lesson.html',
     sprint: 'S16',
+    comingSoon: true,
     chat: {
-      initial: 'open',
-      context: 'lesson: Royal fork · step 3 of 7 · White to move · no spoilers',
-      attach: 'Lesson step 3',
-      quick: ['Explain differently', 'Another example', 'Why does this work?'],
+      initial: 'closed',
+      context: 'lessons · coming soon',
+      quick: [],
     },
   },
   endgames: {
@@ -265,11 +267,7 @@ export const SCREENS = {
       initial: 'open',
       context: 'endgame drill · K+R vs K · move 5 of par 16 · Stockfish defends',
       attach: 'Current position',
-      quick: [
-        'Explain the box again',
-        "Why can't I just chase the king?",
-        'How do I finish from here?',
-      ],
+      quick: [SHOWCASE_PROMPTS.drill, SHOWCASE_PROMPTS.visualization, 'Explain the box again'],
     },
   },
   vision: {
@@ -287,9 +285,9 @@ export const SCREENS = {
       context: 'Board vision · Name the square · score 14 · coordinates off',
       note: 'Chat is closed during timed drills. Open it any time; the clock keeps running.',
       quick: [
-        'How do I learn squares faster?',
-        'Why does this help my games?',
-        'Which squares do I miss?',
+        SHOWCASE_PROMPTS.visualization,
+        SHOWCASE_PROMPTS.whatsHanging,
+        SHOWCASE_PROMPTS.blindRoute,
       ],
     },
   },
@@ -308,9 +306,9 @@ export const SCREENS = {
       context: 'your Mistake Bank · 57 positions from your own games · 7 due',
       attach: 'Mistake Bank',
       quick: [
-        'What pattern links these?',
-        'Which one should I fix first?',
-        'How does the schedule work?',
+        SHOWCASE_PROMPTS.queuePuzzles,
+        SHOWCASE_PROMPTS.mistakeBank,
+        SHOWCASE_PROMPTS.patterns,
       ],
     },
   },
@@ -328,11 +326,7 @@ export const SCREENS = {
       initial: 'open',
       context: 'your game library · 42 games · last 30 days',
       attach: 'Last 8 games',
-      quick: [
-        'What patterns do you see?',
-        'Which opening should I drop?',
-        'Why do I lose to Rafi?',
-      ],
+      quick: [SHOWCASE_PROMPTS.similar, SHOWCASE_PROMPTS.pastSelf, 'What patterns do you see?'],
     },
   },
   review: {
@@ -349,7 +343,7 @@ export const SCREENS = {
       initial: 'open',
       context: 'full game review · vs Stockfish 1200 · you won in 37 · move 14…Qh4',
       attach: 'This game',
-      quick: ['Why was …Qh4 bad?', 'What was my best move?', 'What should I practise?'],
+      quick: [SHOWCASE_PROMPTS.teacher, SHOWCASE_PROMPTS.patterns, SHOWCASE_PROMPTS.mistakeBank],
     },
   },
   analysis: {
@@ -367,9 +361,10 @@ export const SCREENS = {
       context: 'analysis board · Giuoco Pianissimo · move 7, White to play · engine on',
       attach: 'Current position',
       quick: [
-        "What's the plan for each side?",
-        'Why is h3 useful?',
-        'Where does my knight belong?',
+        SHOWCASE_PROMPTS.whatIf,
+        SHOWCASE_PROMPTS.grandmaster,
+        SHOWCASE_PROMPTS.calculation,
+        SHOWCASE_PROMPTS.compare,
       ],
     },
   },
@@ -387,7 +382,7 @@ export const SCREENS = {
       initial: 'open',
       context: 'your repertoire · 4 openings · 34 lines · how you score in each',
       attach: 'My repertoire',
-      quick: ['What fits my style?', 'Which line should I fix first?', 'Build me a line vs 1.d4'],
+      quick: [SHOWCASE_PROMPTS.idea, SHOWCASE_PROMPTS.openQa, 'What fits my style?'],
     },
   },
   'opening-drill': {
@@ -473,7 +468,7 @@ export const SCREENS = {
       initial: 'open',
       context: 'your last 30 days · ratings · skill map · practice log',
       attach: 'Weekly report',
-      quick: ['Why is Endgames low?', 'What changed this month?', 'Plan next week'],
+      quick: [SHOWCASE_PROMPTS.pastSelf, SHOWCASE_PROMPTS.history, SHOWCASE_PROMPTS.planWeek],
     },
   },
   settings: {
@@ -489,7 +484,11 @@ export const SCREENS = {
     chat: {
       initial: 'open',
       context: 'your settings · Gemini key connected · 184k tokens this month',
-      quick: ['Which model should I pick?', 'Is my key safe?', 'Make Sage more direct'],
+      quick: [
+        SHOWCASE_PROMPTS.deepAnalysis,
+        SHOWCASE_PROMPTS.providerError,
+        'Which model should I pick?',
+      ],
     },
   },
   onboarding: {

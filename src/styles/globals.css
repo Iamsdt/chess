@@ -86,6 +86,11 @@
   --vb-arrow-alt: rgba(224, 103, 60, 0.92);
   --vb-arrow-ai: rgba(90, 72, 176, 0.85);
   --vb-focus: #e0673c;
+  --vb-danger: rgba(214, 69, 65, 0.34);
+  --vb-danger-edge: rgba(190, 45, 45, 0.75);
+  --vb-ctl-white: rgba(36, 130, 96, 0.3);
+  --vb-ctl-black: rgba(90, 72, 176, 0.3);
+  --vb-ctl-contested: rgba(242, 194, 78, 0.42);
 }
 
 .dark {
@@ -134,6 +139,11 @@
   --vb-green-dark: #7d977b;
   --vb-arrow: rgba(181, 211, 168, 0.95);
   --vb-arrow-ai: rgba(185, 173, 255, 0.9);
+  --vb-danger: rgba(255, 120, 100, 0.4);
+  --vb-danger-edge: rgba(255, 140, 120, 0.85);
+  --vb-ctl-white: rgba(120, 220, 170, 0.34);
+  --vb-ctl-black: rgba(185, 173, 255, 0.34);
+  --vb-ctl-contested: rgba(242, 194, 78, 0.4);
 }
 
 [data-board='walnut'] {

@@ -3,10 +3,12 @@ import {
   toSquare,
   type CoachAttachment,
   type CoachContext,
+  type CoachMode,
   type CoachMessage,
 } from '@/domain'
 
 import { CoachError, type CoachDelta, type CoachPort, type CoachSendOptions } from './port'
+import { SHOWCASE_SCRIPT } from './showcase-script'
 
 /**
  * A `CoachPort` that answers from a script.
@@ -20,6 +22,8 @@ import { CoachError, type CoachDelta, type CoachPort, type CoachSendOptions } fr
 export interface MockCoachReply {
   /** Tried against the user's message; the first match wins, unmatched entries are the pool. */
   readonly match?: RegExp | undefined
+  /** The mode Sage answers in; sent as the first delta. */
+  readonly mode?: CoachMode | undefined
   readonly text: string
   /** Used instead of `text` when the no-spoilers toggle is on. */
   readonly spoilerFreeText?: string | undefined
@@ -45,6 +49,8 @@ const FORK_FEN = 'r4rk1/pp3ppp/2p5/6n1/3P4/2P5/PP3P1P/R3Q1K1 b - - 0 17'
  * the prototype's canned replies so the mock reads like the approved design.
  */
 export const DEFAULT_MOCK_SCRIPT: readonly MockCoachReply[] = [
+  // Showcase replies first so their exact prompts win over the looser patterns below.
+  ...SHOWCASE_SCRIPT,
   {
     match: /knight|fork/i,
     text: "It's one pattern. After you castle, your **queen often sits a knight-jump away from your king**. Here's the game from Tuesday.",
@@ -171,6 +177,14 @@ export function createMockCoach(options: MockCoachOptions = {}): CoachPort {
         if (stopped() || reply === undefined) return
         if (reply.failWith !== undefined) throw new CoachError(reply.failWith)
 
+        if (reply.mode !== undefined) yield { kind: 'mode', mode: reply.mode }
+        // Tool chips arrive before the words they back up.
+        const attachments = reply.attachments ?? []
+        for (const attachment of attachments) {
+          if (stopped()) return
+          if (attachment.kind === 'tool') yield { kind: 'attachment', attachment }
+        }
+
         const text =
           context.spoilerGuard && reply.spoilerFreeText !== undefined
             ? reply.spoilerFreeText
@@ -182,8 +196,9 @@ export function createMockCoach(options: MockCoachOptions = {}): CoachPort {
           await sleep(chunkMs, signal)
         }
 
-        for (const attachment of reply.attachments ?? []) {
+        for (const attachment of attachments) {
           if (stopped()) return
+          if (attachment.kind === 'tool') continue
           yield { kind: 'attachment', attachment }
         }
 

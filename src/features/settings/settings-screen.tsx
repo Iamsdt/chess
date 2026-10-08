@@ -773,6 +773,9 @@ export function SettingsScreen() {
                   AI coach · Sage
                 </h2>
                 <p className="help">Bring your own key. No key? Everything else works.</p>
+                <Link to={'/dev/sage'} className="help font-semibold text-primary underline">
+                  Preview every Sage feature
+                </Link>
               </div>
               <span className="badge badge-soft">
                 <span

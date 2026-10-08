@@ -1,12 +1,38 @@
 import { Link } from '@tanstack/react-router'
-import { Users } from 'lucide-react'
+import { Sprout, Users, type LucideIcon } from 'lucide-react'
 
-import { CtaButton, EmptyState, PageHeader, ThemeToggle } from '@/design'
+import { Button, CtaButton, EmptyState, PageHeader, ThemeToggle } from '@/design'
 
 import type { Screen } from '../screens'
 
 export interface ComingSoonPageProps {
   screen: Screen
+}
+
+interface ComingSoonCopy {
+  readonly icon: LucideIcon
+  readonly title: string
+  readonly description: string
+  /** What already works nearby, so the page is not a dead end. */
+  readonly meanwhile?: readonly { readonly to: string; readonly label: string }[]
+}
+
+const LEARN_COPY: ComingSoonCopy = {
+  icon: Sprout,
+  title: 'Lessons are being redesigned',
+  description:
+    'A full course you learn by playing: the board shows the idea, then hands you the move. Until it lands, the drills below keep working.',
+  meanwhile: [
+    { to: '/drills/endgames', label: 'Endgame drills' },
+    { to: '/drills/vision', label: 'Board vision' },
+  ],
+}
+
+const FRIENDS_COPY: ComingSoonCopy = {
+  icon: Users,
+  title: 'Playing with friends is on its way',
+  description:
+    'Invites, share links and live games against friends are coming in a later release. Everything else works today.',
 }
 
 /**
@@ -15,6 +41,7 @@ export interface ComingSoonPageProps {
  * coming and a way back to practice.
  */
 export function ComingSoonPage({ screen }: ComingSoonPageProps) {
+  const copy = screen.nav === 'learn' ? LEARN_COPY : FRIENDS_COPY
   return (
     <div className="page">
       <PageHeader
@@ -25,14 +52,21 @@ export function ComingSoonPage({ screen }: ComingSoonPageProps) {
 
       <div className="mt-7">
         <EmptyState
-          icon={Users}
+          icon={copy.icon}
           eyebrow="Coming soon"
-          title="Playing with friends is on its way"
-          description="Invites, share links and live games against friends are coming in a later release. Everything else works today."
+          title={copy.title}
+          description={copy.description}
           action={
-            <CtaButton asChild>
-              <Link to="/">Back to Today</Link>
-            </CtaButton>
+            <div className="flex flex-wrap justify-center gap-2">
+              <CtaButton asChild>
+                <Link to="/">Back to Today</Link>
+              </CtaButton>
+              {copy.meanwhile?.map((item) => (
+                <Button key={item.to} variant="outline" asChild>
+                  <Link to={item.to}>{item.label}</Link>
+                </Button>
+              ))}
+            </div>
           }
         />
       </div>

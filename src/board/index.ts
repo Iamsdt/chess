@@ -9,6 +9,7 @@
 export { Board } from './board'
 export { PIECE_SET_LABELS, pieceImageUrl, PIECE_BASE_PATH } from './piece-sets'
 export { ANIMATION_DURATIONS } from './use-piece-animation'
+export { useReducedMotion } from './use-reduced-motion'
 export type {
   BoardFlashTone,
   BoardHandle,

@@ -119,9 +119,17 @@ const jobsDevRoute = createRoute({
   component: lazyRouteComponent(() => importLazy(() => import('@/jobs/dev-panel')), 'JobsDevPanel'),
 })
 
+/** Sage feature preview: every planned feature with a button that demos it on the mock. */
+const sageLabRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/dev/sage',
+  component: lazyRouteComponent(() => importLazy(() => import('@/coach/dev')), 'SageLab'),
+})
+
 export const routeTree = rootRoute.addChildren([
   shellRoute.addChildren(shellRoutes),
   onboardingRoute,
   kitchenSinkRoute,
   jobsDevRoute,
+  sageLabRoute,
 ])
