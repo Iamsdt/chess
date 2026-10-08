@@ -158,6 +158,27 @@ describe('EnginePool cancellation', () => {
     await pool.shutdown()
   })
 
+  it('stops the engine and hands back the caller within 100 ms of the cancel', async () => {
+    const { fleet, pool } = setUp(ONE_ENGINE)
+    const controller = new AbortController()
+    const search = pool.submit(submission({ lane: 'batch' }, { signal: controller.signal }))
+    await flush()
+    const searching = fleet.clients[0]?.current
+
+    const cancelledAt = performance.now()
+    controller.abort()
+    const result = await search
+    const answeredAfter = performance.now() - cancelledAt
+
+    expect(result.ok).toBe(false)
+    expect(searching?.stopped).toBe(true)
+    // The engine is idle again, not just the promise settled: no CPU is left burning.
+    expect(searching?.finished).toBe(true)
+    expect(fleet.clients[0]?.current).toBeNull()
+    expect(answeredAfter).toBeLessThan(100)
+    await pool.shutdown()
+  })
+
   it('never starts a search that was cancelled before it got an engine', async () => {
     const { fleet, pool } = setUp(ONE_ENGINE)
     const controller = new AbortController()

@@ -12,3 +12,6 @@ test-results/
 # Review artefacts from `npm run screenshots` — regenerate on demand rather than
 # storing ~6 MB of PNGs per sprint in git history; attach them to the PR instead.
 docs/screenshots/
+
+# Lighthouse CI local runs
+.lighthouseci/

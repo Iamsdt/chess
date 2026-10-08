@@ -3,6 +3,7 @@ import { RouterProvider } from '@tanstack/react-router'
 import { lazy, Suspense } from 'react'
 
 import { ThemeProvider, Toaster, TooltipProvider } from '@/design'
+import { PwaRuntime } from '@/pwa'
 
 import { AppearanceSync } from './appearance-sync'
 import { router } from './router'
@@ -41,6 +42,7 @@ export function App() {
             <RouterProvider router={router} />
           </DesktopOnlyGate>
         </TooltipProvider>
+        <PwaRuntime />
         <Toaster position="bottom-center" />
       </QueryClientProvider>
     </ThemeProvider>

@@ -1,0 +1,320 @@
+{
+  "source": "py-fsrs 6.3.2, Scheduler(enable_fuzzing=False), default parameters",
+  "parameters": [
+    0.212, 1.2931, 2.3065, 8.2956, 6.4133, 0.8334, 3.0194, 0.001, 1.8722, 0.1666, 0.796, 1.4835,
+    0.0614, 0.2629, 1.6483, 0.6014, 1.8729, 0.5425, 0.0912, 0.0658, 0.1542
+  ],
+  "scenarios": {
+    "good-through-learning-then-days": [
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 0,
+        "state": "learning",
+        "step": 1,
+        "stability": 2.3065,
+        "difficulty": 2.118103970459016,
+        "dueMinutesAfterReview": 10.0
+      },
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 10,
+        "state": "review",
+        "step": null,
+        "stability": 2.3065,
+        "difficulty": 2.111214235785395,
+        "dueMinutesAfterReview": 2880.0
+      },
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 5760,
+        "state": "review",
+        "step": null,
+        "stability": 16.18802282851261,
+        "difficulty": 2.1043313908464483,
+        "dueMinutesAfterReview": 23040.0
+      },
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 17280,
+        "state": "review",
+        "step": null,
+        "stability": 55.29466497289186,
+        "difficulty": 2.0974554287524403,
+        "dueMinutesAfterReview": 79200.0
+      },
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 57600,
+        "state": "review",
+        "step": null,
+        "stability": 162.22124046350763,
+        "difficulty": 2.0905863426205262,
+        "dueMinutesAfterReview": 233280.0
+      }
+    ],
+    "easy-graduates-at-once": [
+      {
+        "grade": "easy",
+        "minutesAfterPrevious": 0,
+        "state": "review",
+        "step": null,
+        "stability": 8.2956,
+        "difficulty": 1.0,
+        "dueMinutesAfterReview": 11520.0
+      },
+      {
+        "grade": "easy",
+        "minutesAfterPrevious": 28800,
+        "state": "review",
+        "step": null,
+        "stability": 111.58629207285774,
+        "difficulty": 1.0,
+        "dueMinutesAfterReview": 161280.0
+      },
+      {
+        "grade": "easy",
+        "minutesAfterPrevious": 129600,
+        "state": "review",
+        "step": null,
+        "stability": 550.1432713528496,
+        "difficulty": 1.0,
+        "dueMinutesAfterReview": 792000.0
+      }
+    ],
+    "hard-on-first-step": [
+      {
+        "grade": "hard",
+        "minutesAfterPrevious": 0,
+        "state": "learning",
+        "step": 0,
+        "stability": 1.2931,
+        "difficulty": 5.112170705601056,
+        "dueMinutesAfterReview": 5.5
+      },
+      {
+        "grade": "hard",
+        "minutesAfterPrevious": 6,
+        "state": "learning",
+        "step": 0,
+        "stability": 1.2931,
+        "difficulty": 6.7404595108297,
+        "dueMinutesAfterReview": 5.5
+      },
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 6,
+        "state": "learning",
+        "step": 1,
+        "stability": 1.3358997622047517,
+        "difficulty": 6.728947420615708,
+        "dueMinutesAfterReview": 10.0
+      },
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 10,
+        "state": "review",
+        "step": null,
+        "stability": 1.3771622371865915,
+        "difficulty": 6.717446842491931,
+        "dueMinutesAfterReview": 1440.0
+      },
+      {
+        "grade": "hard",
+        "minutesAfterPrevious": 4320,
+        "state": "review",
+        "step": null,
+        "stability": 4.378240873017405,
+        "difficulty": 7.806116616365843,
+        "dueMinutesAfterReview": 5760.0
+      }
+    ],
+    "again-restarts-steps": [
+      {
+        "grade": "again",
+        "minutesAfterPrevious": 0,
+        "state": "learning",
+        "step": 0,
+        "stability": 0.212,
+        "difficulty": 6.4133,
+        "dueMinutesAfterReview": 1.0
+      },
+      {
+        "grade": "again",
+        "minutesAfterPrevious": 1,
+        "state": "learning",
+        "step": 0,
+        "stability": 0.08335671711031604,
+        "difficulty": 8.806304468856837,
+        "dueMinutesAfterReview": 1.0
+      },
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 1,
+        "state": "learning",
+        "step": 1,
+        "stability": 0.10314065007785231,
+        "difficulty": 8.792726533684817,
+        "dueMinutesAfterReview": 10.0
+      },
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 10,
+        "state": "review",
+        "step": null,
+        "stability": 0.12584423732556518,
+        "difficulty": 8.77916217644797,
+        "dueMinutesAfterReview": 1440.0
+      },
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 2880,
+        "state": "review",
+        "step": null,
+        "stability": 0.9544609972561718,
+        "difficulty": 8.76561138356836,
+        "dueMinutesAfterReview": 1440.0
+      }
+    ],
+    "lapse-after-review": [
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 0,
+        "state": "learning",
+        "step": 1,
+        "stability": 2.3065,
+        "difficulty": 2.118103970459016,
+        "dueMinutesAfterReview": 10.0
+      },
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 10,
+        "state": "review",
+        "step": null,
+        "stability": 2.3065,
+        "difficulty": 2.111214235785395,
+        "dueMinutesAfterReview": 2880.0
+      },
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 4320,
+        "state": "review",
+        "step": null,
+        "stability": 13.835840133660218,
+        "difficulty": 2.1043313908464483,
+        "dueMinutesAfterReview": 20160.0
+      },
+      {
+        "grade": "again",
+        "minutesAfterPrevious": 12960,
+        "state": "relearning",
+        "step": 0,
+        "stability": 1.650396126770812,
+        "difficulty": 7.389975788014609,
+        "dueMinutesAfterReview": 10.0
+      },
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 10,
+        "state": "review",
+        "step": null,
+        "stability": 1.6778689848282906,
+        "difficulty": 7.377814181523433,
+        "dueMinutesAfterReview": 2880.0
+      },
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 2880,
+        "state": "review",
+        "step": null,
+        "stability": 5.0747182139219,
+        "difficulty": 7.365664736638748,
+        "dueMinutesAfterReview": 7200.0
+      }
+    ],
+    "overdue-review": [
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 0,
+        "state": "learning",
+        "step": 1,
+        "stability": 2.3065,
+        "difficulty": 2.118103970459016,
+        "dueMinutesAfterReview": 10.0
+      },
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 10,
+        "state": "review",
+        "step": null,
+        "stability": 2.3065,
+        "difficulty": 2.111214235785395,
+        "dueMinutesAfterReview": 2880.0
+      },
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 43200,
+        "state": "review",
+        "step": null,
+        "stability": 37.447876615868,
+        "difficulty": 2.1043313908464483,
+        "dueMinutesAfterReview": 53280.0
+      },
+      {
+        "grade": "hard",
+        "minutesAfterPrevious": 288000,
+        "state": "review",
+        "step": null,
+        "stability": 191.47415281609267,
+        "difficulty": 4.743715608383524,
+        "dueMinutesAfterReview": 275040.0
+      }
+    ],
+    "same-day-review-of-review-card": [
+      {
+        "grade": "easy",
+        "minutesAfterPrevious": 0,
+        "state": "review",
+        "step": null,
+        "stability": 8.2956,
+        "difficulty": 1.0,
+        "dueMinutesAfterReview": 11520.0
+      },
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 120,
+        "state": "review",
+        "step": null,
+        "stability": 8.2956,
+        "difficulty": 1.0,
+        "dueMinutesAfterReview": 11520.0
+      },
+      {
+        "grade": "again",
+        "minutesAfterPrevious": 60,
+        "state": "relearning",
+        "step": 0,
+        "stability": 2.5625081682260777,
+        "difficulty": 7.0269895692968385,
+        "dueMinutesAfterReview": 10.0
+      },
+      {
+        "grade": "good",
+        "minutesAfterPrevious": 10,
+        "state": "review",
+        "step": null,
+        "stability": 2.5625081682260777,
+        "difficulty": 7.0151909490243805,
+        "dueMinutesAfterReview": 4320.0
+      },
+      {
+        "grade": "easy",
+        "minutesAfterPrevious": 7200,
+        "state": "review",
+        "step": null,
+        "stability": 16.23504945432296,
+        "difficulty": 6.003035225586943,
+        "dueMinutesAfterReview": 23040.0
+      }
+    ]
+  }
+}

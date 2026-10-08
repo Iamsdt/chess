@@ -49,6 +49,7 @@ import {
   type SoundSettings,
   type ThemeMode,
 } from '@/domain'
+import { requestReminderPermission } from '@/features/habit/reminder-host'
 import { downloadFile, exportGames, pgnFileName, usePgnPort } from '@/features/library'
 
 import { MODEL_OPTIONS, PROVIDER_OPTIONS } from './coach-options'
@@ -253,8 +254,7 @@ export function SettingsScreen() {
   return (
     <div className="page @container pb-16">
       <style>{`
-        .sw-green { --vb-light:#f5eedf; --vb-dark:#a3b89b; }
-        .dark .sw-green { --vb-light:#dfe2d4; --vb-dark:#7d977b; }
+        .sw-green { --vb-light: var(--vb-green-light); --vb-dark: var(--vb-green-dark); }
         .sw { background: conic-gradient(var(--vb-dark) 0 25%, var(--vb-light) 0 50%, var(--vb-dark) 0 75%, var(--vb-light) 0) 0 0 / 50% 50%; }
         .sub-link[aria-current="true"] { background: var(--card); color: var(--foreground); box-shadow: 0 0 0 1px var(--border); }
         section[id] { scroll-margin-top: 24px; }
@@ -473,6 +473,7 @@ export function SettingsScreen() {
                       onChange={(e) => {
                         const enabled = e.target.checked
                         save((current) => ({ ...current, reminderEnabled: enabled }))
+                        if (enabled) void requestReminderPermission()
                       }}
                     />
                     <span />
@@ -1357,6 +1358,18 @@ export function SettingsScreen() {
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Free and open source under the MIT licence. Stockfish runs on your device.
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Puzzles come from the{' '}
+                  <a
+                    href="https://database.lichess.org/#puzzles"
+                    className="font-medium text-foreground underline underline-offset-2"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Lichess open puzzle database
+                  </a>
+                  , released under CC0 (public domain).
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <a

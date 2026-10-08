@@ -10,6 +10,7 @@ import {
   FlagTriangleRight,
   Microscope,
   RefreshCw,
+  RotateCcw,
   Sparkles,
   TriangleAlert,
   UserRound,
@@ -35,6 +36,8 @@ import {
 } from '@/domain'
 
 import { whiteWinSeries } from './analyse'
+import { canRetry } from './retry'
+import { RetryPosition } from './retry-position'
 import { registerReviewHandler, reviewDedupeKey, startReview } from './review-job'
 import {
   formatEval,
@@ -341,6 +344,28 @@ function MoveCell({
   )
 }
 
+function RetryButton({
+  move,
+  onRetry,
+}: {
+  readonly move: MoveRecord
+  readonly onRetry: (move: MoveRecord) => void
+}) {
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      className="mt-2 ml-2 h-8 text-xs"
+      onClick={() => {
+        onRetry(move)
+      }}
+    >
+      <RotateCcw className="size-3.5" aria-hidden="true" />
+      Retry this position
+    </Button>
+  )
+}
+
 function Reviewed({
   game,
   moves,
@@ -352,6 +377,7 @@ function Reviewed({
   const [tab, setTab] = useState<Tab>('sum')
   const [ply, setPly] = useState(0)
   const [orientation, setOrientation] = useState<Color>(game.youPlay)
+  const [retrying, setRetrying] = useState<MoveRecord | undefined>(undefined)
 
   const outcome = outcomeFor(game)
   const youAre = game.youPlay
@@ -414,7 +440,7 @@ function Reviewed({
       <span
         className={cn(
           'grid size-8 place-items-center rounded-xl sm:size-9',
-          you ? 'bg-primary text-primary-foreground' : 'bg-[#3b4a44] text-[#cfe0d6]',
+          you ? 'bg-primary text-primary-foreground' : 'bg-engine text-engine-foreground',
         )}
       >
         {you ? (
@@ -582,6 +608,7 @@ function Reviewed({
                     {current.explanation}
                   </p>
                 )}
+                {canRetry(current, youAre) && <RetryButton move={current} onRetry={setRetrying} />}
               </div>
             )}
           </div>
@@ -734,6 +761,7 @@ function Reviewed({
                         >
                           Show the position before it
                         </Button>
+                        <RetryButton move={moment.move} onRetry={setRetrying} />
                       </li>
                     ))}
                   </ol>
@@ -765,6 +793,16 @@ function Reviewed({
           </div>
         </aside>
       </div>
+      {retrying !== undefined && (
+        <RetryPosition
+          move={retrying}
+          orientation={youAre}
+          open
+          onClose={() => {
+            setRetrying(undefined)
+          }}
+        />
+      )}
     </div>
   )
 }

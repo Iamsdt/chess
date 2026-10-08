@@ -33,20 +33,58 @@ jobs:
       - name: Format check
         run: npm run format:check
 
-      - name: Unit tests
+      # Coverage floors for src/domain, src/chess and src/engine live in vitest.config.ts.
+      - name: Unit tests + coverage gate
         run: npm run test:coverage
+
+      # The axe pass over the main routes. It also runs inside the suite above; the separate
+      # step names the gate in the PR checks so a failure is easy to find.
+      - name: Accessibility gate (axe)
+        run: npx vitest run src/app/a11y.test.tsx
 
       - name: Build
         run: npm run build
 
-      - name: Bundle size budget
+      - name: Bundle size budget (initial + per route)
         run: npm run size
+
+      - name: Headers gate (COOP/COEP/CSP)
+        run: node scripts/check-headers.mjs
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: coverage
           path: coverage/
+          retention-days: 7
+
+  lighthouse:
+    name: Lighthouse budgets
+    runs-on: ubuntu-latest
+    needs: verify
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # Mobile profile (Lighthouse default) against dist/ served with the production headers
+      # and compression (scripts/serve-dist.mjs). Budgets live in lighthouserc.json.
+      - name: Lighthouse CI
+        run: npx --yes @lhci/cli@0.14.x autorun
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse
+          path: .lighthouseci/
           retention-days: 7
 
   e2e:

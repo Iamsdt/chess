@@ -198,6 +198,17 @@ describe('ReviewScreen', () => {
       expect(screen.getByText('5 / 7')).toBeInTheDocument()
     })
 
+    it('offers to retry the turning point, on the position before it', async () => {
+      renderReview()
+      await screen.findByRole('tabpanel')
+      fireEvent.click(screen.getByRole('tab', { name: 'Key moments' }))
+      fireEvent.click(await screen.findByRole('button', { name: /Retry this position/ }))
+
+      const dialog = await screen.findByRole('dialog', { name: 'Retry this position' })
+      expect(dialog).toHaveTextContent('you played Nf6 here')
+      expect(within(dialog).getByRole('button', { name: /Show the answer/ })).toBeInTheDocument()
+    })
+
     it('steps through the game and explains each move', async () => {
       renderReview()
       await screen.findByRole('tabpanel')

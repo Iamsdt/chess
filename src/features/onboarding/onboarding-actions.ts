@@ -10,6 +10,7 @@ import {
   type SkillLevel,
   type ThemeMode,
 } from '@/domain'
+import type { GlickoRating } from '@/features/puzzles'
 import { MODEL_OPTIONS } from '@/features/settings/coach-options'
 import { changeSettings, localTimeZone } from '@/features/settings/settings-actions'
 
@@ -69,4 +70,20 @@ export async function completeOnboarding(answers: OnboardingAnswers): Promise<Re
     },
   }))
   return settings.ok ? ok(undefined) : settings
+}
+
+/**
+ * Stores the rating placement measured as the puzzle rating Glicko-2 continues from.
+ *
+ * Why separate from {@link completeOnboarding}: placement runs after the profile exists, so
+ * leaving it half-way costs nothing, and it only ever touches the puzzle rating, never the
+ * sparring one, which no puzzle says anything about.
+ */
+export async function seedPuzzleRating(rating: GlickoRating): Promise<Result<void>> {
+  const saved = await profileRepo.update({
+    puzzleRating: Math.round(rating.rating),
+    puzzleRatingDeviation: rating.deviation,
+    puzzleRatingVolatility: rating.volatility,
+  })
+  return saved.ok ? ok(undefined) : saved
 }

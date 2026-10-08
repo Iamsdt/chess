@@ -143,6 +143,97 @@ describe('the review job', () => {
   })
 })
 
+describe('resuming an interrupted review', () => {
+  beforeEach(async () => {
+    await clearAllData()
+  })
+
+  /** Stops the run after `positions` answers, as a closed tab or a preempting game would. */
+  function interruptedAfter(game: ReturnType<typeof gameFrom>, positions: number) {
+    const controller = new AbortController()
+    const evaluate = engineFor(game).evaluate
+    let answered = 0
+    return {
+      signal: controller.signal,
+      engine: {
+        evaluate: async (fen: Fen) => {
+          const result = await evaluate(fen)
+          answered += 1
+          if (answered === positions) controller.abort()
+          return result
+        },
+      },
+    }
+  }
+
+  it('leaves nothing half-written when stopped part-way, then finishes on the next run', async () => {
+    const game = await seed()
+    const stopped = interruptedAfter(game, 3)
+    await expect(
+      createReviewHandler({ engine: stopped.engine })({ gameId: GAME_ID }, context(stopped.signal)),
+    ).rejects.toMatchObject({ name: 'AbortError' })
+
+    // Part-way: no verdicts, no bank entries, no card, and the game is not "reviewed".
+    expect(await gamesRepo.get(GAME_ID)).toMatchObject({ reviewState: 'queued' })
+    expect((await movesRepo.listForGame(GAME_ID)).some((m) => m.quality !== undefined)).toBe(false)
+    expect(await mistakesRepo.listForGame(GAME_ID)).toHaveLength(0)
+    expect(await srsCardsRepo.listDue()).toHaveLength(0)
+
+    await createReviewHandler({ engine: engineFor(game) })({ gameId: GAME_ID }, context())
+    expect(await gamesRepo.get(GAME_ID)).toMatchObject({ reviewState: 'reviewed', mistakeCount: 1 })
+    expect(await mistakesRepo.listForGame(GAME_ID)).toHaveLength(1)
+  })
+
+  it('ends with the same review as a run that was never interrupted', async () => {
+    const game = await seed()
+    await createReviewHandler({ engine: engineFor(game) })({ gameId: GAME_ID }, context())
+    const uninterrupted = (await movesRepo.listForGame(GAME_ID)).map((m) => [
+      m.ply,
+      m.quality,
+      m.explanation,
+      m.bestMove,
+    ])
+
+    await clearAllData()
+    await seed()
+    const stopped = interruptedAfter(game, 5)
+    await createReviewHandler({ engine: stopped.engine })(
+      { gameId: GAME_ID },
+      context(stopped.signal),
+    ).catch(() => undefined)
+    await createReviewHandler({ engine: engineFor(game) })({ gameId: GAME_ID }, context())
+
+    const resumed = (await movesRepo.listForGame(GAME_ID)).map((m) => [
+      m.ply,
+      m.quality,
+      m.explanation,
+      m.bestMove,
+    ])
+    expect(resumed).toEqual(uninterrupted)
+  })
+
+  it('can be retried after the engine failed part-way', async () => {
+    const game = await seed()
+    const evaluate = engineFor(game).evaluate
+    let calls = 0
+    const flaky = {
+      evaluate: (fen: Fen): Promise<Result<EngineEval>> => {
+        calls += 1
+        return calls === 4
+          ? Promise.resolve(err(domainError('engine', 'The engine stopped', { where: 'test' })))
+          : evaluate(fen)
+      },
+    }
+    await expect(
+      createReviewHandler({ engine: flaky })({ gameId: GAME_ID }, context()),
+    ).rejects.toThrow('The engine stopped')
+    expect((await gamesRepo.get(GAME_ID))?.reviewState).toBe('failed')
+
+    await createReviewHandler({ engine: engineFor(game) })({ gameId: GAME_ID }, context())
+    expect((await gamesRepo.get(GAME_ID))?.reviewState).toBe('reviewed')
+  })
+})
+
 describe('startReview and registerReviewHandler', () => {
   beforeEach(async () => {
     await clearAllData()

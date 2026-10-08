@@ -14,7 +14,7 @@ No installation. No servers required. Runs entirely in your browser.
 ---
 
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev)
-[![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)](https://vite.dev)
+[![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)](https://vite.dev)
 [![Stockfish](https://img.shields.io/badge/Stockfish-18-008000?logo=chess&logoColor=white)](https://stockfishchess.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -252,19 +252,31 @@ npm run build
 npm run preview
 ```
 
-The production build is configured for GitHub Pages at `/chess/`, so the generated `dist` folder is ready to publish from this repository without extra path fixes.
+## Release gates
 
-## GitHub Pages Deployment
+CI (`.github/workflows/ci.yml`) holds the production build to these budgets:
 
-This repository includes a GitHub Actions workflow at [.github/workflows/deploy.yml](.github/workflows/deploy.yml) that deploys every push to `main`.
+| Gate                | Budget                                                   | Where                       |
+| ------------------- | -------------------------------------------------------- | --------------------------- |
+| Initial JS / CSS    | 200 KB / 60 KB gzip                                      | `npm run size`              |
+| JS added per route  | 200 KB gzip each, engine excluded                        | `npm run size`              |
+| Lighthouse (mobile) | TBT < 150 ms, CLS < 0.1, LCP target 2.0 s (hard cap 3 s) | `lighthouserc.json`         |
+| Accessibility       | zero axe violations on the main routes                   | `src/app/a11y.test.tsx`     |
+| Coverage            | floors on `src/domain`, `src/chess`, `src/engine`        | `vitest.config.ts`          |
+| Headers             | COOP/COEP present, inline script hash-allowed by the CSP | `scripts/check-headers.mjs` |
 
-To enable it in GitHub:
+## Deployment
 
-1. Open repository settings.
-2. Go to Pages.
-3. Set the source to GitHub Actions.
+**Cloudflare (primary).** `main` deploys to Cloudflare Workers static assets through
+[.github/workflows/deploy-cloudflare.yml](.github/workflows/deploy-cloudflare.yml), and every
+pull request gets a preview URL. Cloudflare reads `public/_headers`, so the site is served
+with COOP/COEP (cross-origin isolation, which multi-threaded Stockfish needs) and a strict
+CSP. Setup, the two required secrets and the smoke test are in [docs/deploy.md](docs/deploy.md).
 
-After the workflow finishes, the site will be published at your repository Pages URL.
+**GitHub Pages (fallback).** [.github/workflows/deploy.yml](.github/workflows/deploy.yml) still
+publishes `dist/` to Pages. Pages cannot send custom headers, so the page is not
+cross-origin isolated there and the app falls back to single-threaded Stockfish: everything
+works, analysis is slower. To use it, set Settings, Pages, Source to GitHub Actions.
 
 ---
 
@@ -272,11 +284,11 @@ After the workflow finishes, the site will be published at your repository Pages
 
 | Layer            | Technology                   |
 | ---------------- | ---------------------------- |
-| Frontend         | React 19 + Vite 6            |
+| Frontend         | React 19 + Vite 7            |
 | Styling          | Tailwind CSS + Radix UI      |
 | Chess Logic      | chess.js                     |
 | Chess Board      | react-chessboard             |
-| Engine           | Stockfish 18 (WASM)          |
+| Engine           | Stockfish 19 lite (WASM)     |
 | AI Models        | Gemini + GPT-4o              |
 | State Management | Zustand                      |
 | Storage          | IndexedDB (idb)              |
@@ -350,6 +362,21 @@ Ideas for contributions:
 - Expand opening database
 - Improve UI/UX
 - Add new training modes
+
+---
+
+# 🙏 Credits
+
+- **Puzzles:** the [Lichess open puzzle database](https://database.lichess.org/), released under
+  [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). Thank you to Lichess and its
+  community. Each puzzle links back to its page on lichess.org.
+- **Openings:** [lichess-org/chess-openings](https://github.com/lichess-org/chess-openings) (CC0).
+- **Engine:** [Stockfish](https://stockfishchess.org/), GPLv3. The licence text ships at `/engine/Copying.txt`.
+- **Piece sets** (shared with Lichess, authors and licences from
+  [lila's COPYING.md](https://github.com/lichess-org/lila/blob/master/COPYING.md)):
+  Staunty and Maestro by sadsnake1, California by Jerry S. (all CC BY-NC-SA 4.0), and Alpha by
+  Eric Bentzen ("free for personal non commercial use"). These are non-commercial licences,
+  so the app must stay non-commercial while they ship. Full notes in [docs/licences.md](docs/licences.md).
 
 ---
 

@@ -1,162 +1,191 @@
 import 'fake-indexeddb/auto'
 
-import {
-  createMemoryHistory,
-  createRootRoute,
-  createRoute,
-  createRouter,
-  RouterProvider,
-} from '@tanstack/react-router'
-import { fireEvent, render, screen } from '@testing-library/react'
-import { beforeAll, describe, expect, it, vi } from 'vitest'
+import { screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { axe } from 'vitest-axe'
 
-import { ThemeProvider } from '@/design'
+import { repertoireRepo, srsCardsRepo } from '@/data'
+import { toTimestamp, type RepertoireNode, type SrsCardId } from '@/domain'
 
+import { createFakeScheduler } from './fake-scheduler'
 import { OpeningDrillScreen } from './opening-drill-screen'
+import { installDomShims, renderAt } from './screen-test-kit'
+import { seedStarter, type OpeningsDeps } from './service'
+import { buildTree, findBySanPath, pathTo } from './tree'
 
-beforeAll(() => {
-  class ResizeObserverStub implements ResizeObserver {
-    observe(): void {
-      // Nothing is ever laid out in jsdom.
-    }
-    unobserve(): void {
-      // See above.
-    }
-    disconnect(): void {
-      // See above.
-    }
-  }
-  globalThis.ResizeObserver = ResizeObserverStub
-  Element.prototype.scrollIntoView = function scrollIntoView(): void {
-    // No viewport in jsdom.
-  }
-  vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
-})
+import type { Scheduler } from './scheduler'
 
+const deps: OpeningsDeps = { repertoire: repertoireRepo, srsCards: srsCardsRepo }
 const axeOptions = { rules: { 'color-contrast': { enabled: false } } }
 
-function renderOpeningDrillScreen() {
-  const rootRoute = createRootRoute()
-  const drillRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: '/openings/drill',
-    component: OpeningDrillScreen,
-  })
-  const openingsRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: '/openings',
-    component: () => <div>Openings Hub</div>,
-  })
-  const settingsRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: '/settings',
-    component: () => <div>Settings Screen</div>,
-  })
+beforeAll(() => {
+  installDomShims()
+})
 
-  const routeTree = rootRoute.addChildren([drillRoute, openingsRoute, settingsRoute])
-  const history = createMemoryHistory({ initialEntries: ['/openings/drill'] })
-  const router = createRouter({ routeTree, history })
+beforeEach(async () => {
+  await repertoireRepo.clear()
+  await srsCardsRepo.clear()
+})
 
-  return render(
-    <ThemeProvider>
-      <RouterProvider router={router} />
-    </ThemeProvider>,
-  )
+const OPEN_LINE = ['e4', 'c6', 'd4', 'd5', 'e5', 'Bf5', 'Nf3', 'e6', 'Be2', 'c5']
+
+/** A scheduler that asks for one chosen line first, so the test knows what it will see. */
+function schedulerAskingFor(cardId: SrsCardId): Scheduler {
+  const base = createFakeScheduler()
+  return {
+    reviewCard: base.reviewCard,
+    buildDueQueue: (cards, now, caps) =>
+      base
+        .buildDueQueue(cards, now, caps)
+        .sort((a, b) => Number(b.id === cardId) - Number(a.id === cardId)),
+  }
 }
 
-describe('OpeningDrillScreen', () => {
-  it('renders heading with accessible name "Opening drill" and variation details', async () => {
-    renderOpeningDrillScreen()
+function cardOf(node: RepertoireNode): SrsCardId {
+  if (node.srsCardId === undefined) throw new Error('line has no card')
+  return node.srsCardId
+}
 
-    const heading = await screen.findByRole('heading', { level: 1, name: 'Opening drill' })
-    expect(heading).toBeInTheDocument()
+async function caroLine(): Promise<{
+  readonly leaf: RepertoireNode
+  readonly mine: RepertoireNode[]
+}> {
+  const tree = buildTree('black', await repertoireRepo.listByColor('black'))
+  if (tree === null) throw new Error('no black tree')
+  const leaf = findBySanPath(tree, OPEN_LINE)
+  if (leaf === undefined) throw new Error('no line')
+  const head = findBySanPath(tree, ['e4', 'c6'])
+  const mine = pathTo(tree, leaf.id).filter(
+    (node) => node.isYourMove && node.ply > (head?.ply ?? 0),
+  )
+  return { leaf, mine }
+}
 
-    expect(screen.getByText(/Caro-Kann/i)).toBeInTheDocument()
-    expect(screen.getByText(/Advance Variation/i)).toBeInTheDocument()
-    expect(screen.getByText(/line 3 of 8/i)).toBeInTheDocument()
-    expect(screen.getByText('Spaced review')).toBeInTheDocument()
-    expect(screen.getByText('7 due today')).toBeInTheDocument()
+function renderDrill(scheduler: Scheduler) {
+  return renderAt('/openings/drill', () => (
+    <OpeningDrillScreen deps={deps} scheduler={scheduler} random={() => 0} />
+  ))
+}
+
+function squareOf(container: HTMLElement, name: string): HTMLElement {
+  const board = container.querySelector('[aria-label^="Drill board,"]')
+  const element = board?.querySelector(`[data-square="${name}"]`)
+  if (!(element instanceof HTMLElement)) throw new Error(`no square ${name}`)
+  return element
+}
+
+describe('OpeningDrillScreen without lines', () => {
+  it('points to the repertoire instead of drilling nothing', async () => {
+    renderDrill(createFakeScheduler())
+    expect(await screen.findByText('No lines to drill yet')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Go to my repertoire' })).toHaveAttribute(
+      'href',
+      '/openings',
+    )
+    expect(screen.getByRole('heading', { level: 1, name: 'Opening drill' })).toBeInTheDocument()
+  })
+})
+
+describe('OpeningDrillScreen with a seeded repertoire', () => {
+  beforeEach(async () => {
+    await seedStarter(deps, ['caro-kann'])
   })
 
-  it('passes automated accessibility checks', async () => {
-    const { container } = renderOpeningDrillScreen()
-    await screen.findByRole('heading', { level: 1, name: 'Opening drill' })
+  it('shows the real line, the opponent opening move and the mastery list, and is accessible', async () => {
+    const { leaf } = await caroLine()
+    const { container } = renderDrill(schedulerAskingFor(cardOf(leaf)))
+    await waitFor(() => {
+      const heading = screen.getByRole('heading', { level: 1, name: 'Opening drill' })
+      expect(heading).toHaveTextContent(/Caro-Kann Defence · Advance Variation.* · line 1 of 6/)
+    })
+    expect(screen.getByText('Spaced review')).toBeInTheDocument()
+    expect(screen.getByText('6 due today')).toBeInTheDocument()
+    expect(screen.getByText('Your move · play it from memory')).toBeInTheDocument()
+    expect(screen.getAllByRole('progressbar', { name: /Line \d mastery/ })).toHaveLength(6)
+    expect(screen.getByRole('link', { name: /Repertoire/ })).toHaveAttribute('href', '/openings')
 
     const results = await axe(container, axeOptions)
     expect(results.violations.map((violation) => violation.id)).toEqual([])
   })
 
-  it('renders player and opponent indicators, board, and line progress', async () => {
-    renderOpeningDrillScreen()
-    await screen.findByRole('heading', { level: 1, name: 'Opening drill' })
+  it("plays a whole line, grades it and stores the scheduler's card", async () => {
+    const user = userEvent.setup()
+    const { leaf, mine } = await caroLine()
+    const { container } = renderDrill(schedulerAskingFor(cardOf(leaf)))
+    await screen.findByText('Your move · play it from memory')
 
-    expect(screen.getByText(/White/i)).toBeInTheDocument()
-    expect(screen.getByText(/plays the book/i)).toBeInTheDocument()
-    expect(screen.getByText('No clock')).toBeInTheDocument()
+    for (const node of mine) {
+      const uci = node.uci ?? ''
+      await user.click(squareOf(container, uci.slice(0, 2)))
+      await user.click(squareOf(container, uci.slice(2, 4)))
+    }
 
-    expect(screen.getByText('SK')).toBeInTheDocument()
-    expect(screen.getByText('· Black')).toBeInTheDocument()
-    expect(screen.getByText('3…c5')).toBeInTheDocument()
-    expect(screen.getByText('1.e4')).toBeInTheDocument()
-    expect(screen.getByText('2.d4')).toBeInTheDocument()
-    expect(screen.getAllByText('3.e5').length).toBeGreaterThanOrEqual(1)
+    expect((await screen.findAllByText('Line finished')).length).toBeGreaterThan(0)
+    await waitFor(async () => {
+      const stored = await srsCardsRepo.get(cardOf(leaf))
+      expect(stored?.reps).toBe(1)
+      expect(stored?.state).toBe('review')
+    })
+    expect(screen.getByRole('button', { name: 'Next line' })).toBeInTheDocument()
   })
 
-  it('renders feedback box and allows asking Sage', async () => {
-    renderOpeningDrillScreen()
-    await screen.findByRole('heading', { level: 1, name: 'Opening drill' })
+  it('treats a move outside the tree as a miss, explains it, and can keep it as a branch', async () => {
+    const user = userEvent.setup()
+    const { leaf } = await caroLine()
+    const { container } = renderDrill(schedulerAskingFor(cardOf(leaf)))
+    await screen.findByText('Your move · play it from memory')
 
-    const statusElements = screen.getAllByRole('status')
-    expect(statusElements.length).toBeGreaterThanOrEqual(1)
-    expect(screen.getByText(/You played 3…c5/i)).toBeInTheDocument()
+    await user.click(squareOf(container, 'g8'))
+    await user.click(squareOf(container, 'f6'))
+
+    expect(await screen.findByText('Nf6 is not in your repertoire')).toBeInTheDocument()
+    expect(screen.getByText(/Your prepared move here is d5/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Try the move again' })).toBeInTheDocument()
+
+    const keep = screen.getByRole('button', { name: 'Keep Nf6 too' })
+    expect(keep).toBeEnabled()
+    const before = await repertoireRepo.count('black')
+    await user.click(keep)
+    await waitFor(async () => {
+      expect(await repertoireRepo.count('black')).toBe(before + 1)
+    })
+    const rows = await repertoireRepo.listByColor('black')
+    expect(rows.some((row) => row.san === 'Nf6' && row.isYourMove)).toBe(true)
+  })
+
+  it('reveals the answer and schedules the line as a lapse', async () => {
+    const user = userEvent.setup()
+    const { leaf } = await caroLine()
+    renderDrill(schedulerAskingFor(cardOf(leaf)))
+    await screen.findByText('Your move · play it from memory')
+    await user.click(screen.getByRole('button', { name: 'Show answer' }))
+    expect(await screen.findByText('The line was')).toBeInTheDocument()
+    await waitFor(async () => {
+      const stored = await srsCardsRepo.get(cardOf(leaf))
+      expect(stored?.lapses).toBe(1)
+    })
+  })
+
+  it('offers to practise ahead of schedule when nothing is due', async () => {
+    const user = userEvent.setup()
+    const rows = await repertoireRepo.listByColor('black')
+    for (const row of rows) {
+      if (row.srsCardId === undefined) continue
+      await srsCardsRepo.update(row.srsCardId, {
+        state: 'review',
+        due: toTimestamp(Date.now() + 5 * 86_400_000),
+        stability: 12,
+        reps: 2,
+      })
+    }
+    renderDrill(createFakeScheduler())
+    expect(await screen.findByText('Nothing is due right now')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Practise anyway' }))
+    expect(await screen.findByText('Your move · play it from memory')).toBeInTheDocument()
+    const lines = screen.getAllByRole('progressbar', { name: /Line \d mastery/ })
     expect(
-      screen.getByText(/That's playable, but your repertoire move is 3…Bf5/i),
+      within(lines[0]?.closest('button') ?? document.body).getByText(/in \d+ days/),
     ).toBeInTheDocument()
-
-    const askSageBtn = screen.getByRole('button', { name: /Why …Bf5 here\?/i })
-    expect(askSageBtn).toBeInTheDocument()
-    fireEvent.click(askSageBtn)
-  })
-
-  it('renders Advance lines mastery list and allows selecting a line', async () => {
-    renderOpeningDrillScreen()
-    await screen.findByRole('heading', { level: 1, name: 'Opening drill' })
-
-    expect(screen.getByText(/Advance lines · mastery/i)).toBeInTheDocument()
-    expect(screen.getByText('4.Nc3 e6 5.g4 Bg6')).toBeInTheDocument()
-    expect(screen.getByText('4.Nf3 e6 5.Be2 c5')).toBeInTheDocument()
-    expect(screen.getByText('4.g4 Bd7')).toBeInTheDocument()
-
-    // Click line 1
-    const line1 = screen.getByText('4.Nc3 e6 5.g4 Bg6')
-    fireEvent.click(line1)
-
-    // Click line 3
-    const line3 = screen.getByText('4.Nf3 e6 5.Be2 c5')
-    fireEvent.click(line3)
-  })
-
-  it('handles reset, skip, and keep actions', async () => {
-    renderOpeningDrillScreen()
-    await screen.findByRole('heading', { level: 1, name: 'Opening drill' })
-
-    const resetBtn = screen.getByRole('button', { name: /Try the move again/i })
-    fireEvent.click(resetBtn)
-    expect(screen.getByText(/Your move · play it from memory/i)).toBeInTheDocument()
-
-    const skipBtn = screen.getByRole('button', { name: /Skip line/i })
-    fireEvent.click(skipBtn)
-
-    const keepBtn = screen.getByRole('button', { name: /Keep …c5 too/i })
-    fireEvent.click(keepBtn)
-  })
-
-  it('renders links to Repertoire and Settings', async () => {
-    renderOpeningDrillScreen()
-    await screen.findByRole('heading', { level: 1, name: 'Opening drill' })
-
-    expect(screen.getByRole('link', { name: /Repertoire/i })).toHaveAttribute('href', '/openings')
-    expect(screen.getByRole('link', { name: 'Board and piece settings' })).toBeInTheDocument()
   })
 })

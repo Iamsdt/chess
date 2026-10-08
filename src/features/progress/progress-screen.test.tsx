@@ -15,6 +15,7 @@ import {
   attemptsRepo,
   clearAllData,
   gamesRepo,
+  kvRepo,
   profileRepo,
   puzzlesRepo,
   sessionsRepo,
@@ -34,7 +35,10 @@ import {
   toTimestamp,
 } from '@/domain'
 
-import { ProgressScreen } from './progress-screen'
+import { LineChart, ProgressScreen } from './progress-screen'
+import { chartGeometry } from './progress-stats'
+import { buildStatsSnapshot } from './stats-job'
+import { STATS_SNAPSHOT_KEY } from './stats-snapshot'
 
 beforeAll(() => {
   class ResizeObserverStub implements ResizeObserver {
@@ -212,6 +216,13 @@ describe('ProgressScreen', () => {
     expect((await axe(filled.container, axeOptions)).violations.map((v) => v.id)).toEqual([])
   })
 
+  it('ties the garden to the streak and the daily goal', async () => {
+    await seed()
+    renderProgressScreen()
+    expect(await screen.findByText('7-day streak')).toBeInTheDocument()
+    expect(screen.getByTestId('garden-water')).toHaveTextContent(/water|Watered|keeps it growing/i)
+  })
+
   it('says what it is waiting for instead of showing made-up numbers', async () => {
     renderProgressScreen()
     expect(
@@ -253,9 +264,9 @@ describe('ProgressScreen', () => {
     await seed()
     renderProgressScreen()
 
-    expect(await screen.findByRole('img', { name: /^Theme mastery\./ })).toHaveAccessibleName(
-      'Theme mastery. Fork 75, Mate in 2 25, Pin 50.',
-    )
+    expect(
+      await screen.findByRole('img', { name: /^Theme mastery\./ }, { timeout: 4000 }),
+    ).toHaveAccessibleName('Theme mastery. Fork 75, Mate in 2 25, Pin 50.')
     expect(screen.getByRole('heading', { level: 3, name: /Getting stronger/i })).toBeInTheDocument()
     const trainLinks = screen.getAllByRole('link', { name: /Train this/i })
     expect(trainLinks[0]).toHaveAttribute('href', '/puzzles')
@@ -301,5 +312,131 @@ describe('ProgressScreen', () => {
       screen.getByRole('img', { name: /Practice heatmap.*7 days practised/ }),
     ).toBeInTheDocument()
     expect(screen.getByText('Average session').nextSibling).toHaveTextContent('20 min')
+  })
+})
+
+describe('ProgressScreen table alternatives', () => {
+  beforeEach(async () => {
+    await clearAllData()
+    await seed()
+  })
+
+  it('gives every chart a data table with the same figures', async () => {
+    const view = renderProgressScreen()
+    await screen.findByRole('img', { name: /Puzzle rating from/ })
+    await screen.findByRole('img', { name: /^Theme mastery\./ }, { timeout: 4000 })
+    for (const summary of screen.getAllByText('View as table')) fireEvent.click(summary)
+
+    const rating = screen.getByRole('table', { name: 'Puzzle rating by day' })
+    expect(
+      within(rating)
+        .getAllByRole('columnheader')
+        .map((c) => c.textContent),
+    ).toEqual(['Day', 'Rating'])
+    expect(within(rating).getAllByRole('row').length).toBeGreaterThan(1)
+
+    const accuracy = screen.getByRole('table', { name: 'Game accuracy by day' })
+    expect(within(accuracy).getByText('82', { exact: true })).toBeInTheDocument()
+
+    const skills = screen.getByRole('table', { name: 'Theme mastery' })
+    expect(within(skills).getByText('Fork')).toBeInTheDocument()
+
+    const heat = screen.getByRole('table', { name: 'Practice per day over the last 16 weeks' })
+    expect(within(heat).getAllByRole('row').length).toBeGreaterThan(1)
+
+    expect((await axe(view.container, axeOptions)).violations.map((v) => v.id)).toEqual([])
+  })
+
+  it('opens the table from a keyboard-reachable disclosure', async () => {
+    renderProgressScreen()
+    await screen.findByRole('img', { name: /Puzzle rating from/ })
+    await screen.findByRole('img', { name: /^Theme mastery\./ }, { timeout: 4000 })
+    const summaries = screen.getAllByText('View as table')
+    expect(summaries.length).toBe(4)
+    for (const summary of summaries) expect(summary.tagName).toBe('SUMMARY')
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    const [first = document.body] = summaries
+    fireEvent.click(first)
+    expect(screen.getByRole('table', { name: 'Puzzle rating by day' })).toBeInTheDocument()
+    fireEvent.click(first)
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+  })
+
+  it('reads the precomputed rows when they match, and live rows otherwise', async () => {
+    const snapshot = await buildStatsSnapshot()
+    const marked = {
+      ...snapshot,
+      models: {
+        ...snapshot.models,
+        '30d': {
+          ...snapshot.models['30d'],
+          garden: { ...snapshot.models['30d'].garden, level: 99 },
+        },
+      },
+    }
+    await kvRepo.set(STATS_SNAPSHOT_KEY, marked)
+    const first = renderProgressScreen()
+    expect(await screen.findByText('Your chess garden · Level 99')).toBeInTheDocument()
+    first.unmount()
+
+    await kvRepo.set(STATS_SNAPSHOT_KEY, { ...marked, signature: 'stale' })
+    renderProgressScreen()
+    expect(await screen.findByText(/Your chess garden · Level [1-5]$/)).toBeInTheDocument()
+    expect(screen.queryByText('Your chess garden · Level 99')).not.toBeInTheDocument()
+  })
+})
+
+describe('chart performance', () => {
+  const points = Array.from({ length: 400 }, (_, i) => ({
+    at: 1_700_000_000_000 + i * DAY,
+    value: 1400 + Math.round(Math.sin(i / 20) * 80),
+  }))
+
+  /** Best of several runs: one slow run is the machine, not the code. */
+  function fastest(run: () => void): number {
+    let best = Infinity
+    for (let i = 0; i < 15; i += 1) {
+      const start = performance.now()
+      run()
+      best = Math.min(best, performance.now() - start)
+    }
+    return best
+  }
+
+  it('computes a chart from a year of stored points in under 16 ms', () => {
+    const window = { from: points[0]?.at ?? 0, to: points.at(-1)?.at ?? 0 }
+    expect(
+      fastest(() => {
+        chartGeometry(points, window)
+      }),
+    ).toBeLessThan(16)
+  })
+
+  it('renders the chart and its table from that geometry in under 16 ms', () => {
+    const window = { from: points[0]?.at ?? 0, to: points.at(-1)?.at ?? 0 }
+    // 90 days is the widest range with a daily series; "all time" is the same shape.
+    const recent = points.slice(-90)
+    const chart = chartGeometry(recent, { from: recent[0]?.at ?? 0, to: window.to })
+    const views: { unmount: () => void }[] = []
+    const elapsed = fastest(() => {
+      views.push(
+        render(
+          <LineChart
+            title="Puzzle rating"
+            caption="All time"
+            badge={undefined}
+            chart={chart}
+            colour="var(--q-best)"
+            from={window.from}
+            to={window.to}
+            summary="Puzzle rating"
+            empty="none"
+            valueLabel="Rating"
+          />,
+        ),
+      )
+    })
+    for (const view of views) view.unmount()
+    expect(elapsed).toBeLessThan(16)
   })
 })

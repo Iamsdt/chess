@@ -47,6 +47,8 @@ const ACTIVE_STATES: readonly SrsState[] = ['new', 'learning', 'review', 'relear
 
 export interface SrsCardsRepository {
   get: (id: SrsCardId) => Promise<SrsCard | undefined>
+  /** Every card, for the bank screen's schedule strip and pipeline. */
+  listAll: (kind?: SrsSubject['kind']) => Promise<SrsCard[]>
   /** Due first, then by how long they have been waiting. */
   listDue: (query?: DueQuery) => Promise<SrsCard[]>
   countDue: (query?: DueQuery) => Promise<number>
@@ -127,6 +129,11 @@ export function createSrsCardsRepository(db: ChessKingDb): SrsCardsRepository {
 
   return {
     get: (id) => db.srsCards.get(id),
+
+    listAll: (kind) =>
+      kind === undefined
+        ? db.srsCards.toArray()
+        : db.srsCards.where('subject.kind').equals(kind).toArray(),
 
     listDue: async (query = {}) => {
       const rows = await dueCollection(query).sortBy('due')

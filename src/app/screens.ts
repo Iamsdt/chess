@@ -62,6 +62,8 @@ export interface Screen extends ShellScreen {
   readonly prototype?: string
   /** The sprint that replaces the placeholder with the real screen. */
   readonly sprint?: string
+  /** Planned but held back from this release: the route answers with a "coming soon" page. */
+  readonly comingSoon?: true
 }
 
 export type ScreenId =
@@ -415,10 +417,11 @@ export const SCREENS = {
     layout: 'page',
     prototype: 'friends.html',
     sprint: 'S28',
+    comingSoon: true,
     chat: {
-      initial: 'open',
-      context: 'your games with friends · 1 open invite · 1 correspondence game',
-      quick: ['How do links work?', 'Help me prep for Rafi', 'Is the relay private?'],
+      initial: 'closed',
+      context: 'playing with friends · coming soon',
+      quick: [],
     },
   },
   live: {
@@ -431,6 +434,7 @@ export const SCREENS = {
     layout: 'board',
     prototype: 'live.html',
     sprint: 'S28',
+    comingSoon: true,
     chat: {
       initial: 'closed',
       context: 'paused · live game vs Rafi',
@@ -448,11 +452,11 @@ export const SCREENS = {
     layout: 'page',
     prototype: 'share.html',
     sprint: 'S27',
+    comingSoon: true,
     chat: {
-      initial: 'open',
-      context: "Rafi's challenge · White to play and win · no spoilers",
-      attach: "Rafi's puzzle",
-      quick: ['Give me a nudge', 'What should I look at first?', 'How do share links work?'],
+      initial: 'closed',
+      context: 'share links · coming soon',
+      quick: [],
     },
   },
   progress: {

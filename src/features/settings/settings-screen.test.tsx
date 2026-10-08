@@ -241,6 +241,68 @@ describe('SettingsScreen', () => {
     expect(await screen.findByText(/games in your library/)).toBeInTheDocument()
   })
 
+  it('persists every remaining toggle and takes effect at once', async () => {
+    renderSettingsScreen()
+    await screen.findByRole('heading', { level: 1, name: 'Settings' })
+
+    fireEvent.click(screen.getByRole('button', { name: '5 min' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Light' }))
+    expect(document.documentElement).not.toHaveClass('dark')
+    fireEvent.click(screen.getByLabelText('Highlight last move'))
+    fireEvent.click(screen.getByLabelText('Always ask on promotion'))
+    fireEvent.click(screen.getByLabelText('Move sounds'))
+    fireEvent.click(screen.getByLabelText('Low-time warning'))
+    fireEvent.click(screen.getByLabelText('Celebration sounds'))
+    fireEvent.click(within(screen.getByLabelText('Reminder on')).getByRole('checkbox'))
+
+    await waitFor(async () => {
+      const saved = await settingsRepo.peek()
+      expect(saved?.dailyGoalMinutes).toBe(5)
+      expect(saved?.theme).toBe('light')
+      expect(saved?.board.highlightLastMove).toBe(false)
+      expect(saved?.board.alwaysAskOnPromotion).toBe(false)
+      expect(saved?.sound.moveSounds).toBe(false)
+      expect(saved?.sound.lowTimeWarning).toBe(false)
+      expect(saved?.sound.celebrations).toBe(true)
+      expect(saved?.reminderEnabled).toBe(false)
+    })
+    expect(screen.getByLabelText('Highlight last move')).not.toBeChecked()
+    expect(screen.getByLabelText('Celebration sounds')).toBeChecked()
+  })
+
+  it('shows what was saved after the screen is opened again', async () => {
+    const first = renderSettingsScreen()
+    await screen.findByRole('heading', { level: 1, name: 'Settings' })
+    fireEvent.click(screen.getByRole('button', { name: '30 min' }))
+    fireEvent.click(screen.getByRole('radio', { name: 'Slate' }))
+    fireEvent.click(screen.getByLabelText('Premoves'))
+    fireEvent.change(screen.getByLabelText('Volume'), { target: { value: '25' } })
+    await waitFor(async () => {
+      expect((await settingsRepo.peek())?.sound.volume).toBe(25)
+    })
+    first.unmount()
+
+    renderSettingsScreen()
+    await screen.findByRole('heading', { level: 1, name: 'Settings' })
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '30 min' })).toHaveClass('is-active')
+    })
+    expect(screen.getByRole('radio', { name: 'Slate' })).toHaveAttribute('aria-checked', 'true')
+    expect(screen.getByLabelText('Premoves')).toBeChecked()
+    expect(screen.getByLabelText('Volume')).toHaveValue('25')
+  })
+
+  it('credits the Lichess open puzzle database as CC0', async () => {
+    renderSettingsScreen()
+    await screen.findByRole('heading', { level: 1, name: 'Settings' })
+
+    expect(screen.getByRole('link', { name: 'Lichess open puzzle database' })).toHaveAttribute(
+      'href',
+      'https://database.lichess.org/#puzzles',
+    )
+    expect(screen.getByText(/released under CC0/)).toBeInTheDocument()
+  })
+
   it('renders the about section with the first-run link', async () => {
     renderSettingsScreen()
     await screen.findByRole('heading', { level: 1, name: 'Settings' })

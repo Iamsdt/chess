@@ -15,9 +15,10 @@ import {
 
 import type { NavId, ScreenId } from './screens'
 
-/** A count or a dot beside a sidebar entry. Static until S15 and S28 supply real numbers;
- *  the prototype shows both shapes, so the shell has to lay both out. */
-export type NavBadge = { readonly count: number } | { readonly dot: true }
+/** A count, a dot or a short tag beside a sidebar entry. Counts are static until S15
+ *  supplies real numbers; the tag marks a section held back from this release. */
+export type NavBadge =
+  { readonly count: number } | { readonly dot: true } | { readonly label: string }
 
 export interface NavItem {
   readonly id: NavId
@@ -69,7 +70,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         icon: Users,
         screen: 'friends',
         key: 'f',
-        badge: { dot: true },
+        badge: { label: 'Soon' },
       },
       { id: 'progress', label: 'Growth', icon: Leaf, screen: 'progress', key: 'w' },
     ],

@@ -11,7 +11,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { axe } from 'vitest-axe'
 
-import { clearAllData, profileRepo, settingsRepo } from '@/data'
+import { clearAllData, kvRepo, profileRepo, settingsRepo } from '@/data'
 import { ThemeProvider } from '@/design'
 import { createProfile } from '@/domain'
 
@@ -169,7 +169,9 @@ describe('OnboardingScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: /Start playing/i }))
 
     // Nothing is written until the end, and then all of it is written at once.
-    expect(await screen.findByText('Puzzles Screen')).toBeInTheDocument()
+    expect(await screen.findByText(/puzzle set is still loading/i)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Continue to Today/i }))
+    expect(await screen.findByText('Today Screen')).toBeInTheDocument()
     const profile = await profileRepo.get()
     expect(profile?.skillLevel).toBe('club')
     expect(profile?.puzzleRating).toBe(1200)
@@ -180,6 +182,47 @@ describe('OnboardingScreen', () => {
     expect(settings?.board.theme).toBe('walnut')
     expect(settings?.coach.provider).toBe('openai')
     expect(settings?.coach.model).toBe('gpt-4.1-mini')
+  })
+
+  it('Skip setup saves the defaults and lands on Today from any step', async () => {
+    renderOnboardingScreen()
+    fireEvent.click(await screen.findByRole('button', { name: 'Skip setup' }))
+    expect(await screen.findByText('Today Screen')).toBeInTheDocument()
+    const profile = await profileRepo.get()
+    expect(profile?.onboardingCompletedAt).not.toBeNull()
+  })
+
+  it.each([
+    ['2', 'Step 2: Goals'],
+    ['3', 'Step 3: Daily time'],
+    ['4', 'Step 4: AI coach'],
+  ] as const)('can be skipped from step %s', async (_step, stepName) => {
+    renderOnboardingScreen()
+    await screen.findByRole('heading', { level: 1, name: 'Welcome' })
+    fireEvent.click(screen.getByRole('button', { name: new RegExp(stepName) }))
+    fireEvent.click(screen.getByRole('button', { name: 'Skip setup' }))
+    expect(await screen.findByText('Today Screen')).toBeInTheDocument()
+    expect((await profileRepo.get())?.onboardingCompletedAt).not.toBeNull()
+  })
+
+  it('keeps only the provider choice from the coach step and never touches a key', async () => {
+    renderOnboardingScreen()
+    await screen.findByRole('heading', { level: 1, name: 'Welcome' })
+    fireEvent.click(screen.getByRole('button', { name: 'Step 4: AI coach' }))
+
+    // No key field exists on this screen: the key is added in Settings.
+    expect(screen.queryByLabelText(/api key/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/Your key is added in Settings/)).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Provider'), { target: { value: 'openai' } })
+    fireEvent.click(screen.getByRole('button', { name: /Start playing/i }))
+    expect(await screen.findByText('Today Screen')).toBeInTheDocument()
+
+    const saved = await settingsRepo.peek()
+    expect(saved?.coach.provider).toBe('openai')
+    expect(saved?.coach.hasKey).toBe(false)
+    expect(saved?.coach.passphraseLock).toBe(false)
+    expect(await kvRepo.listBackupSafe()).toEqual([])
   })
 
   it('writes nothing if the person leaves before the last step', async () => {

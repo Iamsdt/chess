@@ -405,7 +405,7 @@ export function TodayScreen() {
                       }
                     >
                       <div>
-                        <span className="badge border-transparent bg-reward-soft text-[#8a6310]">
+                        <span className="badge border-transparent bg-reward-soft text-reward-ink">
                           <Sparkles className="mr-1 size-3.5" aria-hidden="true" />
                           {index === steps.length - 1 ? 'Last step today' : 'Up next'}
                         </span>
@@ -503,17 +503,17 @@ export function TodayScreen() {
                             : 'still to come'}
                   </span>
                   {cell.kind === 'done' && (
-                    <div className="mx-auto grid size-7 place-items-center rounded-full bg-reward text-[#5a3f00] sm:size-8">
+                    <div className="mx-auto grid size-7 place-items-center rounded-full bg-reward text-reward-foreground sm:size-8">
                       <Flame className="size-3 sm:size-3.5" aria-hidden="true" />
                     </div>
                   )}
                   {cell.kind === 'freeze' && (
-                    <div className="mx-auto grid size-7 place-items-center rounded-full bg-sky text-[#2d5a78] sm:size-8">
+                    <div className="mx-auto grid size-7 place-items-center rounded-full bg-sky text-sky-ink sm:size-8">
                       <Snowflake className="size-3 sm:size-3.5" aria-hidden="true" />
                     </div>
                   )}
                   {cell.kind === 'today' && (
-                    <div className="mx-auto grid size-7 place-items-center rounded-full border-2 border-dashed border-reward text-[10px] font-semibold text-[#8a6310] sm:size-8">
+                    <div className="mx-auto grid size-7 place-items-center rounded-full border-2 border-dashed border-reward text-[10px] font-semibold text-reward-ink sm:size-8">
                       {cell.minutes}/{goalMinutes}
                     </div>
                   )}
@@ -551,7 +551,7 @@ export function TodayScreen() {
                 <path
                   d={trend.path}
                   fill="none"
-                  stroke="#5f8b6c"
+                  stroke="var(--q-best)"
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -621,7 +621,7 @@ export function TodayScreen() {
                 key={insight.id}
                 className={
                   insight.id === 'weak'
-                    ? 'card flex flex-col border-cta/25 bg-[#fdf0ea] p-4 sm:p-5 dark:bg-cta/10'
+                    ? 'card flex flex-col border-cta/25 bg-cta-soft p-4 sm:p-5'
                     : insight.id === 'strong'
                       ? 'card flex flex-col bg-accent/50 p-4 sm:p-5'
                       : 'card flex flex-col bg-sky/50 p-4 sm:p-5'
@@ -633,7 +633,7 @@ export function TodayScreen() {
                       ? 'flex items-center gap-2 text-xs font-semibold text-cta'
                       : insight.id === 'strong'
                         ? 'flex items-center gap-2 text-xs font-semibold text-primary'
-                        : 'flex items-center gap-2 text-xs font-semibold text-[#2d5a78]'
+                        : 'flex items-center gap-2 text-xs font-semibold text-sky-ink'
                   }
                 >
                   {insight.id === 'weak' && (

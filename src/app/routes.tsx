@@ -1,11 +1,12 @@
 import { createRootRoute, createRoute, lazyRouteComponent } from '@tanstack/react-router'
 
-import { OnboardingScreen, RootDocument, ShellLayout, ShellNotFound } from './layouts'
+import { RootDocument, ShellLayout, ShellNotFound } from './layouts'
 import { importLazy } from './lazy-import'
+import { ComingSoonPage } from './pages/coming-soon-page'
 import { PlaceholderPage } from './pages/placeholder-page'
 import { RouteErrorPage } from './pages/route-error-page'
 import { SCREEN_COMPONENTS } from './screen-components'
-import { SCREENS, type ScreenId } from './screens'
+import { SCREENS, type Screen, type ScreenId } from './screens'
 
 const rootRoute = createRootRoute({
   component: RootDocument,
@@ -21,9 +22,15 @@ const shellRoute = createRoute({
   component: ShellLayout,
 })
 
-/** The component a screen renders: its feature's, or the "not built yet" placeholder. */
+/** The component a screen renders: "coming soon" if held back, its feature's, or the
+ *  "not built yet" placeholder. */
 function componentFor(id: ScreenId) {
-  const screen = SCREENS[id]
+  const screen: Screen = SCREENS[id]
+  if (screen.comingSoon === true) {
+    return function ScreenComingSoon() {
+      return <ComingSoonPage screen={screen} />
+    }
+  }
   function ScreenPlaceholder() {
     return <PlaceholderPage screen={screen} />
   }
@@ -90,10 +97,11 @@ const shellRoutes = [
   screenRoute('settings', '/settings'),
 ] as const
 
+/** Onboarding has no shell in the prototype: the first run owns the whole window. */
 const onboardingRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/onboarding',
-  component: OnboardingScreen,
+  path: SCREENS.onboarding.path,
+  component: componentFor('onboarding'),
 })
 
 /** The S02 design-system gallery. Loaded on demand: it renders every component twice and

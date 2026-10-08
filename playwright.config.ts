@@ -23,6 +23,9 @@ export default defineConfig({
   use: {
     baseURL,
     trace: 'on-first-retry',
+    // The production preview registers a service worker, which would bypass `page.route`
+    // mocks and cache across tests. Only the offline spec opts back in.
+    serviceWorkers: 'block',
     // Every spec starts as a returning visitor: a brand-new browser is sent to first-run
     // setup once, which is covered by its own spec rather than by every other one.
     storageState: {

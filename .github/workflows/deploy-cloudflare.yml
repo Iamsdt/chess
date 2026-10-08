@@ -1,0 +1,126 @@
+name: Deploy to Cloudflare
+
+# Production on every push to main, a preview version for every same-repo pull request.
+# Needs the repository secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID (docs/deploy.md).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: cloudflare-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    # Fork PRs get no secrets, so there is nothing to deploy for them.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Check headers and size budgets
+        run: |
+          node scripts/check-headers.mjs
+          npm run size
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 3
+
+  deploy-production:
+    name: Deploy (production)
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Deploy
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+
+      # PRODUCTION_URL is a repository variable, e.g. https://chess-king.<subdomain>.workers.dev
+      - name: Smoke test
+        env:
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+        run: |
+          if [ -z "$PRODUCTION_URL" ]; then
+            echo "Set the PRODUCTION_URL repository variable to smoke-test the deployment." >&2
+            exit 1
+          fi
+          ./scripts/smoke-deploy.sh "$PRODUCTION_URL"
+
+  deploy-preview:
+    name: Deploy (PR preview)
+    needs: build
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      # Uploads a version without promoting it, under a stable per-PR alias.
+      - name: Upload preview version
+        id: preview
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: versions upload --preview-alias pr-${{ github.event.pull_request.number }} --message "PR ${{ github.event.pull_request.number }} ${{ github.sha }}"
+
+      - name: Find preview URL
+        id: url
+        env:
+          OUTPUT: ${{ steps.preview.outputs.command-output }}
+        run: |
+          url="$(grep -oE 'https://[^ ]+' <<<"$OUTPUT" | grep -E 'pr-${{ github.event.pull_request.number }}' | head -n1 || true)"
+          if [ -z "$url" ]; then
+            echo "Could not find the preview URL in wrangler's output." >&2
+            exit 1
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Preview: $url" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Smoke test
+        run: ./scripts/smoke-deploy.sh "${{ steps.url.outputs.url }}"
+
+      - name: Comment preview URL
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr comment "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" \
+            --body "Preview deployed: ${{ steps.url.outputs.url }}"

@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
 
+import { useDailyReminder } from '@/features/habit/reminder-host'
+
 /** How long to wait after launch before the review worker is wired up. */
 const START_DELAY_MS = 2_000
 
@@ -13,11 +15,19 @@ const START_DELAY_MS = 2_000
  * something a first paint needs.
  */
 export function BackgroundWork() {
+  useDailyReminder()
   useEffect(() => {
     const handle = window.setTimeout(() => {
       void import('@/features/review/review-job')
         .then((module) => {
           module.registerReviewHandler()
+        })
+        .catch(() => undefined)
+      // The stats job is pure aggregation, so it costs no engine; it is still deferred so
+      // that a seeded `rebuild-stats` row left from last session runs after first paint.
+      void import('@/features/progress/stats-job')
+        .then((module) => {
+          module.registerStatsHandler()
         })
         .catch(() => undefined)
     }, START_DELAY_MS)

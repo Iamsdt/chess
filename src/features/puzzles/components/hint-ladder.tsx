@@ -61,7 +61,7 @@ export function HintLadder({ used, hint, onTake, disabled = false }: HintLadderP
                 <span
                   className={cn(
                     'grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-bold',
-                    isUsed ? 'bg-reward text-[#5a3f00]' : 'bg-muted text-muted-foreground',
+                    isUsed ? 'bg-reward text-reward-foreground' : 'bg-muted text-muted-foreground',
                   )}
                 >
                   {index + 1}

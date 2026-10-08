@@ -83,7 +83,7 @@ function LineRow({
         }}
         disabled={first === undefined}
       >
-        <span className="mt-0.5 w-12 shrink-0 rounded bg-white px-1 py-0.5 text-center font-mono text-xs font-semibold text-[#1b2620] ring-1 ring-border">
+        <span className="mt-0.5 w-12 shrink-0 rounded bg-paper px-1 py-0.5 text-center font-mono text-xs font-semibold text-paper-ink ring-1 ring-border">
           {formatScore(line.score, sideToMove)}
         </span>
         <span className="min-w-0 font-mono text-[12.5px] leading-relaxed break-words">{text}</span>

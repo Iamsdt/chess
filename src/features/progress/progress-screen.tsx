@@ -19,13 +19,14 @@ import {
   Trees,
   TrendingUp,
 } from 'lucide-react'
-import { useContext, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 
 import { ChatPanelContext } from '@/app/shell/shell-contexts'
 import {
   useAllAttempts,
   useAllSessions,
   useGames,
+  useKvValue,
   useMistakes,
   useProfile,
   usePuzzlesByIds,
@@ -47,6 +48,8 @@ import {
   type ThemeSkill,
   type TimeRange,
 } from './progress-stats'
+import { requestStatsRebuild } from './stats-job'
+import { modelFromSnapshot, STATS_SNAPSHOT_KEY, statsSignature } from './stats-snapshot'
 
 export type { TimeRange } from './progress-stats'
 
@@ -85,6 +88,71 @@ function dateRangeLabel(range: TimeRange, from: number, to: number): string {
   return range === 'all' ? 'All-time journey' : `${shortDate(from)} → ${shortDate(to)}`
 }
 
+interface DataTableProps {
+  readonly caption: string
+  readonly columns: readonly string[]
+  readonly rows: readonly (readonly string[])[]
+  readonly empty: string
+}
+
+/**
+ * The text twin of a picture: the same figures in a real table, behind a disclosure so it
+ * does not crowd the page. Why not `sr-only`: a sighted keyboard user wants it too.
+ */
+function DataTable({ caption, columns, rows, empty }: DataTableProps) {
+  const [open, setOpen] = useState(false)
+  return (
+    <details open={open} className="mt-3 text-xs">
+      <summary
+        className="inline-flex min-h-[36px] cursor-pointer items-center font-medium text-muted-foreground hover:text-foreground"
+        onClick={(event) => {
+          // Controlled, so a year of rows is only built for the person who asked for them.
+          event.preventDefault()
+          setOpen((current) => !current)
+        }}
+      >
+        View as table
+      </summary>
+      {open &&
+        (rows.length === 0 ? (
+          <p className="mt-2 text-muted-foreground">{empty}</p>
+        ) : (
+          <div className="mt-2 max-h-56 overflow-auto rounded-lg border">
+            <table className="w-full text-left tabular-nums">
+              <caption className="sr-only">{caption}</caption>
+              <thead className="sticky top-0 bg-muted">
+                <tr>
+                  {columns.map((column) => (
+                    <th key={column} scope="col" className="px-3 py-1.5 font-semibold">
+                      {column}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {rows.map((row) => (
+                  <tr key={row.join('|')}>
+                    {row.map((cell, index) =>
+                      index === 0 ? (
+                        <th key={cell} scope="row" className="px-3 py-1.5 font-normal">
+                          {cell}
+                        </th>
+                      ) : (
+                        <td key={`${cell}-${String(index)}`} className="px-3 py-1.5">
+                          {cell}
+                        </td>
+                      ),
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
+    </details>
+  )
+}
+
 function MilestoneIcon({ icon }: { readonly icon: Milestone['icon'] }) {
   switch (icon) {
     case 'puzzle':
@@ -110,10 +178,12 @@ interface LineChartProps {
   readonly to: number
   readonly summary: string
   readonly empty: string
+  /** Heading of the value column in the table alternative. */
+  readonly valueLabel: string
 }
 
 /** One line chart on the shared 320×160 canvas; every coordinate comes from `chartGeometry`. */
-function LineChart({
+export function LineChart({
   title,
   caption,
   badge,
@@ -123,6 +193,7 @@ function LineChart({
   to,
   summary,
   empty,
+  valueLabel,
 }: LineChartProps) {
   return (
     <figure className="card p-4 sm:p-5">
@@ -190,6 +261,14 @@ function LineChart({
             {Math.round(chart.last.value)}
           </text>
         </svg>
+      )}
+      {chart !== undefined && (
+        <DataTable
+          caption={`${title} by day`}
+          columns={['Day', valueLabel]}
+          rows={chart.table.map((row) => [shortDate(row.at), String(Math.round(row.value))])}
+          empty="Nothing to list yet."
+        />
       )}
     </figure>
   )
@@ -274,6 +353,9 @@ function skillDelta(skill: ThemeSkill): string {
  * - You vs you: six figures against the equally long stretch before
  * - Rating and accuracy charts, a theme-mastery radar, a 16-week heatmap, milestones
  *
+ * It reads the rows the `rebuild-stats` job precomputed and falls back to counting the
+ * history live when they are missing or stale.
+ *
  * Nothing is invented: with no data a card says what it is waiting for.
  */
 export function ProgressScreen() {
@@ -294,8 +376,10 @@ export function ProgressScreen() {
     [attempts],
   )
   const puzzles = usePuzzlesByIds(puzzleIds)
+  const snapshot = useKvValue(STATS_SNAPSHOT_KEY)
+  const timeZone = profile?.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
 
-  const model: ProgressModel | undefined = useMemo(() => {
+  const loaded: { model: ProgressModel; precomputed: boolean } | undefined = useMemo(() => {
     if (
       attempts === undefined ||
       sessions === undefined ||
@@ -305,10 +389,18 @@ export function ProgressScreen() {
     ) {
       return undefined
     }
-    return buildProgress({
+    // The rebuild job's rows, when they still describe exactly these rows; otherwise count
+    // the history here. The signature is what makes a stale snapshot impossible to show.
+    const precomputed = modelFromSnapshot(snapshot, timeRange, {
+      signature: statsSignature({ attempts, sessions, games, mistakes, profile, streak }),
+      now,
+      timeZone,
+    })
+    if (precomputed !== undefined) return { model: precomputed, precomputed: true }
+    const live = buildProgress({
       now,
       range: timeRange,
-      timeZone: profile?.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
+      timeZone,
       profile,
       streak,
       attempts,
@@ -317,7 +409,28 @@ export function ProgressScreen() {
       mistakes,
       themeOf: new Map(puzzles.map((puzzle) => [puzzle.id, puzzle.theme])),
     })
-  }, [attempts, sessions, games, mistakes, puzzles, profile, streak, now, timeRange])
+    return { model: live, precomputed: false }
+  }, [
+    attempts,
+    sessions,
+    games,
+    mistakes,
+    puzzles,
+    profile,
+    streak,
+    now,
+    timeRange,
+    snapshot,
+    timeZone,
+  ])
+
+  // Ask for fresh rows only after the live numbers are on screen, so the page never waits.
+  const needsRebuild = loaded !== undefined && !loaded.precomputed
+  useEffect(() => {
+    if (needsRebuild) void requestStatsRebuild()
+  }, [needsRebuild])
+
+  const model = loaded?.model
 
   const header = (
     <header className="flex flex-wrap items-end justify-between gap-4">
@@ -357,7 +470,6 @@ export function ProgressScreen() {
   const { garden, heatmap } = model
   // The stored streak knows about freezes; the heatmap only knows about sessions. Whichever
   // is longer is the truer count, since practice recorded without a session still counts.
-  const timeZone = profile?.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
   const streakDays = Math.max(
     heatmap.currentStreak,
     viewStreak(streak, localDateOf(now, timeZone)).current,
@@ -416,8 +528,15 @@ export function ProgressScreen() {
             >
               <circle cx="252" cy="50" r="22" fill="var(--reward)" opacity=".35" />
               <circle cx="252" cy="50" r="13" fill="var(--reward)" opacity=".7" />
-              <ellipse cx="180" cy="182" rx="104" ry="13" fill="#a3b89b" opacity=".35" />
-              <ellipse cx="180" cy="180" rx="62" ry="7" fill="#a3b89b" opacity=".45" />
+              <ellipse
+                cx="180"
+                cy="182"
+                rx="104"
+                ry="13"
+                fill="var(--garden-ground)"
+                opacity=".35"
+              />
+              <ellipse cx="180" cy="180" rx="62" ry="7" fill="var(--garden-ground)" opacity=".45" />
 
               {/* Next stage ghost */}
               <g
@@ -437,7 +556,7 @@ export function ProgressScreen() {
                 <g className="garden-sway">
                   <path
                     d="M180 176 C180 168 180 160 181 150"
-                    stroke="#5f8b6c"
+                    stroke="var(--garden-stem)"
                     strokeWidth="4"
                     fill="none"
                     strokeLinecap="round"
@@ -446,11 +565,11 @@ export function ProgressScreen() {
                     <>
                       <path
                         d="M181 154 C168 152 158 144 156 134 C170 134 179 142 181 154Z"
-                        fill="#8fb88f"
+                        fill="var(--garden-leaf-light)"
                       />
                       <path
                         d="M181 150 C194 146 204 138 206 128 C192 128 183 138 181 150Z"
-                        fill="#6c9d73"
+                        fill="var(--garden-leaf)"
                       />
                     </>
                   )}
@@ -462,31 +581,34 @@ export function ProgressScreen() {
                 <g className="garden-sway">
                   <path
                     d="M180 176 C180 146 178 116 181 70"
-                    stroke="#5f8b6c"
+                    stroke="var(--garden-stem)"
                     strokeWidth="5"
                     fill="none"
                     strokeLinecap="round"
                   />
                   <path
                     d="M180 140 C160 134 142 120 138 98 C160 98 176 114 180 140Z"
-                    fill="#8fb88f"
+                    fill="var(--garden-leaf-light)"
                   />
                   <path
                     d="M181 118 C200 110 218 96 222 74 C198 74 184 92 181 118Z"
-                    fill="#6c9d73"
+                    fill="var(--garden-leaf)"
                   />
                   <path
                     d="M180 158 C198 154 212 146 218 132 C200 130 186 140 180 158Z"
-                    fill="#8fb88f"
+                    fill="var(--garden-leaf-light)"
                   />
-                  <path d="M181 96 C166 92 156 82 152 68 C168 68 178 78 181 96Z" fill="#6c9d73" />
+                  <path
+                    d="M181 96 C166 92 156 82 152 68 C168 68 178 78 181 96Z"
+                    fill="var(--garden-leaf)"
+                  />
                   <circle cx="181" cy="66" r="9" fill="var(--reward)" />
                   <circle cx="181" cy="66" r="4" fill="var(--cta)" opacity=".6" />
                 </g>
               )}
               <path
                 d="M150 180 Q180 170 210 180"
-                stroke="#5f8b6c"
+                stroke="var(--garden-stem)"
                 strokeWidth="2"
                 fill="none"
                 opacity=".5"
@@ -580,6 +702,18 @@ export function ProgressScreen() {
               </div>
             )}
 
+            <p className="mt-4 flex items-center gap-2 text-sm" data-testid="garden-water">
+              <Droplets
+                className={cn('size-4', garden.watered ? 'text-sky-ink' : 'text-muted-foreground')}
+                aria-hidden="true"
+              />
+              {garden.watered
+                ? 'Watered today: you reached your daily goal.'
+                : garden.minutesToWater > 0
+                  ? `${String(garden.minutesToWater)} more ${garden.minutesToWater === 1 ? 'minute' : 'minutes'} of practice waters it today.`
+                  : 'Any practice today keeps it growing.'}
+            </p>
+
             <div className="mt-auto flex flex-col gap-3 pt-6 sm:flex-row sm:flex-wrap sm:items-center">
               <Button asChild className="btn-cta min-h-[44px] w-full sm:w-auto">
                 <Link to="/">
@@ -665,6 +799,7 @@ export function ProgressScreen() {
               : `Puzzle rating from ${String(Math.round(model.puzzleChart.first.value))} to ${String(Math.round(model.puzzleChart.last.value))}`
           }
           empty="Solve a few rated puzzles and your rating line appears here."
+          valueLabel="Rating"
         />
         <LineChart
           title="Game accuracy"
@@ -680,6 +815,7 @@ export function ProgressScreen() {
               : `Game accuracy from ${String(Math.round(model.accuracyChart.first.value))} to ${String(Math.round(model.accuracyChart.last.value))} percent`
           }
           empty="Review a game and its accuracy is plotted here."
+          valueLabel="Accuracy (%)"
         />
       </section>
 
@@ -720,6 +856,20 @@ export function ProgressScreen() {
                 ? 'Practise a few puzzles in three different themes and your map takes shape.'
                 : 'Practise one more theme and your map takes shape.'}
             </p>
+          )}
+
+          {model.skills.length > 0 && (
+            <DataTable
+              caption="Theme mastery"
+              columns={['Theme', 'First-try %', 'Puzzles', 'Before']}
+              rows={model.skills.map((skill) => [
+                themeLabel(skill.theme),
+                String(skill.score),
+                String(skill.attempts),
+                skill.previous === undefined ? 'n/a' : String(skill.previous),
+              ])}
+              empty="No themes yet."
+            />
           )}
 
           {model.skills.length > 0 && (
@@ -839,6 +989,20 @@ export function ProgressScreen() {
           </div>
         </div>
 
+        <DataTable
+          caption="Practice per day over the last 16 weeks"
+          columns={['Day', 'Practice']}
+          rows={heatmap.weeks.flatMap((week) =>
+            week
+              .filter((cell) => cell.kind !== 'none' && cell.kind !== 'future')
+              .map((cell): readonly string[] => {
+                const [day = '', detail = 'practised'] = cell.title.split(' · ')
+                return [day, detail]
+              }),
+          )}
+          empty="No practice days in this stretch yet."
+        />
+
         <div className="mt-4 flex flex-col items-start gap-x-10 gap-y-6 lg:flex-row">
           <div className="w-full max-w-full overflow-x-auto pb-2 lg:max-w-[480px]">
             <div className="min-w-[340px]">
@@ -936,7 +1100,7 @@ export function ProgressScreen() {
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {model.earned.map((milestone) => (
             <div key={milestone.id} className="card flex items-start gap-3 p-3.5 sm:p-4">
-              <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-reward text-[#5a3f00] sm:size-11">
+              <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-reward text-reward-foreground sm:size-11">
                 <MilestoneIcon icon={milestone.icon} />
               </span>
               <div className="min-w-0">

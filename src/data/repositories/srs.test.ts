@@ -175,6 +175,19 @@ describe('srs cards repository', () => {
   })
 })
 
+describe('srs cards listing', () => {
+  it('lists every card, or only one subject kind', async () => {
+    const { cards } = setup()
+    await cards.putMany([
+      card('c1', 'review', -1, mistakeSubject('m1')),
+      card('c2', 'mastered', 5, mistakeSubject('m2')),
+      card('c3', 'new', 0, puzzleSubject('p1')),
+    ])
+    expect(await cards.listAll()).toHaveLength(3)
+    expect((await cards.listAll('mistake')).map((row) => row.id).sort()).toEqual(['c1', 'c2'])
+  })
+})
+
 describe('mistakes repository', () => {
   const entry = (id: string, daysAgo: number, overrides = {}) =>
     makeMistakeEntry({
@@ -183,6 +196,13 @@ describe('mistakes repository', () => {
       updatedAt: toTimestamp(FIXTURE_NOW - daysAgo * 24 * HOUR),
       ...overrides,
     })
+
+  it('finds the entry banked for a puzzle, and none for another', async () => {
+    const { mistakes } = setup()
+    await mistakes.add(entry('m1', 1, { source: 'puzzle', puzzleId: toPuzzleId('lc_a') }))
+    expect((await mistakes.findByPuzzle(toPuzzleId('lc_a')))?.id).toBe('m1')
+    expect(await mistakes.findByPuzzle(toPuzzleId('lc_b'))).toBeUndefined()
+  })
 
   it('lists newest first and filters by source, quality and theme', async () => {
     const { mistakes } = setup()

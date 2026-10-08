@@ -27,6 +27,13 @@ function NavBadgeMark({ item, compact }: { item: NavItem; compact: boolean }) {
   if ('dot' in item.badge) {
     return <span className="ml-auto size-2 shrink-0 rounded-full bg-cta" aria-hidden="true" />
   }
+  if ('label' in item.badge) {
+    return (
+      <span className={cn('badge badge-soft ml-auto shrink-0', compact && 'hidden')}>
+        {item.badge.label}
+      </span>
+    )
+  }
   return (
     <span
       className={cn(
@@ -123,13 +130,16 @@ export function Sidebar({ screen, compact }: SidebarProps) {
             <path d="M0 62 Q90 54 180 62 L180 70 L0 70Z" fill="var(--accent)" />
             <path
               d="M90 62 C90 48 90 38 91 26"
-              stroke="#5f8b6c"
+              stroke="var(--garden-stem)"
               strokeWidth="3"
               fill="none"
               strokeLinecap="round"
             />
-            <path d="M91 40 C80 36 72 30 70 20 C82 20 90 28 91 40Z" fill="#8fb88f" />
-            <path d="M91 32 C101 28 110 22 112 12 C100 12 92 20 91 32Z" fill="#6c9d73" />
+            <path
+              d="M91 40 C80 36 72 30 70 20 C82 20 90 28 91 40Z"
+              fill="var(--garden-leaf-light)"
+            />
+            <path d="M91 32 C101 28 110 22 112 12 C100 12 92 20 91 32Z" fill="var(--garden-leaf)" />
             <circle cx="91" cy="22" r="5" fill="var(--reward)" />
           </svg>
           <Suspense fallback={<p className="text-sm font-medium">Your garden</p>}>

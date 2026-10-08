@@ -32,6 +32,15 @@ beforeAll(() => {
   })
 })
 
+/**
+ * Each screen is a lazy chunk, so the first render of a heavy one transforms its whole
+ * module graph inside jsdom. Alone that takes a second or two; with ~140 test files
+ * sharing the CPU it can exceed vitest's 5 s default. This budget is for that load, not
+ * for slow code: a screen that really hangs still fails, just later.
+ */
+const LAZY_SCREEN_TIMEOUT_MS = 20_000
+vi.setConfig({ testTimeout: LAZY_SCREEN_TIMEOUT_MS * 2 })
+
 /** A fresh router per test so navigation in one case cannot leak into the next. */
 async function renderRoute(path: string) {
   const router = createRouter({
@@ -47,7 +56,7 @@ async function renderRoute(path: string) {
     () => {
       expect(router.state.status).toBe('idle')
     },
-    { timeout: 5000 },
+    { timeout: LAZY_SCREEN_TIMEOUT_MS },
   )
   return router
 }
@@ -57,9 +66,14 @@ const routableScreens = SCREEN_LIST.map((entry) => [entry.path, entry.title] as 
 describe('route table', () => {
   it.each(routableScreens)('serves %s as "%s"', async (path, title) => {
     await renderRoute(path)
-    expect(
-      await screen.findByRole('heading', { level: 1, name: title }, { timeout: 5000 }),
-    ).toBeVisible()
+    // Re-query inside `waitFor`: a screen may swap its loading heading for the loaded one,
+    // and a node `findByRole` returned a moment earlier would then be detached.
+    await waitFor(
+      () => {
+        expect(screen.getByRole('heading', { level: 1, name: title })).toBeVisible()
+      },
+      { timeout: LAZY_SCREEN_TIMEOUT_MS },
+    )
   })
 
   it('titles the browser tab after the screen', async () => {

@@ -3,8 +3,7 @@ import { lazy, Suspense, useEffect } from 'react'
 
 import { importLazy } from './lazy-import'
 import { NotFoundPage } from './pages/not-found-page'
-import { PlaceholderPage } from './pages/placeholder-page'
-import { NOT_FOUND_SCREEN, SCREENS } from './screens'
+import { NOT_FOUND_SCREEN } from './screens'
 import { AppShell } from './shell'
 import { useCurrentScreen } from './use-current-screen'
 import { useDocumentTitle } from './use-document-title'
@@ -69,14 +68,5 @@ export function ShellNotFound() {
     <AppShell screen={NOT_FOUND_SCREEN}>
       <NotFoundPage />
     </AppShell>
-  )
-}
-
-/** Onboarding has no shell in the prototype: the first run owns the whole window. */
-export function OnboardingScreen() {
-  return (
-    <main className="min-h-dvh overflow-auto">
-      <PlaceholderPage screen={SCREENS.onboarding} />
-    </main>
   )
 }

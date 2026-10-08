@@ -14,13 +14,15 @@ import { type LocalDate, type StreakState, type Timestamp } from '@/domain'
  * - A freeze is earned once a streak reaches `FREEZE_AFTER_DAYS`, and then at most once a
  *   week. There is never more than one in the bank.
  * - A clock that moves backwards never changes the streak: the day is simply not later
- *   than the last one that counted.
+ *   than the last one that counted. One that was wrong by more than a week (set far ahead
+ *   and then corrected) is re-anchored without changing the count.
  */
 
 const DAY_MS = 86_400_000
 const FREEZE_AFTER_DAYS = 3
 const FREEZE_EVERY_DAYS = 7
 const FREEZE_HISTORY = 120
+const SKEW_DAYS = 7
 
 function utcMs(day: LocalDate): number {
   return Date.parse(`${day}T00:00:00Z`)
@@ -70,6 +72,19 @@ export function advanceStreak(prev: StreakState | undefined, input: PracticeInpu
 
   const last = base.lastPracticeDay
   const gap = last === null ? null : daysBetween(last, input.today)
+  // More than a week behind the last counted day is no time-zone change (the widest swing is
+  // a day) and no small drift, so the clock was wrong. Re-anchor on the corrected day, or a
+  // device that was once set a year ahead would stop counting until that date came round.
+  if (gap !== null && gap < -SKEW_DAYS && input.ms > 0) {
+    const stale = base.freezeEarnedOn !== null && daysBetween(base.freezeEarnedOn, input.today) < 0
+    return {
+      ...base,
+      lastPracticeDay: input.today,
+      freezeEarnedOn: stale ? null : base.freezeEarnedOn,
+      today,
+      updatedAt: input.at,
+    }
+  }
   // No time practised, the same day again, or a clock that went backwards: nothing to count.
   if (input.ms <= 0 || (gap !== null && gap <= 0)) {
     return { ...base, today, updatedAt: input.at }

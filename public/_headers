@@ -1,0 +1,53 @@
+# Cloudflare static-assets headers (https://developers.cloudflare.com/workers/static-assets/headers/).
+# Vite copies this file from public/ to dist/_headers. GitHub Pages ignores it, which is why
+# multi-threaded Stockfish only runs on Cloudflare; see docs/deploy.md.
+#
+# Cross-origin isolation (COOP + COEP) is what unlocks SharedArrayBuffer, which the
+# multi-threaded engine needs (src/engine/capabilities.ts reads crossOriginIsolated).
+# COEP is `require-corp` rather than `credentialless`: Safari does not implement
+# `credentialless`, and `require-corp` costs us nothing because every cross-origin request the
+# app makes is a CORS `fetch()` (lichess.org, explorer.lichess.ovh, api.chess.com, which all
+# send CORS headers) or Google Fonts (which sends Cross-Origin-Resource-Policy: cross-origin).
+# If an <img> or <iframe> from another origin is ever added, it must be CORP/CORS-enabled.
+#
+# CSP, directive by directive:
+#   default-src 'self'          everything not listed below is same-origin only.
+#   script-src                  'self' + 'wasm-unsafe-eval' for Stockfish WebAssembly (no JS eval).
+#                               The sha256 is the inline theme bootstrap in index.html, which must
+#                               run before first paint; `node scripts/check-headers.mjs` fails the build if
+#                               that script changes without this hash being updated.
+#   worker-src 'self' blob:     engine, CSV/PGN workers and the service worker are same-origin; blob:
+#                               covers Emscripten's pthread workers.
+#   style-src                   'unsafe-inline' is needed because Radix and friends inject <style>
+#                               elements at runtime and React sets style="" attributes. Styles cannot
+#                               run script, so this is the accepted trade. Google Fonts CSS is allowed.
+#   font-src / img-src          fonts.gstatic.com; piece sets and icons are same-origin, data:/blob:
+#                               for generated board art and exported images.
+#   connect-src                 EXACT list of external APIs the code calls: lichess.org (game import,
+#                               src/features/library/providers.ts), explorer.lichess.ovh (masters
+#                               explorer, src/features/analysis/explorer.ts), api.chess.com (game
+#                               import). Deliberately NOT `https:`: the bring-your-own-key coach
+#                               (S21) will need user-chosen endpoints, and this line is widened in
+#                               the PR that ships it, so the tight policy stands until then.
+#   frame-ancestors 'none'      nobody may embed the app (clickjacking). Also X-Frame-Options for
+#                               old browsers. object-src, base-uri and form-action are closed.
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-IJl/6T5XzN9SHAJnyA0O2Cuh7z1Ab2YzbOM5i8rw4NA='; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; manifest-src 'self'; connect-src 'self' https://lichess.org https://explorer.lichess.ovh https://api.chess.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+
+# Hashed build output never changes under its name.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The worker and the shell must always revalidate or an update can never land.
+/sw.js
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/manifest.webmanifest
+  Cache-Control: no-cache

@@ -15,6 +15,7 @@ import {
   toast,
 } from '@/design'
 import type { Result } from '@/domain'
+import { OnlineOnlyNotice } from '@/pwa'
 
 import { importFromFeed, importPgn, type ImportProgress, type ImportReport } from './import-service'
 import { chesscomFeed, lichessFeed, type FetchLike } from './providers'
@@ -212,6 +213,9 @@ export function ImportCard({ getPort, onImported, fetchImpl }: ImportCardProps) 
         </h2>
       </div>
       <p className="help mt-1">Imported games get the same review and feed your Mistake Bank.</p>
+      <div className="mt-2">
+        <OnlineOnlyNotice feature="Importing from Lichess or Chess.com" />
+      </div>
 
       <Tabs defaultValue="pgn" className="mt-4">
         <TabsList className="w-full">

@@ -290,6 +290,21 @@ describe('gardenFor', () => {
     expect(gardenFor(12)).toMatchObject({ stageIndex: 2, daysToNext: 3, next: { id: 'bloom' } })
     expect(gardenFor(100)).toMatchObject({ stageIndex: 4, next: undefined, daysToNext: 0 })
   })
+
+  it("is watered by reaching today's goal, and a short day only says how far is left", () => {
+    const goalMs = 15 * 60_000
+    expect(gardenFor(5, { practisedMs: goalMs, goalMs })).toMatchObject({
+      watered: true,
+      minutesToWater: 0,
+    })
+    expect(gardenFor(5, { practisedMs: 4 * 60_000 + 1, goalMs })).toMatchObject({
+      watered: false,
+      minutesToWater: 11,
+    })
+    // A missed goal never moves the stage backwards.
+    expect(gardenFor(5, { practisedMs: 0, goalMs }).stageIndex).toBe(gardenFor(5).stageIndex)
+    expect(gardenFor(5)).toMatchObject({ watered: false, minutesToWater: 0 })
+  })
 })
 
 describe('buildProgress · milestones', () => {

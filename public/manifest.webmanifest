@@ -1,0 +1,29 @@
+{
+  "name": "Chess King",
+  "short_name": "Chess King",
+  "description": "A chess coach that runs entirely in your browser: play, puzzles, lessons, review and analysis, offline.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f7f3ec",
+  "theme_color": "#f7f3ec",
+  "categories": ["games", "education"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Play", "url": "/play" },
+    { "name": "Puzzles", "url": "/puzzles" },
+    { "name": "Analysis", "url": "/analysis" }
+  ]
+}

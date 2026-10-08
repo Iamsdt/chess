@@ -28,6 +28,8 @@ import {
   type Uci,
 } from '@/domain'
 
+import { explainMove } from './explain'
+
 /**
  * S13 · Reviewing a game: evaluations in, a verdict on every move out.
  *
@@ -36,6 +38,8 @@ import {
  * built from those numbers and the rules of chess and never from a model, so an
  * explanation cannot disagree with the engine line it sits next to.
  */
+
+export { explainMove, type ExplainInput } from './explain'
 
 /** Asks the engine about one position; the review never knows which engine, or where. */
 export type Evaluator = (fen: Fen) => Promise<Result<EngineEval>>
@@ -104,58 +108,6 @@ function terminalEval(fen: Fen): EngineEval | undefined {
 async function evaluatePosition(fen: Fen, evaluate: Evaluator): Promise<Result<EngineEval>> {
   const terminal = terminalEval(fen)
   return terminal === undefined ? evaluate(fen) : ok(terminal)
-}
-
-function percent(value: number): string {
-  return `${String(Math.round(value))}%`
-}
-
-const VERDICT: Readonly<Partial<Record<MoveQuality, string>>> = {
-  inaccuracy: 'was a small slip',
-  mistake: 'was a mistake',
-  miss: 'let a win slip away',
-  blunder: 'was a blunder',
-}
-
-/**
- * Plain words for one move, from the numbers alone.
- *
- * It states how the mover's winning chances changed and what the engine preferred. It
- * does not guess at why: "you missed a fork" would need to know what the engine saw, and
- * a sentence that might be wrong is worse than a shorter one that cannot be.
- */
-export function explainMove(input: {
-  readonly san: San
-  readonly quality: MoveQuality
-  readonly bestSan: San | undefined
-  readonly winBefore: number
-  readonly winAfter: number
-  readonly matedAfter: boolean
-}): string {
-  const { san, quality, bestSan, winBefore, winAfter, matedAfter } = input
-  const verdict = VERDICT[quality]
-  if (verdict !== undefined) {
-    const chances = `Your winning chances went from ${percent(winBefore)} to ${percent(winAfter)}.`
-    const mate = matedAfter ? ' It allows a forced mate.' : ''
-    const better = bestSan === undefined ? '' : ` ${bestSan} was the engine's choice.`
-    return `${san} ${verdict}. ${chances}${mate}${better}`
-  }
-  switch (quality) {
-    case 'brilliant':
-      return `${san} gives up material for something better, and the engine agrees.`
-    case 'great':
-      return `${san} was the only move that held the position together.`
-    case 'best':
-      return `${san} is the engine's top choice.`
-    case 'excellent':
-      return `${san} is as good as the engine's first choice, within a point.`
-    case 'good':
-      return `${san} is a sound move.`
-    case 'book':
-      return `${san} is a standard opening move.`
-    default:
-      return `${san}.`
-  }
 }
 
 /** A short caption for a board position, for the bank card: what to find, not the answer. */
@@ -285,7 +237,10 @@ export async function reviewGame(
     }
   }
 
-  const accuracy = gameAccuracyFromEvals(evals)
+  // Accuracy counts positions *after* each move and supplies the starting one itself, so the
+  // start position's evaluation must not also be in the list: it would shift every move
+  // onto the wrong side.
+  const accuracy = gameAccuracyFromEvals(evals.slice(1), { startColor: first.color })
   const withQuality = reviewed.flatMap((move) =>
     move.quality === undefined ? [] : [{ color: move.color, quality: move.quality }],
   )

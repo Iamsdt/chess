@@ -1,0 +1,12 @@
+{
+  // Cloudflare Workers static assets: no Worker code, just `dist/` behind Cloudflare's CDN.
+  // `dist/_headers` (from public/_headers) supplies COOP/COEP/CSP; see docs/deploy.md.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "chess-king",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./dist",
+    // Unknown paths get index.html so TanStack Router deep links (/puzzles/solve) work.
+    "not_found_handling": "single-page-application",
+  },
+}

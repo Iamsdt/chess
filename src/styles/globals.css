@@ -40,6 +40,13 @@
   --reward: #f2c24e;
   --reward-soft: #fdf3d8;
   --reward-ink: #7a5710;
+  /* Text on a solid --reward fill (a medal, a streak dot). */
+  --reward-foreground: #5a3f00;
+  /* The engine as a player: its avatar chip, and the eval bar's two sides. */
+  --engine: #3b4a44;
+  --engine-foreground: #cfe0d6;
+  --paper: #ffffff;
+  --paper-ink: #1b2620;
   --sky: #dcebf3;
   --sky-ink: #2d5a78;
   --lilac: #ece7fb;
@@ -62,9 +69,17 @@
   /* Ink for the one light-backed glyph; inline as text-[#3a2c00] in the prototype. */
   --q-inaccuracy-ink: #3a2c00;
 
+  /* garden illustration: leaf, young leaf, and the ground it stands on */
+  --garden-stem: #5f8b6c;
+  --garden-leaf: #6c9d73;
+  --garden-leaf-light: #8fb88f;
+  --garden-ground: #a3b89b;
+
   /* board */
-  --vb-light: #f5eedf;
-  --vb-dark: #a3b89b;
+  --vb-green-light: #f5eedf;
+  --vb-green-dark: #a3b89b;
+  --vb-light: var(--vb-green-light);
+  --vb-dark: var(--vb-green-dark);
   --vb-hl: rgba(242, 194, 78, 0.55);
   --vb-sel: rgba(36, 70, 58, 0.35);
   --vb-arrow: rgba(36, 70, 58, 0.85);
@@ -100,14 +115,23 @@
   --reward: #f2c867;
   --reward-soft: rgba(242, 200, 103, 0.12);
   --reward-ink: #f2c867;
+  --reward-foreground: #3a2c00;
+  --engine: #3b4a44;
+  --engine-foreground: #cfe0d6;
+  --paper: #e9eee8;
+  --paper-ink: #1b2620;
   --sky: rgba(143, 184, 212, 0.14);
   --sky-ink: #9cc4de;
   --lilac: rgba(165, 148, 255, 0.13);
   --lilac-ink: #b9adff;
   --success: #8fcf95;
   --sidebar: #0e1311;
-  --vb-light: #dfe2d4;
-  --vb-dark: #7d977b;
+  --garden-stem: #7fa07a;
+  --garden-leaf: #7fae86;
+  --garden-leaf-light: #a3cba3;
+  --garden-ground: #7d977b;
+  --vb-green-light: #dfe2d4;
+  --vb-green-dark: #7d977b;
   --vb-arrow: rgba(181, 211, 168, 0.95);
   --vb-arrow-ai: rgba(185, 173, 255, 0.9);
 }
@@ -156,6 +180,11 @@
   --color-reward: var(--reward);
   --color-reward-soft: var(--reward-soft);
   --color-reward-ink: var(--reward-ink);
+  --color-reward-foreground: var(--reward-foreground);
+  --color-engine: var(--engine);
+  --color-engine-foreground: var(--engine-foreground);
+  --color-paper: var(--paper);
+  --color-paper-ink: var(--paper-ink);
   --color-sky: var(--sky);
   --color-sky-ink: var(--sky-ink);
   --color-lilac: var(--lilac);

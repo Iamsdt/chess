@@ -18,8 +18,8 @@ import {
  * makes every evaluation read backwards.
  */
 
-const BLACK_FILL = 'bg-[#3b4a44]'
-const WHITE_FILL = 'bg-white dark:bg-[#e9eee8]'
+const BLACK_FILL = 'bg-engine'
+const WHITE_FILL = 'bg-paper'
 
 export interface EvalBarProps {
   /** `null` while the engine is off or has not answered yet. */
@@ -58,7 +58,7 @@ export function EvalBar({ score, sideToMove, orientation }: EvalBarProps) {
       <span
         className={cn(
           'absolute inset-x-0 bottom-1 text-center font-mono text-[9px] font-semibold max-sm:hidden',
-          topIsBlack ? 'text-[#1b2620]' : 'text-white',
+          topIsBlack ? 'text-paper-ink' : 'text-white',
         )}
       >
         {label}

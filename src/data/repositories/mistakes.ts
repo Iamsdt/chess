@@ -10,6 +10,7 @@ import {
   type MistakeId,
   type MistakeQuality,
   type MistakeSource,
+  type PuzzleId,
   type SrsCardId,
   type Timestamp,
 } from '@/domain'
@@ -47,6 +48,8 @@ export interface MistakesRepository {
   count: (filter?: MistakeFilter) => Promise<number>
   listForGame: (gameId: GameId) => Promise<MistakeEntry[]>
   findByCard: (cardId: SrsCardId) => Promise<MistakeEntry | undefined>
+  /** "Is this puzzle already in the bank?" — a puzzle is banked once, however often it is missed. */
+  findByPuzzle: (puzzleId: PuzzleId) => Promise<MistakeEntry | undefined>
   /** The skill radar: how many mistakes carry each theme. */
   countsByTheme: () => Promise<{ theme: string; count: number }[]>
   add: (entry: MistakeEntry) => Promise<Result<MistakeEntry>>
@@ -131,6 +134,8 @@ export function createMistakesRepository(db: ChessKingDb): MistakesRepository {
     listForGame: (gameId) => db.mistakes.where('gameId').equals(gameId).sortBy('ply'),
 
     findByCard: (cardId) => db.mistakes.where('srsCardId').equals(cardId).first(),
+
+    findByPuzzle: (puzzleId) => db.mistakes.where('puzzleId').equals(puzzleId).first(),
 
     countsByTheme: async () => {
       const counts = new Map<string, number>()

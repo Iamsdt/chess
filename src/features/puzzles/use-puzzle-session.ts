@@ -8,6 +8,7 @@ import {
   type PuzzleId,
   type SessionId,
 } from '@/domain'
+import { captureMissedPuzzle } from '@/features/srs'
 
 import { hintFor, type RevealedHint } from './hints'
 import { closeSession, raiseBests, recordAttempt, saveSession } from './puzzle-store'
@@ -259,6 +260,15 @@ export function usePuzzleSession(options: SessionOptions): PuzzleRunner {
       const durationMs = Math.max(Date.now() - attemptStartedAt.current, 0)
       const startedAt = toTimestamp(Math.max(endedAt - durationMs, 0))
       const firstTry = solved && finished.wrongMoves === 0 && finished.hintUsed === null
+      // A failed puzzle goes to the Mistake Bank so it comes back on a schedule.
+      if (!solved) {
+        void captureMissedPuzzle({
+          puzzle: finished.puzzle,
+          fen: finished.game.fen,
+          cursor: finished.cursor,
+          played: finished.played,
+        })
+      }
       void recordAttempt({
         puzzle: finished.puzzle,
         mode: config.kind,

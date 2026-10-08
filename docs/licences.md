@@ -34,8 +34,7 @@ waiting on them are marked **unverified** rather than guessed.
   - the About screen and the README credit the Lichess open puzzle database and
     link here.
 
-  **Gap:** the About screen is S23's and the README is not this sprint's file, so
-  neither credit is written yet. The data and the link are in place for them.
+  The README credit is written (S29). **Gap:** the About screen's credit is still S23's.
 
 ## Engine — Stockfish 19 lite
 
@@ -56,28 +55,30 @@ waiting on them are marked **unverified** rather than guessed.
 
 ## Board piece sets
 
-- **What:** `prototype/assets/pieces/{alpha,california,maestro,staunty}` — 12 SVGs
-  each — which S08 is porting to `public/pieces/`.
-- **Status: unverified.** No licence or attribution file accompanies the SVGs in
-  this repository, and nothing in the prototype records where they came from.
-- **Lead, not a finding:** four piece sets of those names are distributed with
-  Lichess, and `lichess-org/lila`'s `COPYING.md`
-  (<https://raw.githubusercontent.com/lichess-org/lila/master/COPYING.md>, read
-  2026-09-20) lists them as:
+- **What:** `public/pieces/{alpha,california,maestro,staunty}` - 12 SVGs each.
+- **Provenance in this repo:** none. The SVG directories contain no licence, author or
+  attribution file, and the SVGs carry no metadata. The sets are identified by name only.
+- **Licences, read upstream:** `lichess-org/lila`'s `COPYING.md`
+  (<https://raw.githubusercontent.com/lichess-org/lila/master/COPYING.md>, read 2026-10-08)
+  lists the four sets as follows. The README credits these authors.
 
-  | Set        | Author       | Licence                                |
-  | ---------- | ------------ | -------------------------------------- |
-  | California | Jerry S.     | CC BY-NC-SA 4.0                        |
-  | Staunty    | sadsnake1    | CC BY-NC-SA 4.0                        |
-  | Maestro    | sadsnake1    | CC BY-NC-SA 4.0                        |
-  | Alpha      | Eric Bentzen | "free for personal non commercial use" |
+  | Set        | Author                                                    | Licence                                                                                          |
+  | ---------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+  | California | [Jerry S.](https://sites.google.com/view/jerrychess/home) | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)                            |
+  | Staunty    | sadsnake1                                                 | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)                            |
+  | Maestro    | sadsnake1                                                 | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)                            |
+  | Alpha      | Eric Bentzen                                              | "free for personal non commercial use" ([source](http://www.enpassant.dk/chess/downl/alpha.zip)) |
 
-  Whether the files in this repository _are_ those files has not been checked, so
-  none of the above is recorded as this project's licence position yet. **S08
-  owns confirming it**, and if it holds, three consequences follow that the team
-  has to decide on before release: CC BY-NC-SA requires per-set attribution in the
-  UI, it is share-alike, and **NC forbids commercial use** — which sits oddly
-  beside an MIT-licensed app, even a free one.
+- **Still unverified:** that the files in `public/pieces/` are byte-identical to those
+  upstream sets (they match by name and set structure, nothing more). Treat the table as the
+  working licence position, not as proof.
+- **Consequences to decide before any commercial release:**
+  - **NC** (non-commercial) applies to all four. Selling the app, ads or paid tiers would
+    breach the licences; either drop these sets or replace them with CC0/permissive ones
+    (Lichess ships `cburnett` GPLv2+, `chessnut` Apache-2.0, `rhosgfx` CC0).
+  - **BY** needs visible attribution: the credit belongs in the About screen as well as the README.
+  - **SA** makes adaptations of California, Staunty and Maestro share-alike (CC BY-NC-SA).
+    We ship the SVGs unmodified.
 
 ## Lesson content
 
@@ -101,9 +102,9 @@ community pack cannot arrive unlicensed. See `docs/content-packs.md`.
 
 ## Still to record
 
-| Item                       | Owner     | What is missing                                            |
-| -------------------------- | --------- | ---------------------------------------------------------- |
-| Piece sets                 | S08       | Provenance of the SVGs; then the licence and the UI credit |
-| Stockfish build provenance | S07       | Upstream release + corresponding-source link for GPLv3 §6  |
-| `LICENSE` file             | —         | The MIT text the README claims                             |
-| Fonts, icons, sounds       | S02 / S12 | Not surveyed by this sprint                                |
+| Item                       | Owner     | What is missing                                               |
+| -------------------------- | --------- | ------------------------------------------------------------- |
+| Piece sets                 | S08 / S23 | Byte-compare with upstream; About-screen credit (README done) |
+| Stockfish build provenance | S07       | Upstream release + corresponding-source link for GPLv3 §6     |
+| `LICENSE` file             | —         | The MIT text the README claims                                |
+| Fonts, icons, sounds       | S02 / S12 | Not surveyed by this sprint                                   |

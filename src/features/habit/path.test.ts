@@ -197,3 +197,61 @@ describe('pathProgress', () => {
     expect(pathProgress(steps)).toEqual({ done: 2, total: 2, activeIndex: -1, minutesLeft: 0 })
   })
 })
+
+describe('planPath · fixture profiles', () => {
+  const profiles: readonly { name: string; input: PathInput; expected: readonly string[] }[] = [
+    { name: 'brand-new 5-minute user', input: input(), expected: ['daily-puzzle', 'puzzles'] },
+    {
+      name: 'casual 15-minute user with a weak theme',
+      input: input({ dailyMinutes: 15, weakestTheme: { id: 'fork', label: 'Forks' } }),
+      expected: ['daily-puzzle', 'weak-theme'],
+    },
+    {
+      name: 'mistake-heavy user',
+      input: input({ dailyMinutes: 15, totalMistakes: 40, dueMistakes: 9 }),
+      expected: ['daily-puzzle', 'mistakes'],
+    },
+    {
+      name: 'learner mid-course',
+      input: input({
+        dailyMinutes: 15,
+        nextLesson: { id: 'lesson-1', title: 'Forks', minutes: 5 },
+      }),
+      expected: ['daily-puzzle', 'lesson'],
+    },
+    {
+      name: 'player with an unreviewed game',
+      input: input({ dailyMinutes: 15, reviewTarget: { id: 'g1', opponent: 'Stockfish 1200' } }),
+      expected: ['daily-puzzle', 'review'],
+    },
+    {
+      name: 'committed 30-minute user with everything on offer',
+      input: input({
+        dailyMinutes: 30,
+        totalMistakes: 20,
+        dueMistakes: 6,
+        weakestTheme: { id: 'pin', label: 'Pins' },
+        nextLesson: { id: 'lesson-2', title: 'Pins', minutes: 6 },
+        reviewTarget: { id: 'g2', opponent: 'Stockfish 1500' },
+      }),
+      expected: ['daily-puzzle', 'mistakes'],
+    },
+  ]
+
+  it('covers exactly six fixture profiles', () => {
+    expect(profiles).toHaveLength(6)
+  })
+
+  it.each(profiles)('plans a sensible day for the $name', ({ input: profile, expected }) => {
+    const steps = planPath(profile)
+    expect(steps.length).toBeGreaterThanOrEqual(2)
+    expect(steps.length).toBeLessThanOrEqual(4)
+    expect(new Set(steps.map((step) => step.id)).size).toBe(steps.length)
+    expect(steps.every((step) => step.minutes > 0)).toBe(true)
+    // Each situation must see what it calls for in the plan.
+    expect(ids(steps)).toEqual(expect.arrayContaining([...expected]))
+    const total = steps.reduce((sum, step) => sum + step.minutes, 0)
+    // The plan fits the goal with some slack, never a day twice as long as asked for.
+    expect(total).toBeLessThanOrEqual(profile.dailyMinutes * 2)
+  })
+})

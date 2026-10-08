@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 
 import { Switch } from '@/design'
 import type { Fen, Uci } from '@/domain'
+import { OnlineOnlyNotice } from '@/pwa'
 
 import { EXPLORER_SOURCE_LABEL, lookupExplorer, type ExplorerReport } from './explorer'
 
@@ -94,6 +95,7 @@ export function ExplorerPanel({
           aria-label="Look this position up online"
         />
       </div>
+      <OnlineOnlyNotice feature="The opening explorer" />
 
       <div className="min-h-0 flex-1 overflow-auto">
         {!enabled ? (
@@ -164,7 +166,7 @@ export function ExplorerPanel({
                         aria-label={`White ${String(move.whitePercent)}%, draw ${String(move.drawPercent)}%, Black ${String(move.blackPercent)}%`}
                       >
                         <span
-                          className="bg-white pl-1 text-[#1b2620]"
+                          className="bg-paper pl-1 text-paper-ink"
                           style={{ width: `${String(move.whitePercent)}%` }}
                         >
                           {String(move.whitePercent)}
@@ -176,7 +178,7 @@ export function ExplorerPanel({
                           {String(move.drawPercent)}
                         </span>
                         <span
-                          className="bg-[#3b4a44] pl-1 text-white"
+                          className="bg-engine pl-1 text-engine-foreground"
                           style={{ width: `${String(move.blackPercent)}%` }}
                         >
                           {String(move.blackPercent)}

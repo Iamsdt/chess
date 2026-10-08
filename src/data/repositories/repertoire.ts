@@ -39,6 +39,16 @@ export interface RepertoireRepository {
   putMany: (nodes: readonly RepertoireNode[]) => Promise<Result<number>>
   update: (id: RepertoireNodeId, patch: Partial<RepertoireNode>) => Promise<Result<RepertoireNode>>
   /**
+   * Writes some nodes and deletes others in one transaction.
+   *
+   * Why: an edit touches the new node and its parent's `childIds` together, and a
+   * crash between two writes would leave a child the tree cannot reach.
+   */
+  applyChange: (
+    put: readonly RepertoireNode[],
+    remove: readonly RepertoireNodeId[],
+  ) => Promise<Result<number>>
+  /**
    * Deletes a node and everything under it, and unlinks it from its parent.
    *
    * Why the subtree goes too: a flat table has no cascade, and an orphaned node
@@ -123,6 +133,18 @@ export function createRepertoireRepository(db: ChessKingDb): RepertoireRepositor
         }),
       )
       return outcome.ok ? outcome.value : outcome
+    },
+
+    applyChange: async (put, remove) => {
+      const validated = validateMany(RepertoireNodeSchema, put, 'repertoire.applyChange')
+      if (!validated.ok) return validated
+      return runWrite('repertoire.applyChange', () =>
+        db.transaction('rw', db.repertoire, async () => {
+          await db.repertoire.bulkPut(validated.value)
+          await db.repertoire.bulkDelete([...remove])
+          return validated.value.length + remove.length
+        }),
+      )
     },
 
     removeSubtree: (id) =>

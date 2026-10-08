@@ -9,6 +9,7 @@ import {
   type PuzzleAttempt,
   type StreakState,
 } from '@/domain'
+import { viewStreak } from '@/features/habit'
 
 /**
  * S22 · Everything the Growth screen shows, computed from stored rows.
@@ -274,6 +275,8 @@ export interface ChartGeometry {
   readonly gridlines: readonly { readonly y: number; readonly label: string }[]
   readonly first: { readonly x: number; readonly y: number; readonly value: number }
   readonly last: { readonly x: number; readonly y: number; readonly value: number }
+  /** The same series as rows, one per day, for the table that stands in for the picture. */
+  readonly table: readonly SeriesPoint[]
 }
 
 const CHART = { left: 40, right: 310, top: 20, bottom: 130 } as const
@@ -287,6 +290,13 @@ function niceAxis(min: number, max: number): { lo: number; hi: number } {
   }
   const step = Math.ceil((max - min) / 2)
   return { lo: Math.floor(min), hi: Math.floor(min) + 2 * step }
+}
+
+/** One row per day, keeping the day's last reading: a chart of 200 points is not 200 rows. */
+export function dailyRows(sorted: readonly SeriesPoint[]): SeriesPoint[] {
+  const byDay = new Map<number, SeriesPoint>()
+  for (const point of sorted) byDay.set(Math.floor(point.at / DAY_MS), point)
+  return [...byDay.values()]
 }
 
 /** Why a function: the SVG is drawn from numbers, so the chart is as testable as any value. */
@@ -323,6 +333,7 @@ export function chartGeometry(
     })),
     first: { x: x(firstPoint.at), y: y(firstPoint.value), value: firstPoint.value },
     last: { x: x(lastPoint.at), y: y(lastPoint.value), value: lastPoint.value },
+    table: dailyRows(sorted),
   }
 }
 
@@ -637,17 +648,39 @@ export const GARDEN_STAGES = [
 
 export type GardenStageId = (typeof GARDEN_STAGES)[number]['id']
 
+export interface GardenStage {
+  readonly id: GardenStageId
+  readonly label: string
+  readonly days: number
+}
+
 export interface Garden {
   readonly stageIndex: number
   readonly level: number
   readonly practicedDays: number
   /** The next stage, or `undefined` once the tree is grown. */
-  readonly next: (typeof GARDEN_STAGES)[number] | undefined
+  readonly next: GardenStage | undefined
   readonly daysToNext: number
+  /** Whether today's practice has reached the daily goal: the garden is "watered". */
+  readonly watered: boolean
+  /** Minutes still to go to reach the goal today; zero once watered. */
+  readonly minutesToWater: number
 }
 
-/** The garden grows with days practised, not with wins: a missed day costs nothing. */
-export function gardenFor(totalPracticeDays: number): Garden {
+/** What today's practice means for the garden, taken from the streak row. */
+export interface GardenWatering {
+  readonly practisedMs: number
+  readonly goalMs: number
+}
+
+/**
+ * The garden grows with days practised, not with wins: a missed day costs nothing.
+ *
+ * The stage follows the practice days the streak counts (a freeze keeps a streak alive
+ * but adds no day), and reaching today's goal waters it. Why watering is separate from
+ * growth: the goal is a daily nudge, and a day that falls short should not undo a tree.
+ */
+export function gardenFor(totalPracticeDays: number, watering?: GardenWatering): Garden {
   let stageIndex = 0
   GARDEN_STAGES.forEach((stage, index) => {
     if (totalPracticeDays >= stage.days) stageIndex = index
@@ -659,6 +692,12 @@ export function gardenFor(totalPracticeDays: number): Garden {
     practicedDays: totalPracticeDays,
     next,
     daysToNext: next === undefined ? 0 : Math.max(next.days - totalPracticeDays, 0),
+    watered:
+      watering !== undefined && watering.goalMs > 0 && watering.practisedMs >= watering.goalMs,
+    minutesToWater:
+      watering === undefined
+        ? 0
+        : Math.max(Math.ceil((watering.goalMs - watering.practisedMs) / 60_000), 0),
   }
 }
 
@@ -838,6 +877,12 @@ export function buildProgress(input: ProgressInput): ProgressModel {
   const chartFrom = input.range === 'all' ? earliest : from
   const chartWindow = { from: chartFrom, to: input.now }
 
+  const todayStreak = viewStreak(input.streak, localDateOf(input.now, input.timeZone))
+  const watering =
+    todayStreak.goalMs === undefined
+      ? undefined
+      : { practisedMs: todayStreak.todayMs, goalMs: todayStreak.goalMs }
+
   const skills = themeSkills(input)
   const { earned, pending } = buildMilestones(input, practiceDays)
 
@@ -850,7 +895,7 @@ export function buildProgress(input: ProgressInput): ProgressModel {
     skills,
     radar: radarGeometry(skills),
     heatmap: buildHeatmap(input, byDay),
-    garden: gardenFor(practiceDays.length),
+    garden: gardenFor(practiceDays.length, watering),
     earned,
     pending,
     window: chartWindow,

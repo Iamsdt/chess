@@ -14,10 +14,18 @@ import path from 'node:path'
 import { gzipSync } from 'node:zlib'
 
 const BUDGETS_KB = { js: 200, css: 60 }
+/**
+ * Per-route budget (S29): the JS a route adds on top of the shell, i.e. its own chunk and
+ * the shared chunks only it pulls in. The shell itself is held to `BUDGETS_KB.js` above, so
+ * a first visit to any route is bounded by the sum of the two.
+ */
+const ROUTE_BUDGET_KB = 200
+/** Lazy entries that are routes. Workers, the engine and shell slots load on demand. */
+const ROUTE_ENTRY = /^src\/features\//
 const DIST = path.resolve('dist')
 const MANIFEST = path.join(DIST, '.vite/manifest.json')
 
-/** @type {Record<string, { file: string, isEntry?: boolean, imports?: string[], css?: string[] }>} */
+/** @type {Record<string, { file: string, isEntry?: boolean, isDynamicEntry?: boolean, imports?: string[], css?: string[] }>} */
 let manifest
 try {
   manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'))
@@ -60,7 +68,38 @@ for (const file of files) {
   totals[ext] += gzipSync(readFileSync(path.join(DIST, file))).byteLength
 }
 
+const gzipKb = (file) => gzipSync(readFileSync(path.join(DIST, file))).byteLength / 1024
+
 let failed = false
+
+/**
+ * Per route: every chunk the route's static import graph adds beyond the initial download. Engine chunks are excluded as the budget says, though in practice the
+ * engine is a worker and never appears in a route's static graph.
+ */
+const routeKeys = Object.keys(manifest).filter(
+  (key) => manifest[key]?.isDynamicEntry === true && ROUTE_ENTRY.test(key) && !initial.has(key),
+)
+const initialJs = [...files].filter((file) => file.endsWith('.js'))
+const initialJsKb = initialJs.reduce((sum, file) => sum + gzipKb(file), 0)
+for (const key of routeKeys) {
+  const own = new Set()
+  const walk = (next) => {
+    if (initial.has(next) || own.has(next) || next.startsWith('src/engine/')) return
+    const chunk = manifest[next]
+    if (!chunk) return
+    own.add(next)
+    for (const dep of chunk.imports ?? []) walk(dep)
+  }
+  walk(key)
+  const extraKb = [...own].reduce((sum, k) => sum + gzipKb(manifest[k].file), 0)
+  const ok = extraKb <= ROUTE_BUDGET_KB
+  if (!ok) failed = true
+  console.log(
+    `${ok ? 'PASS' : 'FAIL'}  ROUTE ${key.padEnd(34)} ${extraKb.toFixed(1)} KB gzip / ${ROUTE_BUDGET_KB} KB budget` +
+      `  (first visit ${(initialJsKb + extraKb).toFixed(1)} KB with the shell)`,
+  )
+}
+
 for (const [ext, budgetKb] of Object.entries(BUDGETS_KB)) {
   const actualKb = totals[ext] / 1024
   const ok = actualKb <= budgetKb

@@ -20,6 +20,7 @@ import type {
   Settings,
   SrsCard,
   SrsState,
+  SrsSubject,
   StreakState,
   Timestamp,
 } from '@/domain'
@@ -128,6 +129,11 @@ export function useDueCards(query?: DueQuery): SrsCard[] | undefined {
 
 export function useDueCount(query?: DueQuery): number | undefined {
   return useLiveQuery(() => repositories.srsCards.countDue(query), [query])
+}
+
+/** Every card, for the bank's schedule strip and pipeline; `kind` narrows to one subject. */
+export function useSrsCards(kind?: SrsSubject['kind']): SrsCard[] | undefined {
+  return useLiveQuery(() => repositories.srsCards.listAll(kind), [kind])
 }
 
 export function useSrsCountsByState(): Record<SrsState, number> | undefined {
