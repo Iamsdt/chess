@@ -167,11 +167,8 @@ function CoachPanelContents({
   const summary = contextSummary ?? seed?.contextSummary
   const replies = quickReplies ?? seed?.quickReplies
 
-  const statusLine = !hasKey
-    ? 'Needs your API key'
-    : busy
-      ? 'Writing…'
-      : 'Online · answers from your own key'
+  // Online is the avatar's green dot; text only when there is something else to say.
+  const statusLine = !hasKey ? 'Needs your API key' : busy ? 'Writing…' : undefined
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -195,7 +192,9 @@ function CoachPanelContents({
             <div className="font-display text-base font-bold">Sage</div>
             <div className="flex items-center gap-1.5">
               <ModeChip mode={mode} onChange={setModeOverride} />
-              <span className="truncate text-xs text-muted-foreground">{statusLine}</span>
+              {statusLine === undefined ? null : (
+                <span className="truncate text-xs text-muted-foreground">{statusLine}</span>
+              )}
             </div>
           </div>
           <SimpleTooltip content="Coach settings" side="bottom">

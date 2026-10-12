@@ -1,12 +1,14 @@
-import { Check, Hand, RotateCcw } from 'lucide-react'
+import { Check, Hand, Lightbulb, RotateCcw, X } from 'lucide-react'
 
-import { Button } from '@/design'
+import { Button, cn } from '@/design'
 import { type Puzzle } from '@/domain'
 
 import { PuzzleAttribution } from './puzzle-attribution'
 
+import type { RevealedHint } from '../hints'
 import type { RatingChange } from '../rating'
 import type { SolveVerdict } from '../use-puzzle-session'
+import type { ReactNode } from 'react'
 
 export interface SolverFeedbackProps {
   readonly puzzle: Puzzle
@@ -15,6 +17,10 @@ export interface SolverFeedbackProps {
   readonly ratingChange: RatingChange | null
   /** True once the attempt has been written; the next puzzle is then one press away. */
   readonly settled: boolean
+  /** The wrong move still on the board, in SAN. */
+  readonly wrongMove: string | null
+  /** The hint rung last opened, shown while the user is still solving. */
+  readonly hint: RevealedHint | null
   readonly onNext: () => void
   readonly onRetry: () => void
   readonly lastInSet: boolean
@@ -22,17 +28,16 @@ export interface SolverFeedbackProps {
 
 function ratingLine(change: RatingChange | null): string | null {
   if (change === null) return null
-  if (!change.rated) return 'Unrated — you had the move shown to you.'
+  if (!change.rated) return 'Unrated, you had the move shown to you'
   return `${change.delta >= 0 ? '+' : '−'}${String(Math.abs(change.delta))} rating`
 }
 
 /**
- * What the panel says after a move.
+ * The strip under the board: what the last move was worth and what to do next.
  *
- * The copy carries the sprint's tone rule: a miss is "the idea you missed", never "wrong".
- * The user keeps the board they were thinking about and is told plainly that their rating
- * has not moved yet, because the thing that makes people stop practising is not
- * difficulty, it is being told off.
+ * A wrong move is called wrong, plainly, and stays on the board until "Look again" takes
+ * it back. Solved and missed puzzles get the "why it works" line and the attribution,
+ * and the next puzzle is the one button in reach.
  */
 export function SolverFeedback({
   puzzle,
@@ -40,85 +45,159 @@ export function SolverFeedback({
   solved,
   ratingChange,
   settled,
+  wrongMove,
+  hint,
   onNext,
   onRetry,
   lastInSet,
 }: SolverFeedbackProps) {
+  const nextLabel = lastInSet ? 'See how the set went' : 'Next puzzle'
+
   if (verdict === 'solved' || (solved && settled)) {
+    const rating = ratingLine(ratingChange)
     return (
-      <div className="rise rounded-xl border border-success/30 bg-accent/60 p-4" role="status">
-        <div className="flex items-center gap-2">
-          <span className="grid size-7 place-items-center rounded-full bg-primary text-primary-foreground">
-            <Check aria-hidden className="size-4" />
-          </span>
-          <p className="flex-1 font-display text-lg font-bold">That's the idea</p>
-          {ratingLine(ratingChange) === null ? null : (
-            <span className="badge border-transparent bg-card font-semibold text-success">
-              {ratingLine(ratingChange)}
-            </span>
-          )}
-        </div>
-        <div className="mt-3 rounded-lg bg-card p-3">
-          <p className="label">Why it works</p>
-          <p className="mt-1 text-sm leading-relaxed">{puzzle.explanation}</p>
-        </div>
-        <PuzzleAttribution className="mt-3" puzzle={puzzle} revealed />
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+      <Strip
+        tone="success"
+        icon={<Check aria-hidden className="size-4" />}
+        title="Solved"
+        aside={
+          rating === null ? null : (
+            <span className="text-xs font-semibold text-success">{rating}</span>
+          )
+        }
+        action={
           <Button className="btn btn-cta" onClick={onNext} disabled={!settled}>
-            {lastInSet ? 'See how the set went' : 'Next puzzle'}
+            {nextLabel}
           </Button>
-        </div>
-      </div>
+        }
+      >
+        <p>{puzzle.explanation}</p>
+        <PuzzleAttribution className="mt-2" puzzle={puzzle} revealed />
+      </Strip>
     )
   }
 
   if (verdict === 'missed') {
-    return (
-      <div className="rise rounded-xl border border-cta/30 bg-cta-soft p-4" role="status">
-        <div className="flex items-center gap-2">
-          <span className="grid size-7 place-items-center rounded-full bg-card text-cta ring-1 ring-cta/30">
-            <RotateCcw aria-hidden className="size-4" />
-          </span>
-          <p className="flex-1 font-display text-lg font-bold">Not the idea this one is about</p>
-        </div>
-        <p className="mt-2 text-sm">
-          That move is playable — there is something stronger here.{' '}
-          {settled
-            ? 'This one is recorded; take the next when you are ready.'
-            : 'Your rating has not moved yet.'}
-        </p>
-        {settled ? (
-          <>
-            <div className="mt-3 rounded-lg bg-card p-3">
-              <p className="label">The idea you missed</p>
-              <p className="mt-1 text-sm leading-relaxed">{puzzle.explanation}</p>
-            </div>
-            <PuzzleAttribution className="mt-3" puzzle={puzzle} revealed />
-          </>
-        ) : null}
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          {settled ? (
+    const title = wrongMove === null ? 'Wrong move' : `${wrongMove} is wrong`
+    if (settled) {
+      return (
+        <Strip
+          tone="error"
+          icon={<X aria-hidden className="size-4" />}
+          title={title}
+          action={
             <Button className="btn btn-cta" onClick={onNext}>
-              {lastInSet ? 'See how the set went' : 'Next puzzle'}
+              {nextLabel}
             </Button>
-          ) : (
-            <Button variant="default" onClick={onRetry}>
-              <RotateCcw aria-hidden className="size-4" />
-              Look again
-            </Button>
-          )}
-        </div>
-      </div>
+          }
+        >
+          <p>
+            <span className="font-medium">The idea: </span>
+            {puzzle.explanation}
+          </p>
+          <PuzzleAttribution className="mt-2" puzzle={puzzle} revealed />
+        </Strip>
+      )
+    }
+    return (
+      <Strip
+        tone="error"
+        icon={<X aria-hidden className="size-4" />}
+        title={title}
+        action={
+          <Button variant="default" onClick={onRetry}>
+            <RotateCcw aria-hidden className="size-4" />
+            Look again
+          </Button>
+        }
+      >
+        <p>That is not the answer. Take it back and try another move.</p>
+      </Strip>
+    )
+  }
+
+  if (verdict === 'correct') {
+    return (
+      <Strip tone="success" icon={<Check aria-hidden className="size-4" />} title="Right move">
+        <p>Your opponent is answering. Keep going.</p>
+      </Strip>
+    )
+  }
+
+  if (hint !== null) {
+    return (
+      <Strip tone="hint" icon={<Lightbulb aria-hidden className="size-4" />} title="Hint">
+        <p>{hint.text}</p>
+      </Strip>
     )
   }
 
   return (
-    <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
-      <p className="flex items-center gap-2 font-medium text-foreground">
-        <Hand aria-hidden className="size-4 text-primary" />
-        Your move
-      </p>
-      <p className="mt-1">Drag or tap a piece. Checks, captures, threats: in that order.</p>
+    <Strip tone="idle" icon={<Hand aria-hidden className="size-4" />} title="Your move">
+      <p>Checks, captures, threats: in that order.</p>
+    </Strip>
+  )
+}
+
+type StripTone = 'success' | 'error' | 'hint' | 'idle'
+
+const TONES: Record<StripTone, { box: string; icon: string }> = {
+  success: {
+    box: 'border-success/40 bg-accent/60',
+    icon: 'bg-primary text-primary-foreground',
+  },
+  error: {
+    box: 'border-destructive/40 bg-destructive-soft',
+    icon: 'bg-destructive text-white',
+  },
+  hint: {
+    box: 'border-reward/50 bg-reward-soft text-reward-ink',
+    icon: 'bg-reward text-reward-foreground',
+  },
+  idle: {
+    box: 'border-dashed',
+    icon: 'bg-muted text-primary',
+  },
+}
+
+function Strip({
+  tone,
+  icon,
+  title,
+  aside,
+  action,
+  children,
+}: {
+  readonly tone: StripTone
+  readonly icon: ReactNode
+  readonly title: string
+  readonly aside?: ReactNode
+  readonly action?: ReactNode
+  readonly children: ReactNode
+}) {
+  const styles = TONES[tone]
+  return (
+    <div
+      className={cn(
+        'flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border px-3 py-2.5',
+        tone !== 'idle' && 'rise',
+        styles.box,
+      )}
+      role="status"
+    >
+      <span className={cn('grid size-7 shrink-0 place-items-center rounded-full', styles.icon)}>
+        {icon}
+      </span>
+      <div className="min-w-0 flex-1 text-sm">
+        <div className="flex flex-wrap items-baseline gap-x-2">
+          <p className="font-display font-bold">{title}</p>
+          {aside}
+        </div>
+        <div className={cn('leading-snug', tone === 'idle' && 'text-muted-foreground')}>
+          {children}
+        </div>
+      </div>
+      {action === undefined ? null : <div className="shrink-0">{action}</div>}
     </div>
   )
 }

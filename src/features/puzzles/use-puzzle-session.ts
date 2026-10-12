@@ -30,6 +30,7 @@ import {
   type SessionSummary,
 } from './session'
 import {
+  clearMistake,
   createSolve,
   markMissed,
   playOpponentReply,
@@ -378,7 +379,7 @@ export function usePuzzleSession(options: SessionOptions): PuzzleRunner {
       if (solve === null || solve.status === 'solved') return
       setAttempt({
         puzzleId: solve.puzzle.id,
-        solve: withHint(solve, level),
+        solve: withHint(clearMistake(solve), level),
         verdict: 'idle',
         hint: hintFor(solve, level),
         ratingChange: live?.ratingChange ?? null,
@@ -407,9 +408,13 @@ export function usePuzzleSession(options: SessionOptions): PuzzleRunner {
     setActiveIndex(state.index)
   }, [state])
 
-  /** Back to the board with the position untouched; the miss is already recorded. */
+  /** Take the wrong move back and return to the position; the miss is already recorded. */
   const retry = useCallback(() => {
-    setAttempt((current) => (current === null ? current : { ...current, verdict: 'idle' }))
+    setAttempt((current) =>
+      current === null
+        ? current
+        : { ...current, solve: clearMistake(current.solve), verdict: 'idle' },
+    )
   }, [])
 
   const finish = useCallback(() => {

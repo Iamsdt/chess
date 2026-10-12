@@ -89,6 +89,17 @@ describe('playing the line', () => {
     expect(attempt.state.played).toEqual([toUci('a7a6')])
   })
 
+  it('keeps the wrong move played out so the board can show it, and a right move clears it', () => {
+    const wrong = playUserMove(solve(), move('a7a6'))
+
+    expect(wrong.state.mistake).toMatchObject(move('a7a6'))
+    expect(wrong.state.mistake?.game.fen).not.toBe(wrong.state.game.fen)
+
+    const right = playUserMove(wrong.state, move(String(puzzle.solution[0])))
+    expect(right.verdict).toBe('correct')
+    expect(right.state.mistake).toBeNull()
+  })
+
   it('accepts any mate, because a second mate in one is still a solution', () => {
     // Two rooks, one back rank: Rb8# and Re8# both finish it. The line names one of them.
     const twoMates = makePuzzle({

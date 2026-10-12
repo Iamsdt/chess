@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { Board } from '@/board'
 import type { BoardMove } from '@/board'
 import { useTheme } from '@/design'
-import { emptyBoardShapes, type Square } from '@/domain'
+import { emptyBoardShapes, type BoardShapes, type Square } from '@/domain'
 
 import {
   isPromotionMove,
@@ -11,6 +11,7 @@ import {
   solveShapes,
   type SolveState,
   type AttemptedMove,
+  type WrongMove,
 } from '../solution'
 
 export interface SolverBoardProps {
@@ -29,17 +30,28 @@ export interface SolverBoardProps {
  * all. Everything it needs — which moves are legal, whether one promotes, what to
  * highlight — is computed here from `@/chess` by way of the solve state, which is why a
  * puzzle, a game and a lesson can share one board without sharing any rules.
+ *
+ * A wrong move is played out and marked, and stays on the board until the screen takes
+ * it back (`clearMistake`), so the user sees what they chose instead of a piece that
+ * silently refuses to move.
  */
 export function SolverBoard({ solve, focus, onMove, label, announcement }: SolverBoardProps) {
   const { pieceSet, board: boardTheme } = useTheme()
+
+  const mistake = solve?.mistake ?? null
 
   const legalMoves = useMemo(
     () => (solve === null ? new Map<Square, readonly Square[]>() : legalMoveMap(solve.game)),
     [solve],
   )
   const shapes = useMemo(
-    () => (solve === null ? emptyBoardShapes() : solveShapes(solve, { focus })),
-    [solve, focus],
+    () =>
+      solve === null
+        ? emptyBoardShapes()
+        : mistake !== null
+          ? wrongMoveShapes(mistake)
+          : solveShapes(solve, { focus }),
+    [solve, focus, mistake],
   )
   const isPromotion = useMemo(
     () => (from: Square, to: Square) => solve !== null && isPromotionMove(solve.game, from, to),
@@ -56,11 +68,11 @@ export function SolverBoard({ solve, focus, onMove, label, announcement }: Solve
     )
   }
 
-  const movable = solve.status === 'solving' ? solve.userColor : 'none'
+  const movable = solve.status === 'solving' && mistake === null ? solve.userColor : 'none'
 
   return (
     <Board
-      fen={solve.game.fen}
+      fen={mistake === null ? solve.game.fen : mistake.game.fen}
       orientation={solve.userColor}
       movable={movable}
       legalMoves={legalMoves}
@@ -75,4 +87,13 @@ export function SolverBoard({ solve, focus, onMove, label, announcement }: Solve
       {...(announcement === undefined ? {} : { announcement })}
     />
   )
+}
+
+/** The wrong move's squares, its landing square tinted and marked with a cross. */
+function wrongMoveShapes(mistake: WrongMove): BoardShapes {
+  const shapes = emptyBoardShapes()
+  shapes.highlight = [mistake.from, mistake.to]
+  shapes.danger = [mistake.to]
+  shapes.marks = [{ square: mistake.to, quality: 'miss' }]
+  return shapes
 }

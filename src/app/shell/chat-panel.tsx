@@ -33,7 +33,7 @@ export function ChatPanel({ overlay, onClose, children }: ChatPanelProps) {
       tabIndex={-1}
       aria-label="Chat with Sage"
       className={cn(
-        'flex min-h-0 flex-col bg-card outline-none',
+        'flex min-h-0 min-w-0 flex-col overflow-hidden bg-card outline-none',
         overlay
           ? 'fixed inset-y-0 right-0 z-60 w-[min(400px,100vw)] shadow-[0_20px_60px_rgba(0,0,0,0.25)]'
           : 'border-l',

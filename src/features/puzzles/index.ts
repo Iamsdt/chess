@@ -90,6 +90,7 @@ export {
 
 /* Solving a puzzle: S16's lessons and S27's shared challenges replay the same lines. */
 export {
+  clearMistake,
   createSolve,
   expectedMove,
   isPromotionMove,

@@ -77,7 +77,10 @@ function ShellFrame({ screen, viewport, chat, children }: ShellFrameProps) {
 
   return (
     <>
-      <div className="grid h-dvh" style={{ gridTemplateColumns }}>
+      <div
+        className="grid h-dvh grid-rows-[minmax(0,1fr)] overflow-hidden"
+        style={{ gridTemplateColumns }}
+      >
         {viewport.isMobile ? null : <Sidebar screen={screen} compact={viewport.isCompactNav} />}
         <main className={cn('relative min-h-0 overflow-auto', viewport.isMobile && 'pb-[76px]')}>
           {children}

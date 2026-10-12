@@ -60,7 +60,10 @@ function ComposerToggle({
           size="sm"
           aria-pressed={pressed}
           disabled={disabled}
-          className={cn(pressed ? 'text-primary' : 'text-muted-foreground')}
+          className={cn(
+            'h-7 gap-1 px-2 text-xs',
+            pressed ? 'text-primary' : 'text-muted-foreground',
+          )}
           onClick={() => {
             onPressedChange(!pressed)
           }}
@@ -165,39 +168,41 @@ export function CoachComposer({
           onKeyDown={onKeyDown}
         />
 
-        <div className="flex items-center gap-0.5 p-1.5">
-          <ComposerToggle
-            pressed={spoilerGuard}
-            onPressedChange={onSpoilerGuardChange}
-            label="No spoilers"
-            hint="Sage nudges but never reveals a puzzle answer"
-            icon={EyeOff}
-            disabled={disabled}
-          />
-          <ComposerToggle
-            pressed={allowEngineLines}
-            onPressedChange={onAllowEngineLinesChange}
-            label="Engine"
-            hint="Let Sage read the engine's lines for this position"
-            icon={Cpu}
-            disabled={disabled}
-          />
-          {onBlunderWarningChange === undefined ? null : (
+        <div className="flex items-center gap-1 p-1.5">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-0.5">
             <ComposerToggle
-              pressed={blunderWarning}
-              onPressedChange={onBlunderWarningChange}
-              label="Blunder warning"
-              hint="In a live game, Sage speaks up only if a move would hang material"
-              icon={ShieldAlert}
+              pressed={spoilerGuard}
+              onPressedChange={onSpoilerGuardChange}
+              label="No spoilers"
+              hint="Sage nudges but never reveals a puzzle answer"
+              icon={EyeOff}
               disabled={disabled}
             />
-          )}
+            <ComposerToggle
+              pressed={allowEngineLines}
+              onPressedChange={onAllowEngineLinesChange}
+              label="Engine"
+              hint="Let Sage read the engine's lines for this position"
+              icon={Cpu}
+              disabled={disabled}
+            />
+            {onBlunderWarningChange === undefined ? null : (
+              <ComposerToggle
+                pressed={blunderWarning}
+                onPressedChange={onBlunderWarningChange}
+                label="Blunders"
+                hint="In a live game, Sage speaks up only if a move would hang material"
+                icon={ShieldAlert}
+                disabled={disabled}
+              />
+            )}
+          </div>
           {busy ? (
             <Button
               type="button"
               size="icon-sm"
               variant="outline"
-              className="ml-auto rounded-full"
+              className="shrink-0 rounded-full"
               aria-label="Stop"
               onClick={onCancel}
             >
@@ -207,7 +212,7 @@ export function CoachComposer({
             <Button
               type="submit"
               size="icon-sm"
-              className="ml-auto rounded-full"
+              className="shrink-0 rounded-full"
               aria-label="Send"
               disabled={disabled || draft.trim() === ''}
             >
@@ -217,16 +222,7 @@ export function CoachComposer({
         </div>
       </form>
 
-      {onBlunderWarningChange === undefined ? null : (
-        <p
-          className="mt-2 text-center text-[11px] text-muted-foreground"
-          data-slot="coach-blunder-help"
-        >
-          Blunder warning is {blunderWarning ? 'on' : 'off'}: Sage stays quiet in a game unless a
-          move would hang material.
-        </p>
-      )}
-      <p className="mt-2 text-center text-[11px] text-muted-foreground">
+      <p className="mt-1.5 text-center text-[11px] text-muted-foreground">
         Enter to send · your key stays encrypted in this browser
       </p>
     </div>

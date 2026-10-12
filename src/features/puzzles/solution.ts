@@ -59,6 +59,20 @@ export interface SolveState {
   readonly lastMove: { readonly from: Square; readonly to: Square } | null
   /** The side the user is playing, taken from the puzzle's FEN. */
   readonly userColor: Color
+  /**
+   * The last wrong move, played out so the board can show it before taking it back.
+   * `game` above never includes it; a right move clears it.
+   */
+  readonly mistake: WrongMove | null
+}
+
+/** A legal move that was not the idea: the position it led to and the squares it used. */
+export interface WrongMove {
+  readonly game: ChessGame
+  readonly from: Square
+  readonly to: Square
+  /** The move in SAN for the verdict line, or its UCI if it would not convert. */
+  readonly san: string
 }
 
 /** A move as the board hands it over. */
@@ -90,6 +104,7 @@ export function createSolve(puzzle: Puzzle): Result<SolveState> {
     hintCount: 0,
     lastMove: null,
     userColor: game.value.turn,
+    mistake: null,
   })
 }
 
@@ -125,12 +140,18 @@ function uciOf(move: AttemptedMove): Uci {
   return toUci(`${move.from}${move.to}${move.promotion ?? ''}`)
 }
 
+function sanOf(game: ChessGame, move: Uci): string {
+  const san = uciToSan(game.fen, move)
+  return san.ok ? san.value : move
+}
+
 /**
  * Judge one move by the user and, when it is right, play it.
  *
- * A wrong move leaves the position exactly as it was. That is a deliberate kindness: the
- * user keeps the board they were thinking about instead of having to undo a move they
- * already regret, and the session decides separately whether a miss ends the attempt.
+ * A wrong move leaves the position exactly as it was, but is kept as `mistake` so the
+ * board can play it out and then take it back: the user sees the move they chose, then
+ * gets the board they were thinking about. The session decides separately whether a miss
+ * ends the attempt.
  */
 export function playUserMove(
   state: SolveState,
@@ -148,10 +169,16 @@ export function playUserMove(
     return { state: { ...state, played: [...state.played, attempted] }, verdict: 'missed' }
   }
 
+  const squares = { from: toSquare(attempted.slice(0, 2)), to: toSquare(attempted.slice(2, 4)) }
   const isMate = played.value.status.kind === 'checkmate'
   if (attempted !== expected && !isMate) {
     return {
-      state: { ...state, played: [...state.played, attempted], wrongMoves: state.wrongMoves + 1 },
+      state: {
+        ...state,
+        played: [...state.played, attempted],
+        wrongMoves: state.wrongMoves + 1,
+        mistake: { game: played.value, ...squares, san: sanOf(state.game, attempted) },
+      },
       verdict: 'missed',
     }
   }
@@ -167,7 +194,8 @@ export function playUserMove(
       cursor,
       status: finished ? 'solved' : 'replying',
       played: [...state.played, attempted],
-      lastMove: { from: toSquare(attempted.slice(0, 2)), to: toSquare(attempted.slice(2, 4)) },
+      lastMove: squares,
+      mistake: null,
     },
     verdict: finished ? 'solved' : 'correct',
   }
@@ -198,6 +226,11 @@ export function playOpponentReply(state: SolveState): SolveState {
     status: cursor >= state.puzzle.solution.length ? 'solved' : 'solving',
     lastMove: { from: toSquare(reply.slice(0, 2)), to: toSquare(reply.slice(2, 4)) },
   }
+}
+
+/** Take the wrong move back off the board, back to the position the user was solving. */
+export function clearMistake(state: SolveState): SolveState {
+  return state.mistake === null ? state : { ...state, mistake: null }
 }
 
 /** Give up on this one: the state stops accepting moves and the line may be shown. */

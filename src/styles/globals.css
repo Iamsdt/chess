@@ -233,6 +233,12 @@
   body {
     @apply bg-background font-sans text-foreground antialiased;
   }
+  /* Thin, theme-coloured scrollbars: the default ones read as four heavy rails when the
+     page, the thread and the composer each scroll. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
   h1,
   h2,
   h3 {

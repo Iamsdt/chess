@@ -1,7 +1,7 @@
 import { ArrowLeft, Eye, SkipForward, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 
-import { Badge, Button, EmptyState, PageHeader } from '@/design'
+import { Button, cn, EmptyState, PageHeader } from '@/design'
 
 import { HintLadder } from '../components/hint-ladder'
 import { ProgressDots } from '../components/progress-dots'
@@ -129,104 +129,89 @@ export function PuzzleSolver({ navigate }: PuzzleSolverProps) {
     runner.state.config.goal !== null &&
     runner.state.results.length + 1 >= runner.state.config.goal
 
-  return (
-    <Frame navigate={navigate} dots={runner.dots}>
-      <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_340px]">
-        <section className="flex justify-center" aria-label="Puzzle board">
-          <div className="board-size w-full max-w-[min(100%,calc(100dvh-220px))] space-y-2 sm:space-y-2.5 lg:max-w-[min(100%,70vh)]">
-            <div className="flex items-center gap-3">
-              <div className="min-w-0 leading-tight">
-                <p className="text-sm font-semibold">
-                  {solve === null
-                    ? 'Loading'
-                    : `${solve.userColor === 'white' ? 'White' : 'Black'} to play`}
-                </p>
-                <p className="truncate text-xs text-muted-foreground">{puzzle?.prompt ?? ''}</p>
-              </div>
-            </div>
-            <SolverBoard
-              solve={solve}
-              focus={runner.hint?.focus ?? []}
-              onMove={runner.play}
-              label="Puzzle board"
-              announcement={announcementFor(runner.verdict, settled)}
-            />
-          </div>
-        </section>
-
-        <aside
-          className="card flex min-h-0 flex-col overflow-hidden lg:max-h-[calc(100dvh-56px-48px)]"
-          aria-label="Puzzle panel"
-        >
-          <div className="border-b px-4 py-3 sm:px-5 sm:py-4">
-            <p className="label">Your task</p>
-            <h2 className="mt-0.5 font-display text-lg leading-snug font-bold sm:text-xl">
-              {puzzle?.title ?? 'Find the move'}
-            </h2>
-            <div className="mt-2.5 flex flex-wrap items-center gap-2 text-xs sm:mt-3">
-              {puzzle === null ? null : <PuzzleAttribution puzzle={puzzle} revealed={showMeta} />}
-              {showMeta || puzzle === null ? null : (
-                <button
-                  type="button"
-                  className="ml-auto font-medium text-primary hover:underline"
-                  onClick={() => {
-                    setRevealed(true)
-                  }}
-                >
-                  Reveal
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="min-h-0 flex-1 space-y-4 overflow-auto p-4 sm:space-y-5 sm:p-5">
-            <HintLadder
-              used={runner.hintUsed}
-              hint={runner.hint}
-              onTake={runner.takeHint}
-              disabled={settled}
-            />
-            <section aria-labelledby="after-move-heading">
-              <h3 id="after-move-heading" className="text-sm font-semibold">
-                After your move
-              </h3>
-              <div className="mt-2.5">
-                {puzzle === null ? null : (
-                  <SolverFeedback
-                    puzzle={puzzle}
-                    verdict={runner.verdict}
-                    solved={solve?.status === 'solved'}
-                    ratingChange={runner.ratingChange}
-                    settled={settled}
-                    onNext={() => {
-                      setRevealed(false)
-                      runner.next()
-                    }}
-                    onRetry={runner.retry}
-                    lastInSet={lastInSet}
-                  />
-                )}
-              </div>
-            </section>
-          </div>
-
-          <div className="space-y-2 border-t p-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full text-muted-foreground"
-              onClick={runner.skip}
-              disabled={settled}
-            >
-              <SkipForward aria-hidden className="size-4" />
-              Skip this one
-            </Button>
-            <p className="text-center text-[11px] text-muted-foreground">
-              A skipped puzzle counts as a miss and comes back another day.
-            </p>
-          </div>
-        </aside>
+  const heading = (
+    <div className="min-w-0 flex-1 leading-tight">
+      <h1 className="truncate font-display text-lg font-bold sm:text-xl">
+        {puzzle?.title ?? 'Find the move'}
+      </h1>
+      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5">
+          <span
+            aria-hidden
+            className={cn(
+              'inline-block size-2.5 rounded-full ring-1 ring-border',
+              solve?.userColor === 'black' ? 'bg-foreground' : 'bg-background',
+            )}
+          />
+          {solve === null
+            ? 'Loading'
+            : `${solve.userColor === 'white' ? 'White' : 'Black'} to play`}
+        </span>
+        {puzzle === null ? null : showMeta ? (
+          <PuzzleAttribution puzzle={puzzle} revealed />
+        ) : (
+          <button
+            type="button"
+            className="font-medium text-primary hover:underline"
+            title="Theme and rating are hidden until you have played your move."
+            onClick={() => {
+              setRevealed(true)
+            }}
+          >
+            Reveal theme
+          </button>
+        )}
       </div>
+    </div>
+  )
+
+  return (
+    <Frame navigate={navigate} dots={runner.dots} heading={heading}>
+      <section
+        className="mx-auto w-full max-w-[min(100%,calc(100dvh-210px))] min-w-[min(100%,340px)] space-y-2"
+        aria-label="Puzzle"
+      >
+        <SolverBoard
+          solve={solve}
+          focus={runner.hint?.focus ?? []}
+          onMove={runner.play}
+          label="Puzzle board"
+          announcement={announcementFor(runner.verdict, settled)}
+        />
+
+        {puzzle === null ? null : (
+          <SolverFeedback
+            puzzle={puzzle}
+            verdict={runner.verdict}
+            solved={solve?.status === 'solved'}
+            ratingChange={runner.ratingChange}
+            settled={settled}
+            wrongMove={solve?.mistake?.san ?? null}
+            hint={runner.hint}
+            onNext={() => {
+              setRevealed(false)
+              runner.next()
+            }}
+            onRetry={runner.retry}
+            lastInSet={lastInSet}
+          />
+        )}
+
+        <div className="flex flex-wrap items-center gap-2">
+          <HintLadder used={runner.hintUsed} onTake={runner.takeHint} disabled={settled} />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="ml-auto text-muted-foreground"
+            onClick={runner.skip}
+            disabled={settled}
+            title="A skipped puzzle counts as a miss and comes back another day."
+          >
+            <SkipForward aria-hidden className="size-4" />
+            Skip
+          </Button>
+        </div>
+      </section>
     </Frame>
   )
 }
@@ -235,8 +220,8 @@ function announcementFor(verdict: string, settled: boolean): string | undefined 
   if (verdict === 'solved') return "That's the idea. The puzzle is solved."
   if (verdict === 'missed') {
     return settled
-      ? 'That was not the idea this puzzle is about. Move on when you are ready.'
-      : 'That is not the idea here. The position is unchanged; look again.'
+      ? 'That was the wrong move. Move on when you are ready.'
+      : 'That is the wrong move. Press Look again to take it back.'
   }
   if (verdict === 'correct') return 'Right so far. Your opponent is about to answer.'
   return undefined
@@ -245,14 +230,17 @@ function announcementFor(verdict: string, settled: boolean): string | undefined 
 function Frame({
   navigate,
   dots,
+  heading,
   children,
 }: {
   readonly navigate: NavigateTo
   readonly dots?: readonly ('solved' | 'missed' | 'current' | 'todo')[]
+  /** Replaces the page title while a puzzle is on the board. */
+  readonly heading?: ReactNode
   readonly children: ReactNode
 }) {
   return (
-    <div className="mx-auto w-full max-w-[1200px] p-2 sm:p-4 lg:p-6">
+    <div className="mx-auto w-full max-w-[1200px] p-2 sm:px-4 sm:py-3 lg:px-6">
       <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         <Button
           variant="ghost"
@@ -264,13 +252,10 @@ function Frame({
           <ArrowLeft aria-hidden className="size-4" />
           <span className="max-sm:hidden">Puzzles</span>
         </Button>
-        <PageHeader className="flex-1" title="Puzzle" />
+        {heading ?? <PageHeader className="flex-1" title="Puzzle" />}
         {dots === undefined ? null : <ProgressDots dots={dots} />}
-        <Badge variant="muted" className="max-md:hidden">
-          No spoilers · hints nudge, they do not tell
-        </Badge>
       </div>
-      <div className="mt-3 sm:mt-5">{children}</div>
+      <div className="mt-3">{children}</div>
     </div>
   )
 }
