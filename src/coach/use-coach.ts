@@ -75,6 +75,8 @@ export function applyCoachDelta(message: CoachMessage, delta: CoachDelta): Coach
       return { ...message, quickReplies: [...delta.replies] }
     case 'mode':
       return { ...message, mode: delta.mode }
+    case 'decision':
+      return { ...message, decision: delta.decision }
     case 'usage':
       return {
         ...message,
@@ -145,6 +147,7 @@ function reducer(state: CoachState, action: CoachAction): CoachState {
           status: 'pending',
           attachments: [],
           quickReplies: [],
+          decision: undefined,
           error: undefined,
         })),
         activeId: action.id,

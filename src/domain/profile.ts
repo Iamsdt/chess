@@ -124,7 +124,13 @@ export type SoundSettings = z.infer<typeof SoundSettingsSchema>
  */
 export const CoachSettingsSchema = z.object({
   provider: CoachProviderSchema.default('gemini'),
+  /** Free text on purpose: any model id the provider accepts works. */
   model: z.string().min(1).default('gemini-2.5-flash'),
+  /**
+   * Overrides the preset's endpoint. Required in practice for `custom`; used to point
+   * `ollama` or `lmstudio` at another port. Not a secret, so it may sit in backups.
+   */
+  baseUrl: z.url().optional(),
   tone: CoachToneSchema.default('friendly'),
   /** On puzzles and lessons Sage nudges and never tells. */
   spoilerGuard: z.boolean().default(true),
@@ -153,6 +159,19 @@ export const PlaySettingsSchema = z.object({
 })
 export type PlaySettings = z.infer<typeof PlaySettingsSchema>
 
+/**
+ * The on-device decision model (src/decision). Off by default: turning it on downloads the
+ * encoder (~23 MB), so it is always the user's choice.
+ */
+export const DecisionSettingsSchema = z.object({
+  enabled: z.boolean().default(false),
+  /** A fine-tuned model's manifest. Absent means the built-in encoder with prototype heads. */
+  manifestUrl: z.url().optional(),
+  /** Keep a local log of decisions (and corrections) so they can be exported as training data. */
+  logDecisions: z.boolean().default(true),
+})
+export type DecisionSettings = z.infer<typeof DecisionSettingsSchema>
+
 export const SettingsSchema = z.object({
   /** Bumped when a backup written by an older build needs migrating on import. */
   version: z.number().int().min(1).default(1),
@@ -164,6 +183,8 @@ export const SettingsSchema = z.object({
   sound: SoundSettingsSchema,
   coach: CoachSettingsSchema,
   play: PlaySettingsSchema,
+  /** Optional in old backups: a settings row without it parses to the defaults. */
+  decision: DecisionSettingsSchema.prefault({}),
   updatedAt: TimestampSchema,
 })
 export type Settings = z.infer<typeof SettingsSchema>

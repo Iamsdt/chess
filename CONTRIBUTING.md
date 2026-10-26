@@ -66,6 +66,7 @@ src/chess/     rules, PGN, ECO, move classification
 src/engine/    Stockfish worker pool, UCI
 src/board/     the interactive board
 src/coach/     the Sage chat panel and its providers
+src/decision/  the on-device decision model: encoder worker, heads, manifest, training export
 src/content/   content pack schema, loader, registry
 src/jobs/      durable job queue and scheduler
 src/features/  one folder per feature (play, puzzles, review, …)

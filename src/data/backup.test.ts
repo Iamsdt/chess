@@ -16,6 +16,7 @@ import {
 } from './backup'
 import { createDb, type ChessKingDb } from './db'
 import { VAULT_KV_PREFIX } from './kv-keys'
+import { CURRENT_DB_VERSION } from './migrations'
 import { createRepositories } from './repositories'
 import { seedDatabase } from './seed'
 
@@ -63,7 +64,7 @@ describe('backup export', () => {
 
     expect(exported.value.file.format).toBe(BACKUP_FORMAT)
     expect(exported.value.file.formatVersion).toBe(BACKUP_FORMAT_VERSION)
-    expect(exported.value.file.dbVersion).toBe(2)
+    expect(exported.value.file.dbVersion).toBe(CURRENT_DB_VERSION)
     expect(exported.value.report.counts.games).toBe(3)
     expect(exported.value.report.counts.moves).toBe(12)
     expect(exported.value.report.hasSettings).toBe(true)

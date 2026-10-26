@@ -12,6 +12,7 @@ describe('isPrecached', () => {
     'pieces/cburnett/wK.svg',
     'quiz/band-1.csv',
     'manifest.webmanifest',
+    'assets/decision.worker-abc.js',
   ])('keeps %s', (path) => {
     expect(isPrecached(path)).toBe(true)
   })
@@ -23,6 +24,9 @@ describe('isPrecached', () => {
     'quiz-old/a.csv',
     '.vite/manifest.json',
     '_headers',
+    // The decision model's onnxruntime-web runtime is fetched on demand, never installed.
+    'assets/ort-wasm-simd-threaded-Dk3s9.wasm',
+    'assets/ort-wasm-simd-threaded-Dk3s9.mjs',
   ])('skips %s', (path) => {
     expect(isPrecached(path)).toBe(false)
   })
@@ -88,5 +92,23 @@ describe('hashString', () => {
   it('is stable and discriminating', () => {
     expect(hashString('a')).toBe(hashString('a'))
     expect(hashString('a')).not.toBe(hashString('b'))
+  })
+})
+
+describe('the decision model runtime', () => {
+  it('stays out of the install even when the Vite manifest names it', () => {
+    const files = [
+      file('index.html'),
+      file('assets/index-a.js'),
+      file('assets/ort-wasm-simd-threaded-x.wasm'),
+      file('assets/ort-wasm-simd-threaded-x.mjs'),
+    ]
+    const manifest = createPrecacheManifest(files, {
+      'src/decision/decision.worker.ts': {
+        file: 'assets/index-a.js',
+        assets: ['assets/ort-wasm-simd-threaded-x.wasm', 'assets/ort-wasm-simd-threaded-x.mjs'],
+      },
+    })
+    expect(manifest.entries.map((entry) => entry.url)).toEqual(['assets/index-a.js', 'index.html'])
   })
 })

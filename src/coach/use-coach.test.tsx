@@ -1,10 +1,10 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import { makeCoachContext } from '@/domain'
+import { makeCoachContext, makeCoachMessage } from '@/domain'
 
 import { CoachError, type CoachDelta, type CoachPort } from './port'
-import { useCoach } from './use-coach'
+import { applyCoachDelta, useCoach } from './use-coach'
 
 const CONTEXT = makeCoachContext()
 
@@ -185,5 +185,22 @@ describe('useCoach', () => {
     })
     expect(result.current.threadId).toBe(firstThread)
     expect(result.current.messages[0]?.text).toBe('first question')
+  })
+})
+
+describe('applyCoachDelta · decision', () => {
+  it('stores the compact decision on the message without touching the text', () => {
+    const message = makeCoachMessage({ role: 'sage', text: 'so far', status: 'streaming' })
+    const decision = {
+      logId: 'dec_1',
+      modelId: 'minilm-l6-prototype@1',
+      latencyMs: 14,
+      mode: { label: 'grandmaster' as const, prob: 0.87 },
+      flags: { needs_engine: 0.9 },
+    }
+    const next = applyCoachDelta(message, { kind: 'decision', decision })
+    expect(next.decision).toEqual(decision)
+    expect(next.text).toBe('so far')
+    expect(next.status).toBe('streaming')
   })
 })

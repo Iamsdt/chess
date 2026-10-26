@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 import {
   CoachAttachmentSchema,
+  CoachDecisionSchema,
   CoachModeSchema,
   CoachProviderSchema,
   CoachUsageSchema,
@@ -35,6 +36,8 @@ export const CoachDeltaSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('attachment'), attachment: CoachAttachmentSchema }),
   /** The mode this answer is given in (coach-agent.md §3), shown on the bubble. */
   z.object({ kind: z.literal('mode'), mode: CoachModeSchema }),
+  /** What the on-device decision model decided about the question, shown as a chip. */
+  z.object({ kind: z.literal('decision'), decision: CoachDecisionSchema }),
   /** Replace the tappable follow-ups under the bubble. */
   z.object({ kind: z.literal('quickReplies'), replies: z.array(z.string().min(1)).max(4) }),
   /** Final accounting. Optional: a port that cannot count tokens simply omits it. */

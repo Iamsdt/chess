@@ -161,8 +161,9 @@ describe('SettingsScreen', () => {
     await screen.findByRole('heading', { level: 1, name: 'Settings' })
 
     const keyInput = screen.getByLabelText('API key')
-    expect(keyInput).toBeDisabled()
+    expect(keyInput).toBeEnabled()
     expect(keyInput).toHaveValue('')
+    expect(screen.queryByText(/Key stored/)).not.toBeInTheDocument()
     expect(screen.getByText('No key yet')).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('radio', { name: /Blunt GM/i }))
@@ -173,9 +174,43 @@ describe('SettingsScreen', () => {
       expect(saved?.coach.tone).toBe('blunt')
       expect(saved?.coach.spoilerGuard).toBe(false)
       expect(saved?.coach.provider).toBe('openai')
-      expect(saved?.coach.model).toBe('gpt-4.1-mini')
+      expect(saved?.coach.model).toBe('gpt-5-mini')
     })
     expect(screen.getByRole('progressbar', { name: 'Monthly token usage' })).toBeInTheDocument()
+  })
+
+  it('stores a key through the vault, shows only its tail and never the key', async () => {
+    renderSettingsScreen()
+    await screen.findByRole('heading', { level: 1, name: 'Settings' })
+
+    fireEvent.change(screen.getByLabelText('API key'), {
+      target: { value: 'AIza-test-key-ABCDEFGH1234' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Save key' }))
+
+    expect(await screen.findByText(/Key stored · …1234/)).toBeInTheDocument()
+    expect(screen.getByLabelText('API key')).toHaveValue('')
+    expect(document.body.textContent).not.toContain('ABCDEFGH')
+    await waitFor(async () => {
+      expect((await settingsRepo.peek())?.coach.hasKey).toBe(true)
+    })
+    expect(screen.getByText('Connected')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Remove key' }))
+    await waitFor(async () => {
+      expect((await settingsRepo.peek())?.coach.hasKey).toBe(false)
+    })
+  })
+
+  it('offers a server address and a CORS hint for Ollama, with no key field', async () => {
+    renderSettingsScreen()
+    await screen.findByRole('heading', { level: 1, name: 'Settings' })
+
+    fireEvent.change(screen.getByLabelText('Provider'), { target: { value: 'ollama' } })
+    expect(await screen.findByLabelText('Server address')).toBeInTheDocument()
+    expect(screen.getByText(/OLLAMA_ORIGINS/)).toBeInTheDocument()
+    expect(screen.queryByLabelText('API key')).not.toBeInTheDocument()
+    expect(screen.getByText(/Straight from your browser to Ollama/)).toBeInTheDocument()
   })
 
   it('persists sound settings', async () => {

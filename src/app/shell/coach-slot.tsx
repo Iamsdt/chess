@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 
-import { CoachPanel, type CoachContextBase, type CoachSeedScreen } from '@/coach'
+import { CoachPanel, useCoachPort, type CoachContextBase, type CoachSeedScreen } from '@/coach'
+import { useSettings } from '@/data'
 
 import { useChatPanel } from './use-chat-panel'
 
@@ -30,7 +31,7 @@ const SEED_BY_SCREEN: Readonly<Record<string, CoachSeedScreen>> = {
   'opening-drill': 'analysis',
 }
 
-/** Placeholder until S21 sizes the context against the chosen provider's real window. */
+/** Placeholder until S21b sizes the context against the chosen provider's real window. */
 const DEFAULT_TOKEN_BUDGET = 8000
 
 export interface CoachSlotProps {
@@ -46,6 +47,8 @@ export interface CoachSlotProps {
  */
 export function CoachSlot({ screen }: CoachSlotProps) {
   const chat = useChatPanel()
+  const { coach, decision } = useSettings()
+  const { port, live } = useCoachPort()
   const hostRef = useRef<HTMLDivElement>(null)
   const { close, registerComposer } = chat
 
@@ -64,14 +67,14 @@ export function CoachSlot({ screen }: CoachSlotProps) {
   const context = useMemo<CoachContextBase>(
     () => ({
       screen: screen.id,
-      tone: 'friendly',
+      tone: coach.tone,
       engineLines: [],
       recentGames: [],
       weakThemes: [],
       // A placeholder ceiling until S21's builder owns the budget for real.
       tokenBudget: DEFAULT_TOKEN_BUDGET,
     }),
-    [screen.id],
+    [screen.id, coach.tone],
   )
 
   const seedScreen = SEED_BY_SCREEN[screen.id]
@@ -82,8 +85,13 @@ export function CoachSlot({ screen }: CoachSlotProps) {
           thread history and new chat, and its status line reflects real state rather than a
           fixed string. The shell frame draws no header of its own. */}
       <CoachPanel
+        port={port}
+        demo={!live}
+        defaultSpoilerGuard={coach.spoilerGuard}
+        defaultAllowEngineLines={coach.allowEngineLines}
         context={context}
         settingsHref="/settings#coach"
+        {...(decision.enabled ? {} : { decisionHintHref: '/settings#decision' })}
         {...(seedScreen ? { seedScreen } : {})}
         {...(screen.chat.context ? { contextSummary: screen.chat.context } : {})}
         {...(screen.chat.attach ? { attachmentLabel: screen.chat.attach } : {})}

@@ -184,7 +184,25 @@ export const COACH_ROLES = ['system', 'user', 'sage'] as const
 export const CoachRoleSchema = z.enum(COACH_ROLES)
 export type CoachRole = z.infer<typeof CoachRoleSchema>
 
-export const COACH_PROVIDERS = ['gemini', 'openai', 'anthropic'] as const
+/**
+ * Why a long list that ends in `custom`: Sage runs on any model the user can reach, so a
+ * provider id is a preset (base URL, key hint, suggested models) rather than a vendor lock.
+ * The first three stay first so settings written before S21 still parse and keep their meaning;
+ * `custom` is any OpenAI-compatible endpoint the user types in.
+ */
+export const COACH_PROVIDERS = [
+  'gemini',
+  'openai',
+  'anthropic',
+  'openrouter',
+  'groq',
+  'deepseek',
+  'mistral',
+  'xai',
+  'ollama',
+  'lmstudio',
+  'custom',
+] as const
 export const CoachProviderSchema = z.enum(COACH_PROVIDERS)
 export type CoachProvider = z.infer<typeof CoachProviderSchema>
 

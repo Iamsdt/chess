@@ -30,6 +30,7 @@ import { defaultSettings, repositories } from './repositories'
 import { estimateStorage, type StorageEstimateInfo } from './storage'
 
 import type { KvKey } from './kv-keys'
+import type { DecisionCounts } from './repositories/decisions'
 import type { GameFilter, GamePage } from './repositories/games'
 import type { MistakeFilter } from './repositories/mistakes'
 import type { PuzzleSelection, PuzzleStats } from './repositories/puzzles'
@@ -53,6 +54,11 @@ const MAX_TIMESTAMP = Number.MAX_SAFE_INTEGER as Timestamp
  * it in `useMemo`; otherwise every render is a new object and the subscription
  * restarts on each one.
  */
+
+/** How many decisions are logged and how many the user corrected; `undefined` while loading. */
+export function useDecisionCounts(): DecisionCounts | undefined {
+  return useLiveQuery(() => repositories.decisions.count(), [])
+}
 
 export function useGames(filter?: GameFilter, page?: GamePage): GameRow[] | undefined {
   return useLiveQuery(() => repositories.games.list(filter, page), [filter, page])

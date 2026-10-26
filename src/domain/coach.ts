@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import { ArrowSchema } from './board'
+import { CoachDecisionSchema } from './decision'
 import { EngineLineSchema } from './engine'
 import {
   CoachMessageStatusSchema,
@@ -321,6 +322,8 @@ export const CoachMessageSchema = z.object({
   provider: CoachProviderSchema.optional(),
   model: z.string().optional(),
   usage: CoachUsageSchema.optional(),
+  /** What the on-device decision model said about this question, when it ran. */
+  decision: CoachDecisionSchema.optional(),
   /** Readable failure text for the retry state; never a raw provider dump. */
   error: z.string().optional(),
 })
@@ -369,6 +372,8 @@ export const CoachContextSchema = z.object({
       sparringRating: RatingSchema,
     })
     .optional(),
+  /** What the on-device decision model decided about the latest question, when it ran. */
+  decision: CoachDecisionSchema.optional(),
   /** Hard ceiling the builder must stay under, in tokens. */
   tokenBudget: z.number().int().min(1),
 })

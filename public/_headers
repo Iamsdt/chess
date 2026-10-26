@@ -26,7 +26,9 @@
 #   connect-src                 EXACT list of external APIs the code calls: lichess.org (game import,
 #                               src/features/library/providers.ts), explorer.lichess.ovh (masters
 #                               explorer, src/features/analysis/explorer.ts), api.chess.com (game
-#                               import). Deliberately NOT `https:`: the bring-your-own-key coach
+#                               import), and huggingface.co (+ its CDN hosts *.huggingface.co and
+#                               *.hf.co), where the on-device decision model's ~23 MB encoder is
+#                               downloaded from (src/decision). Deliberately NOT `https:`: the bring-your-own-key coach
 #                               (S21) will need user-chosen endpoints, and this line is widened in
 #                               the PR that ships it, so the tight policy stands until then.
 #   frame-ancestors 'none'      nobody may embed the app (clickjacking). Also X-Frame-Options for
@@ -34,7 +36,7 @@
 /*
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Embedder-Policy: require-corp
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-IJl/6T5XzN9SHAJnyA0O2Cuh7z1Ab2YzbOM5i8rw4NA='; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; manifest-src 'self'; connect-src 'self' https://lichess.org https://explorer.lichess.ovh https://api.chess.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-IJl/6T5XzN9SHAJnyA0O2Cuh7z1Ab2YzbOM5i8rw4NA='; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; manifest-src 'self'; connect-src 'self' https://lichess.org https://explorer.lichess.ovh https://api.chess.com https://huggingface.co https://*.huggingface.co https://*.hf.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin

@@ -67,7 +67,7 @@ describe('v1 to v2', () => {
     await v1.table('games').put(legacyGameRow('legacy-2'))
     v1.close()
 
-    const v2 = createDb(name)
+    const v2 = createDb(name, 2)
     open = v2
     await v2.open()
     expect(v2.verno).toBe(2)
@@ -92,7 +92,7 @@ describe('v1 to v2', () => {
       .put(makeGameMeta({ id: toGameId('complete'), mistakeCount: 3, tags: ['sharp'] }))
     v1.close()
 
-    const v2 = createDb(name)
+    const v2 = createDb(name, 2)
     open = v2
     const upgraded = await v2.games.get(toGameId('complete'))
     expect(upgraded?.mistakeCount).toBe(3)
@@ -112,7 +112,7 @@ describe('v1 to v2', () => {
       .put(makeGameMeta({ id: toGameId('g1'), source: 'lichess', externalId: 'x' }))
     v1.close()
 
-    const v2 = createDb(name)
+    const v2 = createDb(name, 2)
     open = v2
     const found = await v2.games.where('[source+externalId]').equals(['lichess', 'x']).first()
     expect(found?.id).toBe('g1')
@@ -126,8 +126,38 @@ describe('v1 to v2', () => {
     await v1.table('kv').put({ key: 'kept', value: { n: 1 }, updatedAt: 1 })
     v1.close()
 
-    const v2 = createDb(name)
+    const v2 = createDb(name, 2)
     open = v2
     expect(await v2.kv.get('kept')).toEqual({ key: 'kept', value: { n: 1 }, updatedAt: 1 })
+  })
+})
+
+describe('v2 to v3', () => {
+  it('adds the decisions table and keeps every earlier table intact', async () => {
+    const name = nextName()
+
+    const v2 = createDb(name, 2)
+    await v2.open()
+    expect(v2.verno).toBe(2)
+    expect(v2.tables.map((table) => table.name)).not.toContain('decisions')
+    await v2.table('kv').put({ key: 'kept', value: 1, updatedAt: 1 })
+    await v2.table('games').put(makeGameMeta({ id: toGameId('g2') }))
+    v2.close()
+
+    const v3 = createDb(name)
+    open = v3
+    await v3.open()
+    expect(v3.verno).toBe(3)
+    expect(await v3.decisions.count()).toBe(0)
+    expect(await v3.kv.get('kept')).toEqual({ key: 'kept', value: 1, updatedAt: 1 })
+    expect(await v3.games.get(toGameId('g2'))).toBeDefined()
+  })
+
+  it('indexes decisions by createdAt, modelId and corrected', async () => {
+    const database = createDb(nextName())
+    open = database
+    await database.open()
+    const indexes = database.decisions.schema.idxByName
+    expect(Object.keys(indexes).sort()).toEqual(['corrected', 'createdAt', 'modelId'])
   })
 })

@@ -10,6 +10,7 @@ import { formatMessageTime } from '../time'
 import { AttachmentCard } from './attachment-card'
 import { AttachmentView } from './attachment-view'
 import { CoachMarkdown } from './coach-markdown'
+import { DecisionChip } from './decision-chip'
 import { ToolChips } from './tool-chips'
 
 import type { ReactNode } from 'react'
@@ -127,6 +128,12 @@ export function MessageBubble({
             ))}
           </div>
         ) : null}
+
+        {message.decision === undefined ? null : (
+          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+            <DecisionChip decision={message.decision} />
+          </div>
+        )}
 
         {message.status === 'complete' || failed ? (
           <div className="msg-time">

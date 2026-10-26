@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { build as viteBuild, defineConfig, type Plugin } from 'vite'
+import { build as viteBuild, defaultClientConditions, defineConfig, type Plugin } from 'vite'
 
 import { createPrecacheManifest, type BuildFile, type ViteManifestChunk } from './src/pwa/precache'
 
@@ -70,11 +70,19 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), serviceWorkerPlugin()],
   resolve: {
     alias: { '@': path.resolve(rootDir, 'src') },
+    // onnxruntime-web's default entry inlines its 27 MB wasm as a build asset. The "extern"
+    // entry expects the wasm to be supplied by the host, and the decision worker supplies the
+    // CPU build itself (src/decision/decision.worker.ts), so only that one 14 MB file ships.
+    conditions: [...defaultClientConditions, 'onnxruntime-web-use-extern-wasm'],
   },
   // Cross-origin isolation, which `SharedArrayBuffer` — and so multi-threaded Stockfish
   // — requires. Preview needs it too, or the e2e run silently tests the fallback engine.
   server: { port: 5173, headers: crossOriginIsolation },
   preview: { headers: crossOriginIsolation },
+  // transformers.js ships its own browser build and loads onnxruntime-web at run time; the dev
+  // server's pre-bundler would split the two apart and break the worker.
+  optimizeDeps: { exclude: ['@huggingface/transformers', 'onnxruntime-web'] },
+  worker: { format: 'es' },
   build: {
     target: 'es2022',
     sourcemap: true,

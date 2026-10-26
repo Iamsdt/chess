@@ -55,6 +55,10 @@ const INCLUDE: readonly RegExp[] = [
 /** Never precached: debugging aids, licence text, retired builds and the worker itself. */
 const EXCLUDE: readonly RegExp[] = [
   /\.map$/,
+  // The decision model's onnxruntime-web runtime (~14 MB of wasm). It is fetched the first time
+  // the user turns the model on, then kept by the HTTP cache; precaching it would add 14 MB to
+  // every install for a feature that is off by default.
+  /^assets\/ort-wasm-.*\.(wasm|mjs)$/,
   /^\.vite\//,
   /^engine\/Copying\.txt$/,
   /^sw\.js$/,

@@ -28,7 +28,7 @@ export {
 
 /* The scripted replies for every Sage feature, and the modes the panel shows. */
 export { SHOWCASE_SCRIPT } from './showcase-script'
-export { defaultModeFor, MODE_INFO } from './modes'
+export { DECISION_MODE_MIN_PROB, defaultModeFor, MODE_INFO, modeFromDecision } from './modes'
 
 /* Thread state: streaming, cancellation, retry, history. */
 export {
@@ -49,6 +49,55 @@ export {
   type CoachSeedThread,
 } from './seeds'
 
+/* S21 · the real runtime: providers, key vault, AI SDK port, usage meter. */
+export { createAiSdkCoach, toModelMessages, type CoachRuntimeConfig } from './runtime/ai-sdk-port'
+export { createLanguageModel, type CoachModelConfig } from './runtime/create-model'
+export { toCoachError, type ErrorContext } from './runtime/errors'
+export { listModels, testConnection, type ConnectionResult, type ModelInfo } from './runtime/models'
+export {
+  defaultModelFor,
+  effectiveBaseUrl,
+  isConfigured,
+  normalizeBaseUrl,
+  PROVIDER_LIST,
+  PROVIDER_PRESETS,
+  providerLabel,
+  providerPreset,
+  type ProviderPreset,
+  type ProviderSdkKind,
+  type SuggestedModel,
+} from './runtime/providers'
+export { buildSystemPrompt, estimateTokens, modeForContext } from './runtime/system-prompt'
+export { createCoachTools } from './runtime/tools'
+export {
+  assertUnderCap,
+  monthKey,
+  readMonthUsage,
+  recordUsage,
+  useCoachUsage,
+  type CoachMonthUsage,
+  type CoachUsageMeter,
+} from './runtime/usage'
+export { useCoachPort, type CoachPortHandle } from './runtime/use-coach-port'
+export {
+  DECISION_BUDGET_MS,
+  toCoachDecision,
+  withDecision,
+  type WithDecisionOptions,
+} from './runtime/with-decision'
+export { useVaultStatus } from './runtime/use-vault-status'
+export {
+  createVault,
+  isVaultLockedError,
+  MIN_PASSPHRASE_LENGTH,
+  vault,
+  VaultCorruptError,
+  VaultLockedError,
+  VaultPassphraseError,
+  type Vault,
+  type VaultStatus,
+} from './runtime/vault'
+
 /* The panel S04 mounts, and the pieces a feature may want on its own. */
 export { CoachPanel, type CoachContextBase, type CoachPanelProps } from './components/coach-panel'
 export { CoachComposer, type CoachComposerProps } from './components/coach-composer'
@@ -62,6 +111,7 @@ export { AttachmentCard, type AttachmentCardProps } from './components/attachmen
 export { PositionPreview, type PositionPreviewProps } from './components/position-preview'
 export { CoachMarkdown, type CoachMarkdownProps } from './components/coach-markdown'
 export { ModeChip } from './components/mode-chip'
+export { DecisionChip, type DecisionChipProps } from './components/decision-chip'
 export { MemorySheet } from './components/memory-sheet'
 export { AttachmentView } from './components/attachment-view'
 export { TypingIndicator } from './components/typing-indicator'

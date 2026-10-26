@@ -1,6 +1,7 @@
 import { db } from '../db'
 
 import { createAttemptsRepository } from './attempts'
+import { createDecisionsRepository } from './decisions'
 import { createGamesRepository } from './games'
 import { createJobsRepository } from './jobs'
 import { createKvRepository } from './kv'
@@ -39,6 +40,7 @@ export interface Repositories {
   settings: ReturnType<typeof createSettingsRepository>
   profile: ReturnType<typeof createProfileRepository>
   kv: ReturnType<typeof createKvRepository>
+  decisions: ReturnType<typeof createDecisionsRepository>
 }
 
 /** Why: the backup, the seed and every test need the whole set at once. */
@@ -58,6 +60,7 @@ export function createRepositories(target: ChessKingDb): Repositories {
     settings: createSettingsRepository(target),
     profile: createProfileRepository(target),
     kv: createKvRepository(target),
+    decisions: createDecisionsRepository(target),
   }
 }
 
@@ -78,9 +81,11 @@ export const jobsRepo = repositories.jobs
 export const settingsRepo = repositories.settings
 export const profileRepo = repositories.profile
 export const kvRepo = repositories.kv
+export const decisionsRepo = repositories.decisions
 
 export {
   createAttemptsRepository,
+  createDecisionsRepository,
   createGamesRepository,
   createJobsRepository,
   createKvRepository,
@@ -98,6 +103,8 @@ export {
 export { defaultSettings } from './settings'
 
 export type { AttemptRange, AttemptsRepository } from './attempts'
+export { effectiveLabels, toDatasetRow } from './decisions'
+export type { DecisionCounts, DecisionsRepository, NewDecision } from './decisions'
 export type { GameFilter, GamePage, GamesRepository } from './games'
 export type { JobsRepository } from './jobs'
 export type { KvRepository } from './kv'

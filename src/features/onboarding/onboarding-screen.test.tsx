@@ -181,7 +181,7 @@ describe('OnboardingScreen', () => {
     expect(settings?.dailyGoalMinutes).toBe(30)
     expect(settings?.board.theme).toBe('walnut')
     expect(settings?.coach.provider).toBe('openai')
-    expect(settings?.coach.model).toBe('gpt-4.1-mini')
+    expect(settings?.coach.model).toBe('gpt-5-mini')
   })
 
   it('Skip setup saves the defaults and lands on Today from any step', async () => {

@@ -3,6 +3,7 @@ import Dexie, { type Table } from 'dexie'
 import type {
   AttemptId,
   ContentPack,
+  DecisionRecord,
   GameId,
   Job,
   JobId,
@@ -53,6 +54,14 @@ export class ChessKingDb extends Dexie {
   readonly settings: Table<SettingsRow, string>
   readonly profile: Table<Profile, ProfileId>
   readonly kv: Table<KvRow, string>
+
+  /**
+   * Read through the Dexie instance on use, not captured in the constructor: the migration tests
+   * open the database at an older version, where this table has not been declared yet.
+   */
+  get decisions(): Table<DecisionRecord, string> {
+    return this.table('decisions')
+  }
 
   constructor(name: string = DB_NAME, upTo: number = CURRENT_DB_VERSION) {
     super(name)

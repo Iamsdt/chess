@@ -13,8 +13,6 @@ import {
   HelpCircle,
   Info,
   KeyRound,
-  Lock,
-  LockKeyhole,
   Monitor,
   Moon,
   Palette,
@@ -33,6 +31,7 @@ import {
 import { useId, useMemo, useRef, useState } from 'react'
 
 import { Board } from '@/board'
+import { isConfigured, providerLabel } from '@/coach'
 import { useGameCount, useProfile, useSettings, useStorageEstimate, gamesRepo } from '@/data'
 import { Button, cn, toast, useTheme, type BoardTheme, type PieceSet } from '@/design'
 import {
@@ -43,6 +42,7 @@ import {
   type BoardShapes,
   type CoachSettings,
   type DailyGoalMinutes,
+  type DecisionSettings,
   type Fen,
   type Settings,
   type SkillLevel,
@@ -52,7 +52,8 @@ import {
 import { requestReminderPermission } from '@/features/habit/reminder-host'
 import { downloadFile, exportGames, pgnFileName, usePgnPort } from '@/features/library'
 
-import { MODEL_OPTIONS, PROVIDER_OPTIONS } from './coach-options'
+import { CoachConnection, CoachPassphraseLock, CoachUsageMeter } from './coach-connection'
+import { DecisionModelSettings } from './decision-model-settings'
 import {
   changeProfile,
   changeSettings,
@@ -65,7 +66,7 @@ const PREVIEW_FEN: Fen = toFen(
   'r1bq1rk1/ppp2ppp/2np1n2/2b1p3/2B1P3/2PP1N2/PP3PPP/RNBQ1RK1 w - - 2 7',
 )
 
-type SettingsSection = 'profile' | 'board' | 'coach' | 'sound' | 'data' | 'about'
+type SettingsSection = 'profile' | 'board' | 'coach' | 'decision' | 'sound' | 'data' | 'about'
 
 const SKILL_LEVEL_OPTIONS: readonly { readonly id: SkillLevel; readonly label: string }[] = [
   { id: 'beginner', label: 'I know the rules' },
@@ -79,10 +80,6 @@ function formatBytes(bytes: number): string {
   return bytes >= MB
     ? `${(bytes / MB).toFixed(1)} MB`
     : `${String(Math.max(1, Math.round(bytes / 1024)))} KB`
-}
-
-function formatTokens(tokens: number): string {
-  return tokens >= 1000 ? `${String(Math.round(tokens / 1000))}k` : String(tokens)
 }
 
 interface BoardSwatchOption {
@@ -138,6 +135,7 @@ export function SettingsScreen() {
   const [wiping, setWiping] = useState(false)
 
   const { board: boardPrefs, sound, coach } = settings
+  const connected = isConfigured(coach)
   const displayName = nameDraft ?? profile?.displayName ?? ''
   const skillLevel = profile?.skillLevel ?? 'club'
 
@@ -156,6 +154,9 @@ export function SettingsScreen() {
   }
   const saveCoach = (patch: Partial<CoachSettings>): void => {
     save((current) => ({ ...current, coach: { ...current.coach, ...patch } }))
+  }
+  const saveDecision = (patch: Partial<DecisionSettings>): void => {
+    save((current) => ({ ...current, decision: { ...current.decision, ...patch } }))
   }
   const saveGoal = (minutes: DailyGoalMinutes): void => {
     save((current) => ({ ...current, dailyGoalMinutes: minutes }))
@@ -310,6 +311,19 @@ export function SettingsScreen() {
               >
                 <Brain className="size-4" aria-hidden="true" />
                 AI coach
+              </a>
+            </li>
+            <li>
+              <a
+                href="#decision"
+                className="sub-link nav-item h-10 min-h-[40px] shrink-0 whitespace-nowrap sm:h-9 sm:min-h-0"
+                aria-current={activeSection === 'decision' ? 'true' : undefined}
+                onClick={() => {
+                  setActiveSection('decision')
+                }}
+              >
+                <Cpu className="size-4" aria-hidden="true" />
+                Decision model
               </a>
             </li>
             <li>
@@ -781,90 +795,15 @@ export function SettingsScreen() {
                 <span
                   className={cn(
                     'size-1.5 rounded-full',
-                    coach.hasKey ? 'bg-success' : 'bg-muted-foreground',
+                    connected ? 'bg-success' : 'bg-muted-foreground',
                   )}
                 />
-                {coach.hasKey ? 'Connected' : 'No key yet'}
+                {connected ? 'Connected' : 'No key yet'}
               </span>
             </div>
 
             <div className="space-y-6 p-4 sm:p-6">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <label htmlFor="provider" className="field-label">
-                    Provider
-                  </label>
-                  <select
-                    id="provider"
-                    className="input"
-                    value={coach.provider}
-                    onChange={(e) => {
-                      const next = PROVIDER_OPTIONS.find((option) => option.id === e.target.value)
-                      if (next === undefined) return
-                      // A model name from another provider would be a request that always fails.
-                      const firstModel = MODEL_OPTIONS[next.id][0]
-                      saveCoach({
-                        provider: next.id,
-                        ...(firstModel ? { model: firstModel.id } : {}),
-                      })
-                    }}
-                  >
-                    {PROVIDER_OPTIONS.map((option) => (
-                      <option key={option.id} value={option.id}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label htmlFor="model" className="field-label">
-                    Model
-                  </label>
-                  <select
-                    id="model"
-                    className="input"
-                    value={coach.model}
-                    onChange={(e) => {
-                      saveCoach({ model: e.target.value })
-                    }}
-                  >
-                    {MODEL_OPTIONS[coach.provider].map((option) => (
-                      <option key={option.id} value={option.id}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1.5 sm:col-span-2">
-                  <label htmlFor="apikey" className="field-label">
-                    API key
-                  </label>
-                  <div className="relative">
-                    <Lock
-                      className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-                      aria-hidden="true"
-                    />
-                    <input
-                      id="apikey"
-                      type="password"
-                      className="input pl-9 font-mono"
-                      value=""
-                      placeholder={
-                        coach.hasKey ? 'A key is stored on this device' : 'No key stored'
-                      }
-                      disabled
-                      readOnly
-                      autoComplete="off"
-                    />
-                  </div>
-                  <p className="help">
-                    Saving a key switches on with the Sage coach itself, which also tests it and
-                    shows its usage. Your tone and model choices below are kept already.
-                  </p>
-                </div>
-              </div>
+              <CoachConnection coach={coach} onChange={saveCoach} />
 
               {/* Security Explainer */}
               <div className="rounded-2xl bg-accent/60 p-4 sm:p-5">
@@ -888,7 +827,8 @@ export function SettingsScreen() {
                     <span>
                       <b className="font-semibold">Sent only to your provider.</b>{' '}
                       <span className="text-muted-foreground">
-                        Straight from your browser to Google. No Chess King server, no proxy.
+                        Straight from your browser to {providerLabel(coach.provider)}. No Chess King
+                        server, no proxy.
                       </span>
                     </span>
                   </li>
@@ -917,29 +857,7 @@ export function SettingsScreen() {
                   </li>
                 </ul>
 
-                <label
-                  htmlFor="opt-passphrase"
-                  className="mt-4 flex min-h-[44px] cursor-pointer items-center gap-3 rounded-xl border bg-card p-3 text-sm"
-                >
-                  <LockKeyhole className="size-4 shrink-0 text-foreground" aria-hidden="true" />
-                  <span className="flex-1">
-                    <span className="block font-medium">Passphrase lock</span>
-                    <span className="help">
-                      Adds a passphrase (PBKDF2) on top. You unlock once per session.
-                    </span>
-                  </span>
-                  <span className="switch">
-                    <input
-                      type="checkbox"
-                      id="opt-passphrase"
-                      checked={coach.passphraseLock}
-                      onChange={(e) => {
-                        saveCoach({ passphraseLock: e.target.checked })
-                      }}
-                    />
-                    <span />
-                  </span>
-                </label>
+                <CoachPassphraseLock coach={coach} onChange={saveCoach} />
               </div>
 
               {/* Tone & Usage */}
@@ -1059,36 +977,13 @@ export function SettingsScreen() {
                     </span>
                   </label>
 
-                  <div className="rounded-xl border p-4">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium">Monthly usage</span>
-                      <span className="text-muted-foreground">
-                        <b className="font-semibold text-foreground">0</b> tokens so far
-                      </span>
-                    </div>
-                    <div
-                      role="progressbar"
-                      aria-valuenow={0}
-                      aria-valuemin={0}
-                      aria-valuemax={coach.monthlyTokenCap}
-                      aria-label="Monthly token usage"
-                      className="progress mt-2"
-                    >
-                      <span className="w-0" />
-                    </div>
-                    <div className="mt-1.5 flex justify-between text-xs text-muted-foreground">
-                      <span>0 of {formatTokens(coach.monthlyTokenCap)} tokens</span>
-                      <span>Soft cap · you set it</span>
-                    </div>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      Estimated from your provider&apos;s public prices. Billing happens on your
-                      provider account.
-                    </p>
-                  </div>
+                  <CoachUsageMeter coach={coach} onChange={saveCoach} />
                 </div>
               </div>
             </div>
           </section>
+
+          <DecisionModelSettings decision={settings.decision} onChange={saveDecision} />
 
           {/* SOUND */}
           <section id="sound" className="card" aria-labelledby="sound-h">

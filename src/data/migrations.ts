@@ -108,7 +108,24 @@ const V2: Migration = {
   },
 }
 
-export const MIGRATIONS: readonly Migration[] = [V1, V2]
+/**
+ * v3 — the on-device decision log.
+ *
+ * - `decisions.createdAt` · the newest-first list in Settings and the export order.
+ * - `decisions.modelId` · "how many rows came from this model" when comparing a fine-tune.
+ * - `decisions.corrected` · 0/1, because IndexedDB cannot index a boolean; the dataset stats
+ *   and a "corrected only" export read it.
+ *
+ * No `upgrade`: it is a new table, so there is nothing to backfill.
+ */
+const V3: Migration = {
+  version: 3,
+  stores: {
+    decisions: 'id, createdAt, modelId, corrected',
+  },
+}
+
+export const MIGRATIONS: readonly Migration[] = [V1, V2, V3]
 
 /** The version a fresh install opens at. Bump it by appending to `MIGRATIONS`. */
 export const CURRENT_DB_VERSION = MIGRATIONS[MIGRATIONS.length - 1]?.version ?? 1

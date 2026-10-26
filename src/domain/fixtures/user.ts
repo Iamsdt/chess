@@ -82,6 +82,7 @@ export function makeSettings(overrides?: Partial<Settings>): Settings {
         showEvaluation: false,
         allowTakebacks: true,
       },
+      decision: { enabled: false, logDecisions: true },
       updatedAt: FIXTURE_NOW,
     },
     overrides,

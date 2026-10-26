@@ -1,0 +1,2706 @@
+[
+  {
+    "text": "What should I play here as white? I'm torn between Nf3 and d4.",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Walk me through how a grandmaster would think about this position.",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Which move is best in this position and why? Show me the candidates.",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Can you think out loud about this middlegame and find a plan for black?",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Is Bxh7+ a real sacrifice here or does it just lose a piece?",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Give me the candidate moves and the refutation of the tempting one.",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "I have 10 minutes left, what is the strongest continuation here?",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Analyse this position like a master: weaknesses, plans, best move.",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Should I trade queens here or keep the tension?",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "What is the engine's top choice and what's the idea behind it?",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Find the best plan for white in this isolated queen pawn position.",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Qué debo jugar aquí con las blancas? Dame los candidatos.",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Quel est le meilleur coup dans cette position et pourquoi ?",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "wat shuld i play here?? im lost",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Evaluate this position for me. Who is better and what are the key factors?",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Is my attack on the kingside actually working or am I just throwing pieces?",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Think step by step: assess, candidates, calculate, compare. Position on the board.",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "What would Stockfish play here and can you explain the plan in plain words?",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Welchen Zug soll ich hier spielen? Ich sehe keinen Plan.",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Is sacrificing the exchange on c3 sound in this structure?",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Give me the exact best move here, nothing else.",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 1,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Tell me the winning move in this position.",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 1,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What is the correct move? Simply say it.",
+    "labels": {
+      "mode": "grandmaster",
+      "wants_solution": 1,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Dime el mejor movimiento ya, sin explicaciones.",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 1,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Should I castle now? Yes or no.",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Is my knight on e5 safe?",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Am I winning?",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Is this position equal or is white better?",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What does the engine say about Qd2?",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Is Bxf7+ playable here?",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What is the evaluation after 12...Nd4?",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Can you show me on the board what happens after Nxe5?",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Show me the line that wins a pawn here with arrows on the board.",
+    "labels": {
+      "mode": "grandmaster",
+      "needs_engine": 1,
+      "wants_solution": 1,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Explain in depth the strategic differences between the Slav and the Semi-Slav.",
+    "labels": {
+      "mode": "grandmaster",
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Can you review my last game and tell me the story of what happened?",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Where did I go wrong in this game? Name the one lesson I should take away.",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Tell me the turning point of my game against the Sicilian.",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Why did I lose that game? I was winning after move 20.",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "What was my biggest mistake in the game I just played?",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Summarise this game for me like a coach would after a tournament round.",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Review my loss from yesterday, what is the key moment?",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Explain what happened in the middlegame of my last game, I felt confused.",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Which of my moves in this game were inaccuracies and which were blunders?",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Help me understand why my opponent's attack worked so well in that game.",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Can you go over my game with the Caro-Kann and show me the critical moment?",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "how did i throw away that won endgame in my last game",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Revisa mi partida de ayer y dime qué aprendí.",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Pouvez-vous analyser ma dernière partie et me dire ma plus grosse erreur ?",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Was my opening choice a problem in this game, or the middlegame?",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Tell me one lesson from this game that will help me in the next one.",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Review time: where did I spend too long thinking in this game?",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Why was move 17 a blunder in the game I just finished?",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "I keep dropping pieces in the same way. Show me in this game where it happens.",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Tell me exactly which move I should have played instead of Bd3 in my last game.",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 1,
+      "wants_solution": 1,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Check my game with the engine and tell me the biggest swing.",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What is my win rate with the black pieces?",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "How accurate was I in my last five games?",
+    "labels": {
+      "mode": "teacher",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Explain what a pin is, with another example.",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "I don't get this lesson on the opposition. Can you explain it differently?",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Why does the king need to be active in the endgame?",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Can you explain the idea of outposts again? I did not understand the lesson.",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "What is the difference between a skewer and a pin?",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Explain how pawn structure decides which pieces are good, in simple words.",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "What does a weak square mean in this lesson?",
+    "labels": {
+      "mode": "tutor",
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Another example of a discovered attack please, I am still confused.",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Why is the bishop pair worth so much in open positions?",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Can you explain the Lucena position more slowly?",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "In this lesson, what does \"tempo\" mean exactly?",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Teach me the idea behind the minority attack.",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "explian zugzwang to me like im a beginner",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Explícame qué es un peón pasado, no lo entendí en la lección.",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Expliquez-moi encore une fois la règle de la case du roi.",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Why do we trade pieces when ahead in material? The lesson says it but not why.",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Can you give me an easier way to remember the rule of the square?",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Break down this lesson step by step: what are the three ideas I need to remember?",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Tell me the answer to the exercise in this lesson.",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 1,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Just give me the correct move for step 3 of this lesson.",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 1,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Show me on a board how a back rank mate works.",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Can you demonstrate the Greek gift sacrifice on the board?",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Draw the arrows for the knight fork idea so I can see it.",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Visualise how the pawn storm works against a castled king.",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Give me a thorough explanation of how to convert a rook endgame, with plans for both sides.",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "One sentence: what is a fork?",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Remind me what the rule for stalemate is.",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Without the engine, explain what the idea of 5.Nxe5 is.",
+    "labels": {
+      "mode": "tutor",
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Explain the plan in the Stonewall without using any engine lines.",
+    "labels": {
+      "mode": "tutor",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "I'm stuck on this puzzle, can I get a hint?",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Just tell me the move for this puzzle, I give up.",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 1,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What's the first move of the solution?",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 1,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Give me a small nudge, not the answer, for this tactic.",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What theme is this puzzle? Fork, pin, or something else?",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Show me the solution to this puzzle please.",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 1,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Which piece should I be looking at in this puzzle?",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Hint level 2 please.",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Is the answer Qxh7+? Tell me yes or no.",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 1,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "I've tried for 5 minutes. Where should I look?",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "whats the answer to this puzzle",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 1,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Can you help me without spoiling it? I think there is a sacrifice.",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Dame una pista para este problema, sin darme la solución.",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Donne-moi la solution de ce problème, s'il te plaît.",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 1,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Why does Rxf7 not work in this puzzle?",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Is there a mate in this puzzle or is it winning material?",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Give me a hint, then wait for me to try again.",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Reveal the full line of this puzzle.",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 1,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Spoil it for me: what is the solution?",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 1,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Stop with the hints, just play the winning move for me.",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 1,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Tell me the whole solution, I do not care about learning it today.",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 1,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Donnez-moi directement la solution du problème du jour.",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 1,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Is this puzzle about a fork?",
+    "labels": {
+      "mode": "puzzle-nudger",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Build me a training plan for the next two weeks.",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "What should I work on this week based on my games?",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Which themes am I weakest at? Make a plan to fix them.",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "I have 20 minutes a day. How should I split puzzles, games and lessons?",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Create a weekly schedule to get to 1500 rating.",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "What should I practise today?",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Based on my mistakes so far, what three things should I focus on?",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "How is my progress this month and what should I do next?",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Plan my openings study, I always get lost after move 8.",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "How many puzzles should I do a day to improve my tactics?",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "plan for improving endgames pls",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Hazme un plan de entrenamiento para esta semana.",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Fais-moi un programme d'entraînement pour progresser aux échecs.",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Where am I losing the most rating points and how do I stop it?",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Set me a goal for this month and break it down into daily tasks.",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "What is the order I should study things in as a 1000 rated player?",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Show me my weak spots and what to drill first.",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Should I play more rapid games or do more puzzles this week?",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Show me my rating graph and tell me whether I am improving.",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "How many games have I played this week?",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Which openings do I lose with most often?",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What's my current puzzle rating compared to last month?",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "How long have I been practising this streak?",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Do I blunder more in blitz than in rapid?",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Run the engine over my last ten games and find my most common mistake.",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 1,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Plan a full six month improvement roadmap with milestones for each month.",
+    "labels": {
+      "mode": "planner",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Why is the Sicilian Defence so popular?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "How does en passant work?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What's the best opening for beginners?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Why do rooks belong on open files?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "How many moves does a game of chess last on average?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What is castling and when can't I do it?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Who was the youngest grandmaster ever?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "How do I stop losing on time in blitz?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "What does a 50 move rule draw mean?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What are the main ideas in the Queen's Gambit Declined?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "What's the difference between rapid and classical time controls?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Is chess good for the brain?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Who is stronger, Magnus Carlsen or Bobby Fischer?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Cuántas piezas tiene cada jugador al empezar?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Comment fonctionne le classement Elo ?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "how do i get better at chess quick",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Why is the Italian Game considered a safe opening?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "What does gambit mean?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "How do I deal with nerves in tournaments?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Just tell me what to play in the Ruy Lopez after 3...a6, I don't want an explanation.",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 1,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What is the difference between a 1200 and a 1600 rated player?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 1,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "How good is a 1500 Elo player compared to the average club player?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What does the Elo number actually mean?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Show me what the Scholar's Mate looks like.",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Can you show me the main line of the Najdorf on a board?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Play through the Fried Liver attack so I can follow it.",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Demonstrate the Philidor position on a board and explain why it is drawn.",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "What's a typical plan for black in the French Defence? Draw it for me.",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "How do you spell \"Zugzwang\"?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What does \"J'adoube\" mean?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Quick question: how many squares are on a chessboard?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Which piece is worth more, a bishop or a knight?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Is it legal to castle out of check?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Yes or no: can a pawn capture backwards?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Thanks, that helped.",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "ok",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "hi sage",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What does ♞ mean?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Quick: what is the notation for kingside castling?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Is e4 or d4 more common?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Short answer: is a knight on the rim bad?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What is the time limit in bullet chess?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Can I resign at any time?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What is the history of the Immortal Game?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "How did the rules of castling develop historically?",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Write a detailed comparison of the London System and the Catalan for a club player.",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Give me a complete overview of how pawn structures decide the middlegame plan.",
+    "labels": {
+      "mode": "open-qa",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "What's a good pasta recipe for dinner tonight?",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Who won the football world cup in 2018?",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Can you help me write an email to my landlord?",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What is the capital of Australia?",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Tell me a joke about programmers.",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "How do I fix a leaking tap?",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What's the weather going to be like tomorrow?",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Translate \"good morning\" into Japanese.",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Explain how neural networks work.",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Recommend a good sci-fi novel.",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Qual é a melhor maneira de aprender guitarra?",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "hey are you a real person or a bot",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What's your favourite colour?",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Write me a poem about autumn.",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "How do I get over a breakup?",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Can you help me with my maths homework? Solve 3x + 5 = 20.",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "What should I name my dog?",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Give me some tips for a job interview tomorrow.",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Which phone should I buy?",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Explain the rules of poker.",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Wie spät ist es in Tokio?",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Comment faire une bonne omelette ?",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Cuéntame un chiste.",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Write a long essay about the history of the Roman empire.",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Explain in detail how to build a website from scratch.",
+    "labels": {
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 1,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Quiz me on what is hanging in this position without showing the board.",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Let's do a blindfold exercise: I'll tell you moves, you tell me the position.",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Give me a visualization drill, hide the pieces.",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Can you read me a line and ask me where the knight ends up?",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Test my board vision, a few moves ahead, no peeking.",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Start a blindfold chess practice, I'll play white.",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Which squares does my bishop on c1 attack after b3 and d4? I want to picture it.",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Show me the position for three seconds then hide it and ask me questions.",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Is Nf3 a check after 1.e4 e5 2.Nf3? Let me visualize first.",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "I want to practise seeing the board in my head. Where do I begin?",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Flash a position and ask me to recall where the pieces were.",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Dime la ruta del caballo de g1 a f7 sin mirar el tablero.",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Exercice de vision : demande-moi quelles pièces sont en prise sans échiquier.",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "blindfold drill pls, start easy",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Give me a harder blindfold exercise, following a long line of moves.",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Count the exchanges on e5 in my head: tell me the line first, then I answer.",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Play the opening moves slowly and I'll try to keep the board in mind.",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 1,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Let me find the squares the queen controls from memory.",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Which colour is the square h3? I want to learn the board geometry.",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  },
+  {
+    "text": "Teach me the diagonals so I can see them without the board.",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 1
+    }
+  },
+  {
+    "text": "Is the a1-h8 diagonal the same colour all along?",
+    "labels": {
+      "mode": "visualization",
+      "needs_engine": 0,
+      "wants_solution": 0,
+      "needs_board": 0,
+      "about_history": 0,
+      "off_topic": 0,
+      "deep_answer": 0
+    }
+  }
+]

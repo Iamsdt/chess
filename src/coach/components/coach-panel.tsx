@@ -21,6 +21,7 @@ import { useCoach } from '../use-coach'
 
 import { CoachComposer } from './coach-composer'
 import { CoachThread } from './coach-thread'
+import { DecisionHint } from './decision-hint'
 import { MemorySheet } from './memory-sheet'
 import { ModeChip } from './mode-chip'
 import { ThreadHistory } from './thread-history'
@@ -55,7 +56,11 @@ export interface CoachPanelProps {
   readonly quickReplies?: readonly string[] | undefined
   /** False renders the bring-your-own-key state; the composer stays visible but inert. */
   readonly hasKey?: boolean | undefined
+  /** True while scripted replies answer instead of a model, so the status line can say so. */
+  readonly demo?: boolean | undefined
   readonly settingsHref?: string | undefined
+  /** Shows a dismissible "try the on-device decision model" line linking to Settings. */
+  readonly decisionHintHref?: string | undefined
   /** Swap the static position preview for S08's board once it exists. */
   readonly renderAttachment?: ((attachment: CoachPositionAttachment) => ReactNode) | undefined
   /** Rendered only when given, because S04 owns whether the panel can be closed. */
@@ -107,7 +112,9 @@ function CoachPanelContents({
   attachmentLabel,
   quickReplies,
   hasKey = true,
+  demo = false,
   settingsHref = '/settings#coach',
+  decisionHintHref,
   renderAttachment,
   onClose,
   loading = false,
@@ -168,7 +175,13 @@ function CoachPanelContents({
   const replies = quickReplies ?? seed?.quickReplies
 
   // Online is the avatar's green dot; text only when there is something else to say.
-  const statusLine = !hasKey ? 'Needs your API key' : busy ? 'Writing…' : undefined
+  const statusLine = !hasKey
+    ? 'Needs your API key'
+    : busy
+      ? 'Writing…'
+      : demo
+        ? 'Demo replies'
+        : undefined
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -242,6 +255,8 @@ function CoachPanelContents({
             </button>
           </p>
         )}
+
+        {decisionHintHref === undefined ? null : <DecisionHint href={decisionHintHref} />}
 
         {paused ? (
           <div
