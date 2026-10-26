@@ -15,3 +15,6 @@ docs/screenshots/
 
 # Lighthouse CI local runs
 .lighthouseci/
+
+# Local decision-model training pipeline; not shipped with the app.
+training/

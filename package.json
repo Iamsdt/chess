@@ -22,20 +22,10 @@
     "e2e": "playwright test",
     "e2e:install": "playwright install chromium",
     "validate": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run build && npm run size",
-    "prepare": "husky",
     "size": "node scripts/check-size.mjs",
     "screenshots": "node scripts/screenshots.mjs",
     "bench:engine": "node scripts/bench-engine.mjs",
     "content:validate": "node scripts/content-validate.mjs"
-  },
-  "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{js,json,css,md,html,yml,yaml}": [
-      "prettier --write"
-    ]
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.85",
@@ -89,9 +79,7 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "fake-indexeddb": "^6.2.5",
     "globals": "^16.5.0",
-    "husky": "^9.1.7",
     "jsdom": "^26.0.0",
-    "lint-staged": "^16.0.0",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "shadcn": "^3.8.5",
