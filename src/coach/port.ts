@@ -40,6 +40,11 @@ export const CoachDeltaSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('decision'), decision: CoachDecisionSchema }),
   /** Replace the tappable follow-ups under the bubble. */
   z.object({ kind: z.literal('quickReplies'), replies: z.array(z.string().min(1)).max(4) }),
+  /**
+   * Throw away the text, cards and follow-ups shown so far and start the answer over.
+   * Sent when a guardrail rejected a draft (coach-agent.md §7); `reason` is for logs and tests.
+   */
+  z.object({ kind: z.literal('restart'), reason: z.string().min(1) }),
   /** Final accounting. Optional: a port that cannot count tokens simply omits it. */
   z.object({
     kind: z.literal('usage'),

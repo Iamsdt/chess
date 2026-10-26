@@ -1,6 +1,10 @@
 import { db } from '../db'
 
 import { createAttemptsRepository } from './attempts'
+import { createCoachNotesRepository } from './coach-notes'
+import { createCoachSummaryRepository } from './coach-summary'
+import { createCoachTaughtRepository } from './coach-taught'
+import { createCoachThreadsRepository } from './coach-threads'
 import { createDecisionsRepository } from './decisions'
 import { createGamesRepository } from './games'
 import { createJobsRepository } from './jobs'
@@ -41,6 +45,10 @@ export interface Repositories {
   profile: ReturnType<typeof createProfileRepository>
   kv: ReturnType<typeof createKvRepository>
   decisions: ReturnType<typeof createDecisionsRepository>
+  coachThreads: ReturnType<typeof createCoachThreadsRepository>
+  taught: ReturnType<typeof createCoachTaughtRepository>
+  summary: ReturnType<typeof createCoachSummaryRepository>
+  notes: ReturnType<typeof createCoachNotesRepository>
 }
 
 /** Why: the backup, the seed and every test need the whole set at once. */
@@ -61,6 +69,10 @@ export function createRepositories(target: ChessKingDb): Repositories {
     profile: createProfileRepository(target),
     kv: createKvRepository(target),
     decisions: createDecisionsRepository(target),
+    coachThreads: createCoachThreadsRepository(target),
+    taught: createCoachTaughtRepository(target),
+    summary: createCoachSummaryRepository(target),
+    notes: createCoachNotesRepository(target),
   }
 }
 
@@ -82,9 +94,17 @@ export const settingsRepo = repositories.settings
 export const profileRepo = repositories.profile
 export const kvRepo = repositories.kv
 export const decisionsRepo = repositories.decisions
+export const coachThreadsRepo = repositories.coachThreads
+export const taughtRepo = repositories.taught
+export const summaryRepo = repositories.summary
+export const notesRepo = repositories.notes
 
 export {
   createAttemptsRepository,
+  createCoachNotesRepository,
+  createCoachSummaryRepository,
+  createCoachTaughtRepository,
+  createCoachThreadsRepository,
   createDecisionsRepository,
   createGamesRepository,
   createJobsRepository,
@@ -103,6 +123,10 @@ export {
 export { defaultSettings } from './settings'
 
 export type { AttemptRange, AttemptsRepository } from './attempts'
+export type { CoachNotesRepository, NewCoachNote } from './coach-notes'
+export type { CoachSummaryRepository } from './coach-summary'
+export type { CoachTaughtRepository, NewTaughtConcept } from './coach-taught'
+export { MAX_STORED_THREADS, type CoachThreadsRepository } from './coach-threads'
 export { effectiveLabels, toDatasetRow } from './decisions'
 export type { DecisionCounts, DecisionsRepository, NewDecision } from './decisions'
 export type { GameFilter, GamePage, GamesRepository } from './games'

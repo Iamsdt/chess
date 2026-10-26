@@ -35,7 +35,14 @@ import type { GameFilter, GamePage } from './repositories/games'
 import type { MistakeFilter } from './repositories/mistakes'
 import type { PuzzleSelection, PuzzleStats } from './repositories/puzzles'
 import type { DueQuery } from './repositories/srs-cards'
-import type { GameRow, LessonProgress, PracticeSession } from './schema'
+import type {
+  CoachNote,
+  CoachSummary,
+  GameRow,
+  LessonProgress,
+  PracticeSession,
+  TaughtConcept,
+} from './schema'
 
 const MAX_TIMESTAMP = Number.MAX_SAFE_INTEGER as Timestamp
 
@@ -58,6 +65,25 @@ const MAX_TIMESTAMP = Number.MAX_SAFE_INTEGER as Timestamp
 /** How many decisions are logged and how many the user corrected; `undefined` while loading. */
 export function useDecisionCounts(): DecisionCounts | undefined {
   return useLiveQuery(() => repositories.decisions.count(), [])
+}
+
+/** Sage's Taught layer, newest first; `undefined` while loading. */
+export function useTaughtConcepts(limit = 50): TaughtConcept[] | undefined {
+  return useLiveQuery(() => repositories.taught.list(limit), [limit])
+}
+
+/** Sage's Summary layer. `null` once loaded and empty, `undefined` while loading. */
+export function useCoachSummary(): CoachSummary | null | undefined {
+  return useLiveQuery(async () => (await repositories.summary.get()) ?? null, [])
+}
+
+export function useCoachNotes(limit = 200): CoachNote[] | undefined {
+  return useLiveQuery(() => repositories.notes.list(limit), [limit])
+}
+
+/** Mistake counts per theme, for "what are you weakest at"; `undefined` while loading. */
+export function useMistakeThemeCounts(): { theme: string; count: number }[] | undefined {
+  return useLiveQuery(() => repositories.mistakes.countsByTheme(), [])
 }
 
 export function useGames(filter?: GameFilter, page?: GamePage): GameRow[] | undefined {

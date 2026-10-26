@@ -125,7 +125,27 @@ const V3: Migration = {
   },
 }
 
-export const MIGRATIONS: readonly Migration[] = [V1, V2, V3]
+/**
+ * v4 — Sage's memory (coach-agent.md §6).
+ *
+ * - `coachThreads.updatedAt` · the chat history list, newest first.
+ * - `coachTaught.lastTaughtAt` · the Taught layer is read newest first and trimmed to the budget.
+ * - `coachNotes.createdAt` · the notes list, newest first.
+ * - `coachSummary` · one row, keyed by a constant.
+ *
+ * No `upgrade`: all four are new tables.
+ */
+const V4: Migration = {
+  version: 4,
+  stores: {
+    coachThreads: 'id, updatedAt',
+    coachTaught: 'id, lastTaughtAt',
+    coachSummary: 'id',
+    coachNotes: 'id, createdAt',
+  },
+}
+
+export const MIGRATIONS: readonly Migration[] = [V1, V2, V3, V4]
 
 /** The version a fresh install opens at. Bump it by appending to `MIGRATIONS`. */
 export const CURRENT_DB_VERSION = MIGRATIONS[MIGRATIONS.length - 1]?.version ?? 1

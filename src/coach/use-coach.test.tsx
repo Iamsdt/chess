@@ -204,3 +204,22 @@ describe('applyCoachDelta · decision', () => {
     expect(next.status).toBe('streaming')
   })
 })
+
+describe('applyCoachDelta · restart', () => {
+  it('clears the rejected draft but keeps the mode and usage of the answer', () => {
+    const message = makeCoachMessage({
+      role: 'sage',
+      text: 'White is at +2.5',
+      status: 'streaming',
+      mode: 'grandmaster',
+      quickReplies: ['Why?'],
+      attachments: [{ kind: 'tool', name: 'analysePosition', summary: 'Done', status: 'done' }],
+    })
+    const next = applyCoachDelta(message, { kind: 'restart', reason: 'Unverified evaluation' })
+    expect(next.text).toBe('')
+    expect(next.attachments).toEqual([])
+    expect(next.quickReplies).toEqual([])
+    expect(next.mode).toBe('grandmaster')
+    expect(next.status).toBe('streaming')
+  })
+})

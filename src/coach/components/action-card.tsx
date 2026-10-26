@@ -1,12 +1,15 @@
 import { Check, Lock } from 'lucide-react'
 import { useState } from 'react'
 
+import { performAction } from '@/coach/actions/perform-action'
+import { useActionPorts } from '@/coach/actions/use-action-ports'
 import { Button, toast } from '@/design'
 import type { ActionAttachment } from '@/domain'
 
 /**
- * Something Sage proposes. Nothing happens until Confirm; the mock only toasts, but a card
- * with an `href` shows an Open link afterwards instead of navigating behind the user's back.
+ * Something Sage proposes. Nothing happens until Confirm; then `performAction` does it (opens
+ * the set, saves the position, sets the plan) and the card says what happened. A failure
+ * keeps the card open so the user can try again instead of showing a false "done".
  */
 
 const DONE_LABEL: Readonly<Record<ActionAttachment['action'], string>> = {
@@ -20,7 +23,9 @@ const DONE_LABEL: Readonly<Record<ActionAttachment['action'], string>> = {
 }
 
 export function ActionCard({ attachment }: { readonly attachment: ActionAttachment }) {
-  const [state, setState] = useState<'proposed' | 'done' | 'dismissed'>('proposed')
+  const [state, setState] = useState<'proposed' | 'working' | 'done' | 'dismissed'>('proposed')
+  const [note, setNote] = useState<string | undefined>(undefined)
+  const ports = useActionPorts()
   const unavailable = attachment.unavailable !== undefined
 
   return (
@@ -52,7 +57,7 @@ export function ActionCard({ attachment }: { readonly attachment: ActionAttachme
       {state === 'done' ? (
         <p className="flex items-center gap-2 text-xs font-medium text-success">
           <Check aria-hidden="true" className="size-3.5" />
-          {DONE_LABEL[attachment.action]}
+          {note ?? DONE_LABEL[attachment.action]}
           {attachment.href === undefined ? null : (
             <a href={attachment.href} className="text-primary hover:underline">
               Open
@@ -66,10 +71,19 @@ export function ActionCard({ attachment }: { readonly attachment: ActionAttachme
           <Button
             type="button"
             size="sm"
-            disabled={unavailable}
+            disabled={unavailable || state === 'working'}
             onClick={() => {
-              setState('done')
-              toast.success(`${DONE_LABEL[attachment.action]} (mock)`)
+              setState('working')
+              void performAction(attachment, ports).then((outcome) => {
+                if (outcome.ok) {
+                  setNote(outcome.value.message)
+                  setState('done')
+                  toast.success(outcome.value.message ?? DONE_LABEL[attachment.action])
+                } else {
+                  setState('proposed')
+                  toast.error(outcome.error.message)
+                }
+              })
             }}
           >
             Confirm

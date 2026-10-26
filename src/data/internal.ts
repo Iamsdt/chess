@@ -117,3 +117,6 @@ export const newMistakeId = (): MistakeId => toMistakeId(`mistake_${randomId()}`
 export const newSessionId = (): SessionId => toSessionId(`session_${randomId()}`)
 export const newJobId = (): JobId => toJobId(`job_${randomId()}`)
 export const newRepertoireNodeId = (): RepertoireNodeId => toRepertoireNodeId(`node_${randomId()}`)
+
+/** Notes have no branded id in the domain: they are storage-only, so the format lives here. */
+export const newNoteId = (): string => `note_${randomId()}`

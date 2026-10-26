@@ -26,7 +26,17 @@ import type {
 
 import { applyMigrations, CURRENT_DB_VERSION } from './migrations'
 
-import type { GameRow, KvRow, LessonProgress, PracticeSession, SettingsRow } from './schema'
+import type {
+  CoachNote,
+  CoachSummary,
+  CoachThreadRow,
+  GameRow,
+  KvRow,
+  LessonProgress,
+  PracticeSession,
+  SettingsRow,
+  TaughtConcept,
+} from './schema'
 
 /**
  * The one Dexie instance.
@@ -61,6 +71,23 @@ export class ChessKingDb extends Dexie {
    */
   get decisions(): Table<DecisionRecord, string> {
     return this.table('decisions')
+  }
+
+  /** Same getter pattern as `decisions`, for the same reason: absent below v4. */
+  get coachThreads(): Table<CoachThreadRow, string> {
+    return this.table('coachThreads')
+  }
+
+  get coachTaught(): Table<TaughtConcept, string> {
+    return this.table('coachTaught')
+  }
+
+  get coachSummary(): Table<CoachSummary, string> {
+    return this.table('coachSummary')
+  }
+
+  get coachNotes(): Table<CoachNote, string> {
+    return this.table('coachNotes')
   }
 
   constructor(name: string = DB_NAME, upTo: number = CURRENT_DB_VERSION) {

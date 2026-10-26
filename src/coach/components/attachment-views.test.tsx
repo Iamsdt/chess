@@ -48,8 +48,8 @@ describe('ThinkingCard', () => {
 describe('ActionCard', () => {
   const base: ActionAttachment = {
     kind: 'action',
-    action: 'queue-puzzles',
-    title: 'Queue',
+    action: 'save-note',
+    title: 'Note',
     items: ['A'],
   }
 
@@ -57,7 +57,7 @@ describe('ActionCard', () => {
     const user = userEvent.setup()
     render(<ActionCard attachment={base} />)
     await user.click(screen.getByRole('button', { name: 'Confirm' }))
-    expect(screen.getByText('Queued')).toBeInTheDocument()
+    expect(screen.getByText('Saved to notes')).toBeInTheDocument()
   })
 
   it('disables confirm when unavailable', () => {

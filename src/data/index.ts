@@ -33,6 +33,10 @@ export type { ChessKingDb } from './db'
 export { applyMigrations, CURRENT_DB_VERSION, MIGRATIONS, type Migration } from './migrations'
 
 export {
+  COACH_SUMMARY_ID,
+  CoachNoteSchema,
+  CoachSummarySchema,
+  CoachThreadRowSchema,
   GameRowSchema,
   KvRowSchema,
   LESSON_PROGRESS_STATUSES,
@@ -43,6 +47,10 @@ export {
   PracticeSessionStateSchema,
   SETTINGS_ROW_ID,
   SettingsRowSchema,
+  TaughtConceptSchema,
+  type CoachNote,
+  type CoachSummary,
+  type CoachThreadRow,
   type GameRow,
   type KvRow,
   type LessonProgress,
@@ -50,6 +58,7 @@ export {
   type PracticeSession,
   type PracticeSessionState,
   type SettingsRow,
+  type TaughtConcept,
 } from './schema'
 
 export {

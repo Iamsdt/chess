@@ -23,6 +23,7 @@ import { db as appDb } from './db'
 import { isBackupSafeKvKey } from './kv-keys'
 import { CURRENT_DB_VERSION } from './migrations'
 import {
+  CoachNoteSchema,
   GameRowSchema,
   KvRowSchema,
   LessonProgressSchema,
@@ -37,9 +38,11 @@ import type { ChessKingDb } from './db'
  *
  * Three things keep secrets out, and they are independent on purpose:
  *
- * 1. **A table allow-list.** Only the tables below are read. `jobs` is device-
- *    local transient state and `puzzles` is a 10,000-row CC0 dataset the app
- *    re-imports from `public/quiz/`, so neither belongs in a personal backup.
+ * 1. **A table allow-list.** Only the tables below are read. Of Sage's memory only the notes
+ *    go: they are the user's own words, while threads, taught concepts and the summary are
+ *    conversation the user can clear from "What Sage sees". `jobs` is device-local transient
+ *    state and `puzzles` is a 10,000-row CC0 dataset the app re-imports from `public/quiz/`,
+ *    so neither belongs in a personal backup.
  * 2. **A schema re-parse per record.** Every row is parsed through its own zod
  *    schema on the way out, and zod strips properties the schema does not name.
  *    A key smuggled onto a settings row by a future build cannot survive that.
@@ -69,6 +72,8 @@ export const BackupDataSchema = z.object({
   sessions: z.array(PracticeSessionSchema),
   /** Absent in backups written before v3. */
   decisions: z.array(DecisionRecordSchema).default(() => []),
+  /** Absent in backups written before v4. */
+  coachNotes: z.array(CoachNoteSchema).default(() => []),
   kv: z.array(KvRowSchema),
   settings: SettingsSchema.nullable(),
   profile: ProfileSchema.nullable(),
@@ -97,6 +102,7 @@ export const BACKUP_TABLES = [
   'repertoire',
   'sessions',
   'decisions',
+  'coachNotes',
   'kv',
 ] as const
 export type BackupTable = (typeof BACKUP_TABLES)[number]
@@ -256,6 +262,12 @@ export async function exportBackup(target: ChessKingDb = appDb): Promise<Result<
         'decisions',
         skipped,
       ),
+      coachNotes: stripRows(
+        CoachNoteSchema,
+        await target.coachNotes.toArray(),
+        'coachNotes',
+        skipped,
+      ),
       kv: stripRows(
         KvRowSchema,
         (await target.kv.toArray()).filter((row) => isBackupSafeKvKey(row.key)),
@@ -291,6 +303,7 @@ export async function exportBackup(target: ChessKingDb = appDb): Promise<Result<
           repertoire: data.repertoire.length,
           sessions: data.sessions.length,
           decisions: data.decisions.length,
+          coachNotes: data.coachNotes.length,
           kv: data.kv.length,
         },
         hasSettings: data.settings !== null,
@@ -367,6 +380,7 @@ export async function restoreBackup(
         target.repertoire,
         target.sessions,
         target.decisions,
+        target.coachNotes,
         target.kv,
         target.settings,
         target.profile,
@@ -384,6 +398,7 @@ export async function restoreBackup(
             target.repertoire.clear(),
             target.sessions.clear(),
             target.decisions.clear(),
+            target.coachNotes.clear(),
             target.settings.clear(),
             target.profile.clear(),
           ])
@@ -401,6 +416,7 @@ export async function restoreBackup(
         await target.repertoire.bulkPut(data.repertoire)
         await target.sessions.bulkPut(data.sessions)
         await target.decisions.bulkPut(data.decisions)
+        await target.coachNotes.bulkPut(data.coachNotes)
         await target.kv.bulkPut(data.kv)
         if (data.settings !== null) {
           await target.settings.put({ id: SETTINGS_ROW_ID, value: data.settings })
@@ -429,6 +445,7 @@ export async function restoreBackup(
       repertoire: data.repertoire.length,
       sessions: data.sessions.length,
       decisions: data.decisions.length,
+      coachNotes: data.coachNotes.length,
       kv: data.kv.length,
     },
     hasSettings: data.settings !== null,

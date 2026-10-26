@@ -1,7 +1,10 @@
 import { z } from 'zod'
 
 import {
+  CoachMessageSchema,
+  CoachModeSchema,
   DurationMsSchema,
+  FenSchema,
   GameMetaSchema,
   LessonIdSchema,
   LessonStepIdSchema,
@@ -10,6 +13,7 @@ import {
   SessionIdSchema,
   SessionKindSchema,
   SettingsSchema,
+  ThreadIdSchema,
   TimestampSchema,
 } from '@/domain'
 
@@ -116,3 +120,56 @@ export const KvRowSchema = z.object({
   updatedAt: TimestampSchema,
 })
 export type KvRow = z.infer<typeof KvRowSchema>
+
+/**
+ * A Sage conversation, as the Session layer keeps it (coach-agent.md §6).
+ *
+ * Why the messages ride inside the row: a thread is read and written whole, newest first, and
+ * never queried by message. A `messages` table would turn "open this chat" into a range scan
+ * and "clear the session" into two deletes that can disagree.
+ */
+export const CoachThreadRowSchema = z.object({
+  id: ThreadIdSchema,
+  /** The seed's screen label, shown as the first day divider. */
+  label: z.string().optional(),
+  messages: z.array(CoachMessageSchema),
+  /** The newest message's time, so saving an unchanged thread is idempotent. */
+  updatedAt: TimestampSchema,
+})
+export type CoachThreadRow = z.infer<typeof CoachThreadRowSchema>
+
+/**
+ * A concept Sage has already covered, so it builds on it instead of repeating it (the Taught
+ * layer). `id` is the concept key; teaching it again bumps `count` and `lastTaughtAt`.
+ */
+export const TaughtConceptSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  /** The voice it was taught in; a lesson explained as Teacher is not the same as a hint. */
+  mode: CoachModeSchema,
+  count: z.number().int().min(1),
+  firstTaughtAt: TimestampSchema,
+  lastTaughtAt: TimestampSchema,
+})
+export type TaughtConcept = z.infer<typeof TaughtConceptSchema>
+
+export const COACH_SUMMARY_ID = 'rolling'
+
+/** The Summary layer: one row of compact text about chats older than the current one. */
+export const CoachSummarySchema = z.object({
+  id: z.literal(COACH_SUMMARY_ID),
+  text: z.string().min(1),
+  updatedAt: TimestampSchema,
+})
+export type CoachSummary = z.infer<typeof CoachSummarySchema>
+
+/** A takeaway the user asked Sage to keep (`saveNote`, confirmed on the action card). */
+export const CoachNoteSchema = z.object({
+  id: z.string().min(1),
+  text: z.string().min(1).max(2000),
+  /** Where it was written, so a note can link back to its position. */
+  screen: z.string().min(1).optional(),
+  fen: FenSchema.optional(),
+  createdAt: TimestampSchema,
+})
+export type CoachNote = z.infer<typeof CoachNoteSchema>

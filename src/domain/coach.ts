@@ -339,6 +339,16 @@ export const CoachPositionContextSchema = z.object({
 })
 export type CoachPositionContext = z.infer<typeof CoachPositionContextSchema>
 
+/** One Taught-layer entry as the model reads it: no ids, no timestamps, just how long ago. */
+export const CoachTaughtItemSchema = z.object({
+  label: z.string().min(1),
+  /** Whole days since Sage last covered it; 0 is today. */
+  daysAgo: z.number().int().min(0),
+  /** How many times it has come up. */
+  times: z.number().int().min(1),
+})
+export type CoachTaughtItem = z.infer<typeof CoachTaughtItemSchema>
+
 /**
  * Everything the context builder is allowed to send.
  *
@@ -361,17 +371,34 @@ export const CoachContextSchema = z.object({
   recentGames: z.array(GameMetaSchema).default(() => []),
   /** Theme names the user is weakest at, so answers can aim at them. */
   weakThemes: z.array(z.string()).default(() => []),
-  /** Set on the solver and lesson screens; what the spoiler guard protects. */
+  /**
+   * Set on the solver and lesson screens; what the spoiler guard protects. `theme` and `rating`
+   * are absent until the screen itself shows them: the solver hides both until the move is
+   * played, and Sage must not know what the learner is not allowed to.
+   */
   activePuzzle: z
-    .object({ id: PuzzleIdSchema, theme: z.string(), rating: RatingSchema })
+    .object({
+      id: PuzzleIdSchema,
+      theme: z.string().optional(),
+      rating: RatingSchema.optional(),
+    })
     .optional(),
   user: z
     .object({
       displayName: z.string(),
       puzzleRating: RatingSchema,
       sparringRating: RatingSchema,
+      /** What they said they were here for. */
+      goals: z.array(z.string()).optional(),
     })
     .optional(),
+  /**
+   * The Taught layer (coach-agent.md §6), newest first: concepts Sage already covered, so it
+   * builds on them. Optional without a default so a context written before S21b stays valid.
+   */
+  taught: z.array(CoachTaughtItemSchema).optional(),
+  /** The Summary layer: a compact digest of older chats. */
+  summary: z.string().optional(),
   /** What the on-device decision model decided about the latest question, when it ran. */
   decision: CoachDecisionSchema.optional(),
   /** Hard ceiling the builder must stay under, in tokens. */

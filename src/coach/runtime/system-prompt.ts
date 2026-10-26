@@ -1,4 +1,11 @@
-import type { CoachContext, CoachMode, CoachTone, EngineLine, GameMeta } from '@/domain'
+import type {
+  CoachContext,
+  CoachMode,
+  CoachTaughtItem,
+  CoachTone,
+  EngineLine,
+  GameMeta,
+} from '@/domain'
 
 import { MODE_INFO, modeFromDecision } from '../modes'
 
@@ -16,9 +23,10 @@ import { MODE_INFO, modeFromDecision } from '../modes'
  *
  * Why a character budget: `context.tokenBudget` is a hard ceiling set by the caller. We estimate
  * 4 characters per token (close enough for English and FENs, and it errs on the safe side for
- * short tokens) and drop the *least* useful context first: recent games, then weak themes, the
- * PGN, the user's ratings, and only then the engine lines and the position. The identity, the
- * limits, the mode and the tone are never dropped, because a prompt without them is not Sage.
+ * short tokens) and drop the *least* useful context first: recent games, the older-chat summary,
+ * weak themes, taught concepts, the PGN, the user's ratings, and only then the engine lines and
+ * the position. The identity, the limits, the mode and the tone are never dropped, because a
+ * prompt without them is not Sage.
  */
 
 const CHARS_PER_TOKEN = 4
@@ -99,13 +107,18 @@ function formatScore(line: EngineLine, fen: string | undefined): string {
   return `${pawns >= 0 ? '+' : ''}${pawns.toFixed(2)}`
 }
 
+/** One engine line as the model reads it; also what "What Sage sees" shows. */
+export function describeEngineLine(line: EngineLine, fen: string | undefined): string {
+  const moves = (line.sanPv ?? line.pv).slice(0, MAX_PV_MOVES).join(' ')
+  return `${String(line.multipv)}. depth ${String(line.depth)}, ${formatScore(line, fen)} (White's view): ${moves}`
+}
+
 function renderEngineLines(context: CoachContext): string | undefined {
   if (!context.allowEngineLines || context.engineLines.length === 0) return undefined
   const fen = context.position?.fen
-  const rows = context.engineLines.slice(0, MAX_ENGINE_LINES).map((line) => {
-    const moves = (line.sanPv ?? line.pv).slice(0, MAX_PV_MOVES).join(' ')
-    return `${String(line.multipv)}. depth ${String(line.depth)}, ${formatScore(line, fen)} (White's view): ${moves}`
-  })
+  const rows = context.engineLines
+    .slice(0, MAX_ENGINE_LINES)
+    .map((line) => describeEngineLine(line, fen))
   return `Engine lines (the only source of evaluations):\n${rows.join('\n')}`
 }
 
@@ -141,27 +154,44 @@ interface Section {
   readonly keep: number
 }
 
+function when(daysAgo: number): string {
+  if (daysAgo === 0) return 'today'
+  return daysAgo === 1 ? 'yesterday' : `${String(daysAgo)} days ago`
+}
+
+function renderTaught(items: readonly CoachTaughtItem[]): string {
+  const rows = items.map((item) => `${item.label} (${when(item.daysAgo)}, ${String(item.times)}x)`)
+  return `Already covered with this learner: ${rows.join('; ')}. Build on these instead of re-explaining the basics, and say so when you do.`
+}
+
 function dynamicSections(context: CoachContext): readonly Section[] {
   const sections: Section[] = []
   const position = renderPosition(context)
-  if (position !== undefined) sections.push({ text: position, keep: 6 })
+  if (position !== undefined) sections.push({ text: position, keep: 8 })
   const engine = renderEngineLines(context)
-  if (engine !== undefined) sections.push({ text: engine, keep: 5 })
+  if (engine !== undefined) sections.push({ text: engine, keep: 7 })
   if (context.user !== undefined) {
-    const { displayName, puzzleRating, sparringRating } = context.user
+    const { displayName, puzzleRating, sparringRating, goals } = context.user
+    const aims = goals === undefined || goals.length === 0 ? '' : ` Their goals: ${goals.join(', ')}.`
     sections.push({
-      text: `Learner: ${displayName}. Puzzle rating ${String(puzzleRating)}, play rating ${String(sparringRating)}. Match your explanation to that level: simpler ideas and fewer variations the lower the rating.`,
-      keep: 4,
+      text: `Learner: ${displayName}. Puzzle rating ${String(puzzleRating)}, play rating ${String(sparringRating)}.${aims} Match your explanation to that level: simpler ideas and fewer variations the lower the rating.`,
+      keep: 6,
     })
   }
   if (context.pgn !== undefined && context.pgn.trim() !== '') {
-    sections.push({ text: `Game so far (PGN):\n${context.pgn.trim()}`, keep: 3 })
+    sections.push({ text: `Game so far (PGN):\n${context.pgn.trim()}`, keep: 5 })
+  }
+  if (context.taught !== undefined && context.taught.length > 0) {
+    sections.push({ text: renderTaught(context.taught), keep: 4 })
   }
   if (context.weakThemes.length > 0) {
     sections.push({
       text: `Weakest themes: ${context.weakThemes.join(', ')}. Tie advice to these when it fits.`,
-      keep: 2,
+      keep: 3,
     })
+  }
+  if (context.summary !== undefined && context.summary.trim() !== '') {
+    sections.push({ text: `Earlier chats with this learner:\n${context.summary.trim()}`, keep: 2 })
   }
   if (context.recentGames.length > 0) {
     sections.push({
@@ -175,7 +205,12 @@ function dynamicSections(context: CoachContext): readonly Section[] {
 function guardText(context: CoachContext): string | undefined {
   if (!context.spoilerGuard || context.activePuzzle === undefined) return undefined
   const { theme, rating } = context.activePuzzle
-  return `Spoiler guard is ON. The learner is solving a puzzle (theme: ${theme}, rating ${String(rating)}). Do NOT reveal the solution or the first move, even if you can see it. Give graded hints only, one level at a time, unless they explicitly ask to be shown.`
+  const shown = [
+    ...(theme === undefined ? [] : [`theme: ${theme}`]),
+    ...(rating === undefined ? [] : [`rating ${String(rating)}`]),
+  ]
+  const about = shown.length === 0 ? '' : ` (${shown.join(', ')})`
+  return `Spoiler guard is ON. The learner is solving a puzzle${about}. Do NOT reveal the solution or the first move, even if you can see it. Give graded hints only, one level at a time, unless they explicitly ask to be shown.`
 }
 
 /** Flag probabilities at which the routing block gives an instruction. */

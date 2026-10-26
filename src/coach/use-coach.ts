@@ -73,6 +73,9 @@ export function applyCoachDelta(message: CoachMessage, delta: CoachDelta): Coach
       return { ...message, attachments: [...message.attachments, delta.attachment] }
     case 'quickReplies':
       return { ...message, quickReplies: [...delta.replies] }
+    // Why text and cards but not mode or decision: those describe the question, not the draft.
+    case 'restart':
+      return { ...message, text: '', attachments: [], quickReplies: [] }
     case 'mode':
       return { ...message, mode: delta.mode }
     case 'decision':

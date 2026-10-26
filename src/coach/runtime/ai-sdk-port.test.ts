@@ -1,7 +1,9 @@
+import { tool } from 'ai'
 import { MockLanguageModelV4, convertArrayToReadableStream } from 'ai/test'
 import { describe, expect, it, vi } from 'vitest'
+import { z } from 'zod'
 
-import { makeCoachContext, makeCoachMessage, toMessageId } from '@/domain'
+import { makeCoachContext, makeCoachMessage, toFen, toMessageId } from '@/domain'
 
 import { type CoachError, isCoachError, type CoachDelta } from '../port'
 
@@ -12,7 +14,7 @@ import {
   type UsageStore,
 } from './ai-sdk-port'
 
-import type { LanguageModel } from 'ai'
+import type { LanguageModel, ToolSet } from 'ai'
 
 const SECRET = 'sk-test-SECRET-1234567890'
 
@@ -202,5 +204,177 @@ describe('toModelMessages', () => {
       { role: 'assistant', content: 'a1' },
       { role: 'user', content: 'q2' },
     ])
+  })
+})
+
+describe('createAiSdkCoach · guardrails', () => {
+  const fenAfterE4 = toFen('rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1')
+
+  function toolCallStream(name: string, input: unknown) {
+    return {
+      stream: convertArrayToReadableStream([
+        { type: 'stream-start' as const, warnings: [] },
+        {
+          type: 'tool-call' as const,
+          toolCallId: 'c1',
+          toolName: name,
+          input: JSON.stringify(input),
+        },
+        {
+          type: 'finish' as const,
+          finishReason: { unified: 'tool-calls' as const, raw: 'tool-calls' },
+          usage: {
+            inputTokens: { total: 5, noCache: 5, cacheRead: 0, cacheWrite: 0 },
+            outputTokens: { total: 5, text: 5, reasoning: 0 },
+          },
+        },
+      ]),
+    }
+  }
+
+  function run(
+    doStream: unknown[],
+    context = makeCoachContext({ position: { fen: fenAfterE4, orientation: 'white' } }),
+    extra: { signal?: AbortSignal; question?: string; tools?: ToolSet } = {},
+  ) {
+    const model = new MockLanguageModelV4({ doStream: doStream as never })
+    const port = createAiSdkCoach(() => Promise.resolve(config), {
+      createModel: () => Promise.resolve(model as LanguageModel),
+      usage: memoryUsage(),
+      tools: () => extra.tools ?? {},
+    })
+    const messages = [
+      makeCoachMessage({
+        id: toMessageId('q'),
+        role: 'user',
+        text: extra.question ?? 'Who is better?',
+      }),
+    ]
+    const stream = port.send(messages, context, {
+      signal: extra.signal ?? new AbortController().signal,
+    })
+    return {
+      model,
+      stream,
+      // Lazy, so a test can pull the stream by hand instead.
+      get deltas() {
+        return collect(stream)
+      },
+    }
+  }
+
+  const textOf = (deltas: CoachDelta[]) =>
+    deltas
+      .filter((d) => d.kind === 'text')
+      .map((d) => d.text)
+      .join('')
+
+  it('restarts and retries once when the model invents an evaluation', async () => {
+    const { model, deltas } = run([
+      textStream(['Natural move. ', 'White is at +2.5 now. ']),
+      textStream(['Natural move. ', 'It is roughly level.']),
+    ])
+    const out = await deltas
+
+    const restart = out.findIndex((d) => d.kind === 'restart')
+    expect(restart).toBeGreaterThan(-1)
+    expect(textOf(out.slice(0, restart))).toBe('Natural move. ')
+    expect(textOf(out.slice(restart))).toBe('Natural move. It is roughly level.')
+    expect(JSON.stringify(out)).not.toContain('+2.5 now')
+    expect(model.doStreamCalls).toHaveLength(2)
+    const retryPrompt = JSON.stringify(model.doStreamCalls[1]?.prompt)
+    expect(retryPrompt).toContain('You stated')
+    expect(retryPrompt).toContain('+2.5')
+    expect(out.at(-1)?.kind).toBe('usage')
+  })
+
+  it('strips the sentence and says so when the retry invents it again', async () => {
+    const bad = ['Good question. ', 'White is at +2.5 now. ', 'Develop quickly.']
+    const { model, deltas } = run([textStream(bad), textStream(bad)])
+    const out = await deltas
+
+    expect(model.doStreamCalls).toHaveLength(2)
+    expect(out.filter((d) => d.kind === 'restart')).toHaveLength(1)
+    const final = textOf(out.slice(out.findIndex((d) => d.kind === 'restart')))
+    expect(final).toContain('Good question. Develop quickly.')
+    expect(final).not.toContain('+2.5')
+    expect(final).toContain('I removed a claim')
+  })
+
+  it('lets a sentence through when it quotes what a tool returned', async () => {
+    const evaluate = tool({
+      description: 'evaluate',
+      inputSchema: z.object({}),
+      execute: () => ({ summary: 'depth 18 · +0.8 · Nf3 best', pawns: 0.8 }),
+    })
+    const { model, deltas } = run(
+      [toolCallStream('analysePosition', {}), textStream(['The engine says +0.8 for White.'])],
+      undefined,
+      { tools: { analysePosition: evaluate } },
+    )
+    const out = await deltas
+
+    expect(out.some((d) => d.kind === 'restart')).toBe(false)
+    expect(model.doStreamCalls).toHaveLength(2)
+    expect(textOf(out)).toBe('The engine says +0.8 for White.')
+    expect(out.some((d) => d.kind === 'attachment')).toBe(true)
+  })
+
+  it('catches an illegal line from the position on screen', async () => {
+    const { deltas } = run([
+      textStream(['Black can play 1... e5 2. Nf6 Nc6 here. ']),
+      textStream(['Black can reply with a central pawn.']),
+    ])
+    const out = await deltas
+    expect(out.some((d) => d.kind === 'restart')).toBe(true)
+    expect(textOf(out.slice(out.findIndex((d) => d.kind === 'restart')))).toBe(
+      'Black can reply with a central pawn.',
+    )
+  })
+
+  it('catches a spoiler in puzzle mode unless the user asked for the answer', async () => {
+    const puzzle = makeCoachContext({
+      spoilerGuard: true,
+      activePuzzle: { id: 'p1' as never, theme: 'fork', rating: 1200 },
+      position: { fen: fenAfterE4, orientation: 'white' },
+    })
+    const spoiling = () => [
+      toolCallStream('analysePosition', {}),
+      textStream(['Just play Nf3 there. ']),
+    ]
+    const tools = {
+      analysePosition: tool({
+        description: 'analyse',
+        inputSchema: z.object({}),
+        execute: () => ({ summary: 'Nf3 best', bestMove: 'Nf3' }),
+      }),
+    }
+
+    const guarded = run([...spoiling(), textStream(['Look for a fork.'])], puzzle, { tools })
+    const out = await guarded.deltas
+    expect(out.some((d) => d.kind === 'restart')).toBe(true)
+    expect(textOf(out)).toBe('Look for a fork.')
+
+    const asked = run(spoiling(), puzzle, { tools, question: 'Please just tell me the solution' })
+    const answered = await asked.deltas
+    expect(answered.some((d) => d.kind === 'restart')).toBe(false)
+    expect(textOf(answered)).toBe('Just play Nf3 there. ')
+  })
+
+  it('produces nothing further when the user stops during the retry', async () => {
+    const controller = new AbortController()
+    const { stream } = run(
+      [textStream(['White is at +2.5 now. ']), textStream(['It is level. ', 'Develop quickly. '])],
+      undefined,
+      { signal: controller.signal },
+    )
+    const seen: CoachDelta[] = []
+    for await (const delta of stream) {
+      seen.push(delta)
+      if (delta.kind === 'restart') controller.abort()
+    }
+
+    expect(seen.at(-1)?.kind).toBe('restart')
+    expect(seen.some((d) => d.kind === 'usage')).toBe(false)
   })
 })
