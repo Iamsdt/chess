@@ -28,11 +28,11 @@ export interface TreeViewProps {
 function chipClass(node: CalcNode, props: TreeViewProps): string {
   const selected = props.selectedId === node.id
   return cn(
-    'inline-flex items-center justify-between gap-1.5 rounded-full border px-2.5 text-xs transition-shadow outline-none',
+    'inline-flex items-center justify-between gap-1.5 rounded-full border px-2.5 text-xs transition-all outline-none shadow-2xs',
     'focus-visible:ring-2 focus-visible:ring-ring',
     TAG_STYLE[node.tag].chip,
     props.pathIds.has(node.id) && 'border-2',
-    selected && 'font-semibold ring-2 ring-foreground',
+    selected && 'font-bold ring-2 ring-foreground',
     props.overlay?.has(node.id) === true && 'shadow-[0_0_0_3px_var(--primary)]',
   )
 }
@@ -44,8 +44,8 @@ function chipName(node: CalcNode, position: NodePosition | undefined): string {
 function ChipBody({ node }: { readonly node: CalcNode }) {
   return (
     <>
-      <span className="truncate">{node.san}</span>
-      <span className="text-muted-foreground tabular-nums">{formatEval(node.eval)}</span>
+      <span className="truncate font-semibold text-foreground">{node.san}</span>
+      <span className="text-muted-foreground/80 tabular-nums text-[11px] font-medium">{formatEval(node.eval)}</span>
     </>
   )
 }

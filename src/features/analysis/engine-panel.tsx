@@ -15,7 +15,7 @@ import {
 import type { Color, EngineLine, Fen, Uci } from '@/domain'
 
 import { SEARCH_LIMITS, type AnalysisSettings } from './analysis-state'
-import { formatScore } from './score-format'
+import { displayPawns, formatScore } from './score-format'
 import { numberingFor, type LineStart } from './variation-tree'
 
 import type { EngineAnalysis } from './use-engine-analysis'
@@ -56,6 +56,14 @@ function pvText(sans: readonly string[], start: LineStart): string {
     .join(' ')
 }
 
+function getScoreTone(score: EngineLine['score'], sideToMove: Color): 'good' | 'bad' | 'neutral' | 'mate' {
+  if (score.kind === 'mate') return 'mate'
+  const pawns = displayPawns(score, sideToMove)
+  if (pawns >= 0.3) return 'good'
+  if (pawns <= -0.3) return 'bad'
+  return 'neutral'
+}
+
 function LineRow({
   line,
   fen,
@@ -72,21 +80,35 @@ function LineRow({
   const sans = uciLineToSan(fen, line.pv.slice(0, PV_MOVES_SHOWN))
   const first = line.pv[0]
   const text = sans.ok ? pvText(sans.value, lineStart) : line.pv.join(' ')
+  const tone = getScoreTone(line.score, sideToMove)
 
   return (
     <li>
       <button
         type="button"
-        className="flex w-full items-start gap-3 px-4 py-2.5 text-left transition hover:bg-muted/40 focus-visible:bg-muted/60 focus-visible:outline-none"
+        className="group flex w-full items-start gap-3 rounded-lg border border-border/50 bg-card/60 px-3 py-2.5 text-left transition hover:border-primary/40 hover:bg-muted/60 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
         onClick={() => {
           if (first !== undefined) onPlayMove(first)
         }}
         disabled={first === undefined}
       >
-        <span className="mt-0.5 w-12 shrink-0 rounded bg-paper px-1 py-0.5 text-center font-mono text-xs font-semibold text-paper-ink ring-1 ring-border">
+        <span
+          className={cn(
+            'mt-0.5 min-w-[54px] shrink-0 rounded-md py-1 px-1.5 text-center font-mono text-xs font-bold tabular-nums border shadow-2xs transition-colors',
+            tone === 'good' && 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+            tone === 'bad' && 'bg-destructive/15 text-destructive dark:text-red-400 border-destructive/30',
+            tone === 'mate' && 'bg-purple-500/20 text-purple-600 dark:text-purple-300 border-purple-500/40',
+            tone === 'neutral' && 'bg-muted/80 text-foreground border-border',
+          )}
+        >
           {formatScore(line.score, sideToMove)}
         </span>
-        <span className="min-w-0 font-mono text-[12.5px] leading-relaxed break-words">{text}</span>
+        <span className="min-w-0 flex-1 font-mono text-xs sm:text-[13px] font-medium leading-relaxed tracking-tight text-foreground/90 group-hover:text-foreground transition-colors break-words">
+          {text}
+        </span>
+        <span className="mt-0.5 shrink-0 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+          Play →
+        </span>
       </button>
     </li>
   )
@@ -180,7 +202,7 @@ export function EnginePanel({
         </p>
       ) : settings.engineEnabled ? (
         <>
-          <ol className="divide-y text-sm" aria-label="Engine lines">
+          <ol className="p-2.5 space-y-1.5 text-sm" aria-label="Engine lines">
             {analysis.lines.map((line) => (
               <LineRow
                 key={line.multipv}

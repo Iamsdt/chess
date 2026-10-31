@@ -1,5 +1,15 @@
 import { Link } from '@tanstack/react-router'
-import { ArrowUpDown, Flag, Handshake, Scale, Swords, Undo2 } from 'lucide-react'
+import {
+  ArrowUpDown,
+  FileText,
+  Flag,
+  Handshake,
+  Library,
+  RotateCcw,
+  Scale,
+  Swords,
+  Undo2,
+} from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { Board } from '@/board'
@@ -8,6 +18,8 @@ import {
   Badge,
   Button,
   Card,
+  cn,
+  CtaButton,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -27,7 +39,7 @@ import { emptyBoardShapes } from '@/domain'
 import type { BoardShapes, Square } from '@/domain'
 
 import { formatTimeControl, remainingAt } from './clock'
-import { GameOverDialog } from './components/game-over-dialog'
+import { headline, TERMINATION_COPY } from './components/game-over-dialog'
 import { GuardDialog } from './components/guard-dialog'
 import { MoveList } from './components/move-list'
 import { PlayerStrip } from './components/player-strip'
@@ -62,7 +74,6 @@ export function PlayGameScreen({ storage }: PlayGameScreenProps = {}) {
   const { pieceSet } = useTheme()
   const [resignOpen, setResignOpen] = useState(false)
   const [flipped, setFlipped] = useState(false)
-  const [gameOverDismissed, setGameOverDismissed] = useState(false)
 
   const state = load.status === 'ready' ? load.state : null
   const game = state?.game ?? null
@@ -270,53 +281,123 @@ export function PlayGameScreen({ storage }: PlayGameScreenProps = {}) {
             </TabsContent>
           </Tabs>
 
-          <div className="space-y-2 border-t p-3">
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!canTakeBack(state)}
-                onClick={actions.takeback}
-              >
-                <Undo2 aria-hidden="true" />
-                Take back
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={state.phase !== 'playing' || state.drawOffer === 'pending'}
-                onClick={actions.offerDraw}
-              >
-                <Handshake aria-hidden="true" />
-                Offer draw
-              </Button>
+          {state.phase === 'game-over' ? (
+            <div className="space-y-3 border-t p-3 sm:p-4 bg-muted/20" aria-label="Game result">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <h2
+                    className={cn(
+                      'text-base font-bold sm:text-lg',
+                      headline(state.result, you) === 'You won'
+                        ? 'text-reward'
+                        : headline(state.result, you) === 'Stockfish won'
+                          ? 'text-cta'
+                          : 'text-foreground',
+                    )}
+                  >
+                    {headline(state.result, you)}
+                  </h2>
+                  <span className="badge font-mono text-xs font-semibold">
+                    {`${state.result} ${TERMINATION_COPY[state.termination]}`.trim()}
+                  </span>
+                </div>
+                <p aria-live="polite" className="text-xs text-muted-foreground leading-relaxed">
+                  {review.status === 'queued'
+                    ? 'The full review is queued and will run in the background. Your mistakes go to the Mistake Bank when it finishes.'
+                    : review.status === 'failed'
+                      ? `${review.message} The game is saved, so you can start the review from your games list.`
+                      : 'Saving the game…'}
+                </p>
+              </div>
+
+              <div className="space-y-2 pt-1">
+                <CtaButton asChild className="w-full min-h-[40px] font-semibold">
+                  <Link to="/play">
+                    <RotateCcw className="mr-1.5 size-4" aria-hidden="true" />
+                    New game
+                  </Link>
+                </CtaButton>
+
+                <div className="grid grid-cols-2 gap-2">
+                  {state.gameId !== undefined && review.status === 'queued' ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                      className="min-h-[36px] text-xs sm:text-sm"
+                    >
+                      <Link to="/games/review" search={{ id: state.gameId }}>
+                        <FileText className="mr-1.5 size-3.5" aria-hidden="true" />
+                        Open review
+                      </Link>
+                    </Button>
+                  ) : null}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className={cn(
+                      'min-h-[36px] text-xs sm:text-sm',
+                      !(state.gameId !== undefined && review.status === 'queued') && 'col-span-2',
+                    )}
+                  >
+                    <Link to="/games">
+                      <Library className="mr-1.5 size-3.5" aria-hidden="true" />
+                      My games
+                    </Link>
+                  </Button>
+                </div>
+              </div>
             </div>
-            {claimable === null ? null : (
-              <Button variant="outline" size="sm" className="w-full" onClick={actions.claimDraw}>
-                <Scale aria-hidden="true" />
-                Claim the draw
+          ) : (
+            <div className="space-y-2 border-t p-3">
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!canTakeBack(state)}
+                  onClick={actions.takeback}
+                >
+                  <Undo2 aria-hidden="true" />
+                  Take back
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={state.phase !== 'playing' || state.drawOffer === 'pending'}
+                  onClick={actions.offerDraw}
+                >
+                  <Handshake aria-hidden="true" />
+                  Offer draw
+                </Button>
+              </div>
+              {claimable === null ? null : (
+                <Button variant="outline" size="sm" className="w-full" onClick={actions.claimDraw}>
+                  <Scale aria-hidden="true" />
+                  Claim the draw
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-muted-foreground"
+                disabled={state.phase !== 'playing'}
+                onClick={() => {
+                  setResignOpen(true)
+                }}
+              >
+                <Flag aria-hidden="true" />
+                Resign
               </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full text-muted-foreground"
-              disabled={state.phase !== 'playing'}
-              onClick={() => {
-                setResignOpen(true)
-              }}
-            >
-              <Flag aria-hidden="true" />
-              Resign
-            </Button>
-            <p aria-live="polite" className="min-h-4 text-center text-xs text-muted-foreground">
-              {state.drawOffer === 'pending'
-                ? 'Draw offered. Stockfish is considering it.'
-                : state.drawOffer === 'declined'
-                  ? 'Stockfish would rather play on.'
-                  : ''}
-            </p>
-          </div>
+              <p aria-live="polite" className="min-h-4 text-center text-xs text-muted-foreground">
+                {state.drawOffer === 'pending'
+                  ? 'Draw offered. Stockfish is considering it.'
+                  : state.drawOffer === 'declined'
+                    ? 'Stockfish would rather play on.'
+                    : ''}
+              </p>
+            </div>
+          )}
         </Card>
       </div>
 
@@ -356,18 +437,6 @@ export function PlayGameScreen({ storage }: PlayGameScreenProps = {}) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <GameOverDialog
-        open={state.phase === 'game-over' && !gameOverDismissed}
-        result={state.result}
-        termination={state.termination}
-        youPlay={you}
-        review={review}
-        gameId={state.gameId}
-        onClose={() => {
-          setGameOverDismissed(true)
-        }}
-      />
     </Frame>
   )
 }

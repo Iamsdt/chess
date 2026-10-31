@@ -406,15 +406,15 @@ export function ExplorePanel({
                 <button
                   type="button"
                   className={cn(
-                    'flex w-full flex-col items-start gap-0.5 rounded-lg border px-2.5 py-2 text-left text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    'flex w-full flex-col items-start gap-1 rounded-xl border p-2.5 text-left text-sm outline-none transition-all hover:bg-accent/40 focus-visible:ring-2 focus-visible:ring-ring',
                     TAG_STYLE[row.node.tag].chip,
-                    branch?.id === row.node.id && 'ring-2 ring-foreground',
+                    branch?.id === row.node.id && 'ring-2 ring-foreground font-semibold shadow-xs',
                   )}
                   onClick={() => {
                     go(row.node.id)
                   }}
                 >
-                  <span className="flex items-center gap-1 font-medium">
+                  <span className="flex items-center gap-1.5 font-bold font-mono text-sm">
                     {row.node.san}
                     {row.isBest ? (
                       <>
@@ -423,7 +423,7 @@ export function ExplorePanel({
                       </>
                     ) : null}
                   </span>
-                  <span className="text-xs text-muted-foreground tabular-nums">
+                  <span className="text-xs font-mono font-medium text-muted-foreground tabular-nums">
                     {formatEval(row.finalEval)}
                   </span>
                 </button>

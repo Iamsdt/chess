@@ -1,8 +1,9 @@
 import { Link } from '@tanstack/react-router'
-import { ArrowLeft, ArrowUpDown, Flag, Palette, Star, TriangleAlert } from 'lucide-react'
-import { useState } from 'react'
+import { ArrowLeft, ArrowUpDown, ChevronDown, Flag, Palette, Star, TriangleAlert } from 'lucide-react'
+import { useContext, useState } from 'react'
 
-import { Button, EmptyState, SimpleTooltip, Skeleton, toast } from '@/design'
+import { ChatPanelContext } from '@/app/shell/shell-contexts'
+import { Button, cn, EmptyState, SimpleTooltip, Skeleton, toast } from '@/design'
 
 import { drillStatsText } from './drill-copy'
 import { EMPTY_ENDGAME_RECORD, masteredCount, type EndgameRecords } from './drill-records'
@@ -85,13 +86,12 @@ function DrillListSection({ category, records, activeId, onSelect }: DrillListSe
 function LoadingBody() {
   return (
     <div
-      className="grid gap-4 p-3 sm:gap-5 sm:p-4 lg:grid-cols-[210px_minmax(0,1fr)] lg:p-6 xl:grid-cols-[220px_minmax(0,1fr)_300px]"
+      className="grid gap-4 p-3 sm:gap-5 sm:p-4 lg:grid-cols-[220px_minmax(0,1fr)] lg:p-6 2xl:grid-cols-[240px_minmax(0,1fr)]"
       role="status"
       aria-label="Loading your drills"
     >
       <Skeleton className="h-72 rounded-xl" />
       <Skeleton className="aspect-square w-full max-w-[620px] justify-self-center rounded-xl" />
-      <Skeleton className="h-72 rounded-xl" />
     </div>
   )
 }
@@ -110,6 +110,8 @@ export function EndgamesScreen() {
   const [activeId, setActiveId] = useState<string>(FIRST_DRILL?.id ?? ENDGAME_DRILLS[0]?.id ?? '')
   const [flipped, setFlipped] = useState(false)
   const [restarts, setRestarts] = useState(0)
+  const chatPanel = useContext(ChatPanelContext)
+  const isChatOpen = chatPanel?.isOpen ?? false
 
   const activeDrill = ENDGAME_DRILLS.find((drill) => drill.id === activeId) ?? ENDGAME_DRILLS[0]
 
@@ -145,6 +147,33 @@ export function EndgamesScreen() {
           <Flag className="size-4 shrink-0 text-cta" aria-hidden="true" />
           <span className="truncate">Endgame drills</span>
         </h1>
+        {readyRecords !== null && activeDrill !== undefined ? (
+          <div className="relative ml-1 sm:ml-2">
+            <select
+              value={activeDrill.id}
+              onChange={(e) => {
+                const found = ENDGAME_DRILLS.find((d) => d.id === e.target.value)
+                if (found) handleSelect(found)
+              }}
+              aria-label="Choose endgame drill"
+              className="cursor-pointer appearance-none rounded-lg border bg-card py-1 pl-2.5 pr-7 text-xs font-semibold shadow-xs hover:bg-muted/60 focus:outline-hidden focus:ring-1 focus:ring-ring sm:text-sm"
+            >
+              {ENDGAME_CATEGORIES.map((category) => (
+                <optgroup key={category} label={ENDGAME_CATEGORY_LABELS[category]}>
+                  {ENDGAME_DRILLS.filter((d) => d.category === category).map((drill) => (
+                    <option key={drill.id} value={drill.id}>
+                      {drill.title}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            <ChevronDown
+              className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            />
+          </div>
+        ) : null}
         {readyRecords !== null ? (
           <span className="badge max-sm:hidden">
             {String(masteredCount(readyRecords))} of {String(ENDGAME_DRILLS.length)} mastered
@@ -198,15 +227,18 @@ export function EndgamesScreen() {
         </div>
       ) : null}
 
-      {/* Main Grid: Left Nav, Center Board, Right Side Panel */}
+      {/* Main Container: Left Nav, Board, Drill Details (Side-by-side, no vertical scroll) */}
       {readyRecords !== null && activeDrill !== undefined ? (
-        <div className="grid gap-4 p-3 sm:gap-5 sm:p-4 lg:grid-cols-[210px_minmax(0,1fr)] lg:p-6 xl:grid-cols-[220px_minmax(0,1fr)_300px] 2xl:grid-cols-[240px_minmax(0,1fr)_320px]">
+        <div className="flex h-[calc(100dvh-56px)] flex-col gap-4 overflow-hidden p-3 sm:p-4 lg:flex-row lg:gap-5 lg:p-6">
           {/* Column 1: Drill Navigation */}
           <nav
-            className="card h-fit overflow-hidden max-lg:order-3"
+            className={cn(
+              'card h-full max-h-[calc(100dvh-56px-32px)] w-full overflow-y-auto shrink-0 max-lg:order-3 lg:w-52 xl:w-56',
+              isChatOpen && 'hidden 2xl:flex',
+            )}
             aria-label="Endgame drills list"
           >
-            <div className="border-b px-3.5 py-2.5 sm:px-4 sm:py-3">
+            <div className="sticky top-0 z-1 border-b bg-card px-3.5 py-2.5 sm:px-4 sm:py-3">
               <h2 className="text-sm font-bold">All drills</h2>
               <p className="text-xs text-muted-foreground">Stars for beating par</p>
             </div>

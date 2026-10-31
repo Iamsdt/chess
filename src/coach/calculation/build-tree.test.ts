@@ -10,7 +10,8 @@ import { childrenMap, replayTree } from './tree-model'
 /** Tactical moves look bad to this engine, quiet ones are ranked alphabetically and close. */
 const quietEngine =
   (
-    score = (san: string, index: number): number => (/[x+]/.test(san) ? -300 : 40 - 10 * index),
+    score = (san: string, index: number): number =>
+      /[x+]/.test(san) ? -200 : index < 3 ? 40 - 10 * index : -500,
   ): EngineScript =>
   (request) => {
     const game = createGame(request.fen)

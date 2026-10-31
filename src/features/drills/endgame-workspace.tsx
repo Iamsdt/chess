@@ -143,9 +143,12 @@ export function EndgameWorkspace({
 
   return (
     <>
-      {/* Column 2: Drill Board */}
-      <section className="flex justify-center" aria-label="Drill board">
-        <div className="w-full max-w-[min(100%,calc(100dvh-220px),620px)] space-y-2 sm:space-y-2.5">
+      {/* Drill Board Section */}
+      <section
+        className="flex flex-1 min-w-0 items-center justify-center h-full max-h-[calc(100dvh-56px-32px)]"
+        aria-label="Drill board"
+      >
+        <div className="w-full max-w-[min(100%,calc(100dvh-56px-48px-90px),620px)] space-y-2 sm:space-y-2.5">
           {/* Opponent Status Bar */}
           <div className="flex items-center gap-2.5 sm:gap-3">
             <span className="avatar size-8 rounded-xl bg-engine text-engine-foreground sm:size-9">
@@ -171,7 +174,7 @@ export function EndgameWorkspace({
           </div>
 
           {/* Board Container */}
-          <div className="overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.45)] ring-1 ring-border">
+          <div className="overflow-hidden rounded-xl shadow-[0_18px_40px_-18px_rgba(30,40,30,.45)] ring-1 ring-border aspect-square">
             {session === null ? (
               <EmptyState
                 icon={Box}
@@ -235,26 +238,65 @@ export function EndgameWorkspace({
         </div>
       </section>
 
-      {/* Column 3: Drill Details Panel */}
+      {/* Drill Details & Actions */}
       <aside
-        className="card flex h-fit flex-col overflow-hidden lg:col-start-2 xl:col-start-3 xl:max-h-[calc(100dvh-56px-48px)]"
+        className="card flex w-full flex-col overflow-hidden shrink-0 h-full max-h-[calc(100dvh-56px-32px)] max-lg:order-2 lg:w-80 xl:w-[360px]"
         aria-label="Drill details"
       >
-        <div className="border-b p-3.5 sm:p-4">
-          <p className="eyebrow">{ENDGAME_CATEGORY_LABELS[drill.category]} · drill</p>
-          <h2 className="mt-1 text-base leading-snug font-bold sm:text-lg">{drill.headline}</h2>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            <span className="badge badge-reward text-xs">Par {String(drill.par)}</span>
-            <span className="badge text-xs">Attempt {String(record.attempts + 1)}</span>
-            {record.bestMoves !== null ? (
-              <span className="badge text-xs text-muted-foreground">
-                Best {String(record.bestMoves)}
-              </span>
-            ) : null}
+        <div className="border-b p-3.5 sm:p-4 shrink-0">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="eyebrow">{ENDGAME_CATEGORY_LABELS[drill.category]} · drill</p>
+              <h2 className="mt-0.5 text-base leading-snug font-bold sm:text-lg">{drill.headline}</h2>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              <span className="badge badge-reward text-xs">Par {String(drill.par)}</span>
+              <span className="badge text-xs">Attempt {String(record.attempts + 1)}</span>
+              {record.bestMoves !== null ? (
+                <span className="badge text-xs text-muted-foreground">
+                  Best {String(record.bestMoves)}
+                </span>
+              ) : null}
+            </div>
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 space-y-3.5 overflow-auto p-3.5 sm:space-y-4 sm:p-4">
+        {/* Drill Action Buttons */}
+        <div className="border-b bg-muted/20 p-3 sm:px-4 shrink-0">
+          <div className="grid grid-cols-3 gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 min-h-[40px] text-xs sm:text-sm"
+              disabled={!controller.canTakeBack}
+              onClick={controller.takeBack}
+            >
+              <Undo2 className="mr-1.5 size-4" aria-hidden="true" />
+              Take back
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 min-h-[40px] border-cta/30 bg-cta-soft text-xs text-cta hover:bg-cta hover:text-cta-foreground sm:text-sm"
+              disabled={session === null || !isUserTurn(session)}
+              onClick={handleHint}
+            >
+              <Lightbulb className="mr-1.5 size-4" aria-hidden="true" />
+              Hint
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 min-h-[40px] text-xs text-muted-foreground"
+              onClick={onRestart}
+            >
+              <RotateCcw className="mr-1.5 size-3.5" aria-hidden="true" />
+              Restart drill
+            </Button>
+          </div>
+        </div>
+
+        <div className="min-h-0 flex-1 space-y-3.5 overflow-y-auto p-3.5 sm:space-y-4 sm:p-4">
           {/* Result */}
           {verdict !== null ? (
             <div
@@ -317,9 +359,19 @@ export function EndgameWorkspace({
 
           {/* Technique Card */}
           <div className="rounded-xl bg-lilac/60 p-3 sm:p-3.5">
-            <div className="flex items-center gap-2 text-xs font-semibold text-lilac-ink sm:text-sm">
-              <Box className="size-4 shrink-0" aria-hidden="true" />
-              {drill.technique.title}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-xs font-semibold text-lilac-ink sm:text-sm">
+                <Box className="size-4 shrink-0" aria-hidden="true" />
+                {drill.technique.title}
+              </div>
+              <button
+                type="button"
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-lilac-ink/10 px-2 py-1 text-xs font-medium text-lilac-ink hover:bg-lilac-ink/20 hover:underline"
+                onClick={handleAskSage}
+              >
+                <MessageCircle className="size-3.5 shrink-0" aria-hidden="true" />
+                Ask Sage about this technique
+              </button>
             </div>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
               {drill.technique.text}
@@ -334,14 +386,6 @@ export function EndgameWorkspace({
                 </li>
               ))}
             </ol>
-            <button
-              type="button"
-              className="mt-2.5 inline-flex cursor-pointer items-center gap-1.5 text-xs font-medium text-lilac-ink hover:underline"
-              onClick={handleAskSage}
-            >
-              <MessageCircle className="size-3.5 shrink-0" aria-hidden="true" />
-              Ask Sage about this technique
-            </button>
           </div>
 
           {/* Stat Counters, or an invitation when nothing has been played */}
@@ -375,41 +419,6 @@ export function EndgameWorkspace({
               </div>
             </div>
           )}
-        </div>
-
-        {/* Drill Action Buttons */}
-        <div className="space-y-2 border-t p-3 sm:p-4">
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9 min-h-[44px] text-xs sm:h-10 sm:min-h-0 sm:text-sm"
-              disabled={!controller.canTakeBack}
-              onClick={controller.takeBack}
-            >
-              <Undo2 className="mr-1 size-4" aria-hidden="true" />
-              Take back
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9 min-h-[44px] border-cta/30 bg-cta-soft text-xs text-cta hover:bg-cta hover:text-cta-foreground sm:h-10 sm:min-h-0 sm:text-sm"
-              disabled={session === null || !isUserTurn(session)}
-              onClick={handleHint}
-            >
-              <Lightbulb className="mr-1 size-4" aria-hidden="true" />
-              Hint
-            </Button>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-9 w-full text-xs text-muted-foreground"
-            onClick={onRestart}
-          >
-            <RotateCcw className="mr-1 size-3.5" aria-hidden="true" />
-            Restart drill
-          </Button>
         </div>
       </aside>
     </>

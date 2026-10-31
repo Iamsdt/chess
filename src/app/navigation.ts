@@ -48,7 +48,6 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         icon: Sprout,
         screen: 'learn',
         key: 'l',
-        badge: { label: 'Soon' },
       },
       {
         id: 'mistakes',

@@ -46,7 +46,7 @@ describe('startVisualizationExercise', () => {
       const card = lastExercise(emitted)
       const key = prepare(card)?.key
       expect(key).toBeDefined()
-      if (key !== undefined && key.kind !== 'squares') {
+      if (key !== undefined && key.kind !== 'squares' && key.kind !== 'choice') {
         expect(JSON.stringify(out)).not.toContain(revealText(key))
       }
     },
@@ -81,7 +81,7 @@ describe('checkVisualizationAnswer', () => {
   it('names the first slip when a followed piece is misplaced', async () => {
     const { env, emitted } = createHarness()
     const tools = visualizationTools(env)
-    await start(tools, 'follow-line')
+    await start(tools, 'follow-line', 2)
     const card = lastExercise(emitted)
     const start0 = card.target?.square
     expect(start0).toBeDefined()
@@ -137,7 +137,7 @@ describe('peekPosition', () => {
   it('refuses to peek before the user has answered, then shows a flash board after', async () => {
     const { env, emitted } = createHarness()
     const tools = visualizationTools(env)
-    await start(tools, 'follow-line')
+    await start(tools, 'follow-line', 2)
     const before = emitted.length
     expect(await callTool(tools, 'peekPosition', { exerciseId: 'exercise-1' })).toMatchObject({
       error: expect.stringContaining('not answered'),

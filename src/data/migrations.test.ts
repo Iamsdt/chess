@@ -144,7 +144,7 @@ describe('v2 to v3', () => {
     await v2.table('games').put(makeGameMeta({ id: toGameId('g2') }))
     v2.close()
 
-    const v3 = createDb(name)
+    const v3 = createDb(name, 3)
     open = v3
     await v3.open()
     expect(v3.verno).toBe(3)

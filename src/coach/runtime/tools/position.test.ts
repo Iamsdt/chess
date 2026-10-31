@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { makeCoachContext, START_FEN } from '@/domain'
+import { makeCoachContext, START_FEN, toFen } from '@/domain'
 import { createScriptedEngine } from '@/coach/testing/scripted-engine'
 
 import { positionTools } from './position'
@@ -10,7 +10,7 @@ import type { ToolExecutionOptions } from '@ai-sdk/provider-utils'
 
 const OPTIONS = { toolCallId: 'x', messages: [] } as unknown as ToolExecutionOptions<never>
 
-const italian = 'r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4'
+const italian = toFen('r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4')
 
 function setUp(fen = START_FEN) {
   const scripted = createScriptedEngine(() => ({}))

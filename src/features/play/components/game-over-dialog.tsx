@@ -25,7 +25,7 @@ export interface GameOverDialogProps {
   readonly onClose: () => void
 }
 
-const TERMINATION_COPY: Readonly<Record<GameTermination, string>> = {
+export const TERMINATION_COPY: Readonly<Record<GameTermination, string>> = {
   checkmate: 'by checkmate',
   resignation: 'by resignation',
   timeout: 'on time',
@@ -41,7 +41,7 @@ const TERMINATION_COPY: Readonly<Record<GameTermination, string>> = {
 
 /** Why the headline is a fact and not a verdict: "You lost" is the score, and the
  *  screen that follows is where the game gets turned into something to learn. */
-function headline(result: GameResult, youPlay: Color): string {
+export function headline(result: GameResult, youPlay: Color): string {
   if (result === '1/2-1/2') return 'Drawn'
   if (result === '*') return 'Game over'
   const youWon = (result === '1-0') === (youPlay === 'white')
@@ -78,7 +78,7 @@ export function GameOverDialog({
               ? `${review.message} The game is saved, so you can start the review from your games list.`
               : 'Saving the game…'}
         </p>
-        <DialogFooter>
+        <DialogFooter className="flex-wrap gap-2 sm:justify-end">
           <Button variant="ghost" onClick={onClose}>
             Stay on the board
           </Button>

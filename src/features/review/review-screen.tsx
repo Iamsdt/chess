@@ -16,7 +16,9 @@ import {
   TriangleAlert,
   UserRound,
 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useContext, useState } from 'react'
+
+import { ChatPanelContext } from '@/app/shell/shell-contexts'
 
 import { Board } from '@/board'
 import { PICTURE_IT_CARD } from '@/coach/fixtures/visualization-fixtures'
@@ -400,6 +402,7 @@ function Reviewed({
   readonly game: GameRow
   readonly moves: readonly MoveRecord[]
 }) {
+  const chatPanel = useContext(ChatPanelContext)
   const settings = useSettings()
   const [tab, setTab] = useState<Tab>('sum')
   const [ply, setPly] = useState(0)
@@ -635,12 +638,25 @@ function Reviewed({
                     {current.explanation}
                   </p>
                 )}
-                {canRetry(current, youAre) && (
-                  <>
-                    <RetryButton move={current} onRetry={setRetrying} />
-                    <PictureItButton />
-                  </>
-                )}
+                <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                  {canRetry(current, youAre) && (
+                    <>
+                      <RetryButton move={current} onRetry={setRetrying} />
+                      <PictureItButton />
+                    </>
+                  )}
+                  {chatPanel?.isAvailable && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 text-xs text-lilac-ink hover:bg-lilac/30"
+                      onClick={() => chatPanel.open()}
+                    >
+                      <Sparkles className="mr-1.5 size-3.5 text-lilac-ink" aria-hidden="true" />
+                      Ask Sage to explain
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>

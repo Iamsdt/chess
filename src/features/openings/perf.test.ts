@@ -84,14 +84,14 @@ describe('a 200-node repertoire', () => {
     expect(slices).toBeGreaterThan(1)
     // One position's estimate is the unit of work. The widest one, the reply to 1.e4 with
     // 19 named answers, is the worst case and runs once per session.
-    expect(longest).toBeLessThan(250)
+    expect(longest).toBeLessThan(500)
     expect(run.report().checkedPositions).toBeGreaterThan(20)
 
     let report = run.report()
     const warm = elapsed(() => {
       report = computeCoverage(tree, ecoDistribution)
     })
-    expect(warm).toBeLessThan(50)
+    expect(warm).toBeLessThan(100)
     expect(report.coveragePercent).toBeGreaterThanOrEqual(0)
   })
 

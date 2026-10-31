@@ -229,11 +229,14 @@ export const SCREENS = {
     layout: 'page',
     prototype: 'learn.html',
     sprint: 'S16',
-    comingSoon: true,
     chat: {
       initial: 'closed',
-      context: 'lessons · coming soon',
-      quick: [],
+      context: 'lessons · 5 tracks · course map',
+      quick: [
+        'What should I learn next?',
+        'Why this order?',
+        'I only have 10 minutes',
+      ],
     },
   },
   lesson: {
@@ -246,11 +249,14 @@ export const SCREENS = {
     layout: 'board',
     prototype: 'lesson.html',
     sprint: 'S16',
-    comingSoon: true,
     chat: {
       initial: 'closed',
-      context: 'lessons · coming soon',
-      quick: [],
+      context: 'interactive lesson · playing moves',
+      quick: [
+        'Give me a hint',
+        'Why does this move work?',
+        'Show me another example',
+      ],
     },
   },
   endgames: {
@@ -264,7 +270,7 @@ export const SCREENS = {
     prototype: 'endgames.html',
     sprint: 'S18',
     chat: {
-      initial: 'open',
+      initial: 'closed',
       context: 'endgame drill · K+R vs K · move 5 of par 16 · Stockfish defends',
       attach: 'Current position',
       quick: [SHOWCASE_PROMPTS.drill, SHOWCASE_PROMPTS.visualization, 'Explain the box again'],
